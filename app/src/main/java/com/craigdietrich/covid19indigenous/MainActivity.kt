@@ -26,7 +26,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun switchTo(what: String) {
-
         if (what == "about") {
             val navView: BottomNavigationView = findViewById(R.id.nav_view)
             navView.setSelectedItemId(R.id.navigation_dashboard);
