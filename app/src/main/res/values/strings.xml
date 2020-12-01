@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">covid19indigenous</string>
+    <string name="title_home">Home</string>
+    <string name="title_begin">Begin</string>
+    <string name="title_dashboard">About</string>
+    <string name="title_project">Project</string>
+    <string name="title_notifications">Survey</string>
+    <string name="title_culture">Cul/Res</string>
+    <string name="about_project">About our project</string>
+    <string name="take_survey">Take the survey</string>
+    <string name="culture_resilience">Culture/Resilience</string>
+    <string name="home_title">KITATIPITHITAMAK MITHWAYAWIN</string>
+    <string name="home_desc">Indigenous-Led Countermeasures to Coronavirus (COVID-19) and other Pandemics Then Now, and Into the Future</string>
+    <string name="home_select">Begin by selecting an activity below</string>
+</resources>

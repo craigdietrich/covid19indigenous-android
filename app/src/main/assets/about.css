@@ -1,0 +1,32 @@
+      html, body {
+          height:100%;
+      }
+      body {
+          background-color:#525a6e; text-align:left; margin:0px 0px 0px 0px;
+          font-family:'-apple-system','HelveticaNeue'; color:#e6f3fd; font-size:17px;
+      }
+      body > div {
+          margin:0px auto 0px auto; padding:6px 19px 0px 19px; max-width:400px;
+      }
+      h5 {
+          line-height:1.25; font-size:17px; font-weight:normal;
+      }
+h6 {
+    line-height:1.25; font-size:17px; font-weight:bold; margin:0px 0px 0px 0px; padding:0px 0px 0px 0px;
+}
+      p {
+          font-weight:normal; line-height:1.25;
+      }
+      a {
+          text-decoration:none; text-shadow:none; color:#2da2d0;
+      }
+      .spacer {
+          margin:0px 0px 0px 0px; padding:0px 0px 0px 0px;
+      }
+      .button {
+          background-color:#f3f3f3; border-radius: 5px; padding-top:16px; padding-bottom:16px; text-align:center; display:block;
+          margin-left:10%; margin-right:10%;
+      }
+      .logo {
+          width:40%; margin-top:20px; margin-left:auto; margin-right:auto;
+      }
