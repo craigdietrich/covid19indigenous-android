@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/whiteText"
+    android:orientation="vertical"
+    tools:context=".ui.dashboard.DashboardFragment">
+
+    <RadioGroup
+        android:id="@+id/rgAbout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_2sdp"
+        android:background="@drawable/bg_gray_rounded"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:padding="@dimen/_2ssp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RadioButton
+            android:id="@+id/rdProject"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/radio_selector"
+            android:button="@android:color/transparent"
+            android:gravity="center"
+            android:padding="@dimen/_5sdp"
+            android:text="About Project"
+            android:textColor="@drawable/radio_text_selector"
+            android:textSize="@dimen/_14sdp" />
+
+        <RadioButton
+            android:id="@+id/rdUs"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/radio_selector"
+            android:button="@android:color/transparent"
+            android:gravity="center"
+            android:padding="@dimen/_5sdp"
+            android:text="About Us"
+            android:textColor="@drawable/radio_text_selector"
+            android:textSize="@dimen/_14sdp" />
+
+    </RadioGroup>
+
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#53596F"
+        android:paddingTop="20sp"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</LinearLayout>

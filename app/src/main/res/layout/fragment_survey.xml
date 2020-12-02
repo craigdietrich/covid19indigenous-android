@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/whiteText"
+    android:orientation="vertical"
+    tools:context=".ui.notifications.NotificationsFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <RadioGroup
+            android:id="@+id/rg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_2sdp"
+            android:background="@drawable/bg_gray_rounded"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal"
+            android:padding="@dimen/_2ssp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RadioButton
+                android:id="@+id/rdSurvey"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/radio_selector"
+                android:button="@android:color/transparent"
+                android:gravity="center"
+                android:padding="@dimen/_5sdp"
+                android:text="About Survey"
+                android:textColor="@drawable/radio_text_selector"
+                android:textSize="@dimen/_14sdp" />
+
+            <RadioButton
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/radio_selector"
+                android:button="@android:color/transparent"
+                android:gravity="center"
+                android:padding="@dimen/_5sdp"
+                android:text="Take Survey"
+                android:textColor="@drawable/radio_text_selector"
+                android:textSize="@dimen/_14sdp" />
+
+        </RadioGroup>
+
+        <WebView
+            android:id="@+id/webView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/grayBg"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/_60sdp"
+        android:paddingRight="@dimen/_60sdp">
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/codeBelow"
+            android:textColor="@color/whiteText"
+            android:textSize="@dimen/_20ssp" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_40sdp"
+            android:layout_marginTop="@dimen/_20sdp"
+            android:background="@drawable/bg_white_rounded"
+            android:gravity="center"
+            android:hint="@string/participant_code"
+            android:padding="@dimen/_5sdp"
+            android:textSize="@dimen/_20ssp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_40sdp"
+            android:layout_marginTop="@dimen/_20sdp"
+            android:background="@color/blueTextLight"
+            android:gravity="center"
+            android:text="@string/submit"
+            android:textAllCaps="false"
+            android:textColor="@color/blueText"
+            android:textSize="@dimen/_14ssp" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/internet_connection"
+            android:textColor="@color/greenText"
+            android:textSize="@dimen/_16ssp" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/dont_have_code"
+            android:textColor="@color/whiteText"
+            android:textSize="@dimen/_16ssp" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/cancel"
+            android:textColor="@color/blueText"
+            android:textSize="@dimen/_16ssp" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+</LinearLayout>

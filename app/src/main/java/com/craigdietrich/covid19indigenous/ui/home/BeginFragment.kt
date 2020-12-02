@@ -1,33 +1,38 @@
 package com.craigdietrich.covid19indigenous.ui.home
 
-import android.app.AlertDialog
-import android.content.DialogInterface
+import android.app.Activity
+import android.os.Build
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.widget.ImageButton
+import android.view.*
 import android.widget.LinearLayout
-import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.craigdietrich.covid19indigenous.MainActivity
 import com.craigdietrich.covid19indigenous.R
-import com.google.android.material.bottomnavigation.BottomNavigationView
 
-class HomeFragment : Fragment() {
+class BeginFragment : Fragment() {
 
-    private lateinit var homeViewModel: HomeViewModel
+    private lateinit var beginViewModel: BeginViewModel
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View? {
-        homeViewModel =
-                ViewModelProviders.of(this).get(HomeViewModel::class.java)
-        val root = inflater.inflate(R.layout.fragment_home, container, false)
+
+        // for change statusbar color
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            val window: Window = (context as Activity?)!!.window
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.statusBarColor = ContextCompat.getColor(context as Activity, R.color.whiteText)
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+
+        }
+
+        beginViewModel =
+            ViewModelProviders.of(this).get(BeginViewModel::class.java)
+        val root = inflater.inflate(R.layout.fragment_begin, container, false)
 
 
         val aboutButton = root.findViewById<LinearLayout>(R.id.llAboutProject)

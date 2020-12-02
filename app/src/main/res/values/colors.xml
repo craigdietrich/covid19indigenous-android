@@ -6,5 +6,13 @@
     <color name="purple">#ff53596F</color>
     <color name="whiteText">#f3f3f3</color>
     <color name="blueText">#2DA2D0</color>
+    <color name="blueTextLight">#C1CFD5</color>
     <color name="menu_de_select">#969696</color>
+    <color name="blackText">#626262</color>
+    <color name="whiteTextLight">#E6F3FD</color>
+    <color name="grayBg">#555555</color>
+    <color name="greenText">#34C759</color>
+    <color name="spacer">#5C5C5D</color>
+    <color name="grayLight">#878788</color>
+
 </resources>
