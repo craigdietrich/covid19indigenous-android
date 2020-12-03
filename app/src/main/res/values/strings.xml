@@ -20,4 +20,10 @@
     <string name="submit">Submit</string>
     <string name="media_content">The app needs to fetch media content from the server</string>
     <string name="download_content">Download Content</string>
+    <string name="about_project_tab">About Project</string>
+    <string name="about_us">About Us</string>
+    <string name="culture">Culture</string>
+    <string name="resilience">Resilience</string>
+    <string name="about_survey">About Survey</string>
+    <string name="take_survey_tab">Take Survey</string>
 </resources>

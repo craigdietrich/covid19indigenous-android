@@ -3,18 +3,19 @@ package com.craigdietrich.covid19indigenous.ui.dashboard
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.os.Build
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
-import android.widget.RadioButton
-import android.widget.RadioGroup
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.craigdietrich.covid19indigenous.R
+import com.craigdietrich.covid19indigenous.common.Constant
+import com.dueeeke.tablayout.SegmentTabLayout
+import com.dueeeke.tablayout.listener.OnTabSelectListener
 
 
 class DashboardFragment : Fragment() {
@@ -27,14 +28,7 @@ class DashboardFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // for change statusbar color
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            val window: Window = (context as Activity?)!!.window
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            window.statusBarColor = ContextCompat.getColor(context as Activity, R.color.whiteText)
-            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-
-        }
+        Constant.changeStatusBar(isDark = false, context = context as Activity)
 
         projectViewModel =
             ViewModelProviders.of(this).get(ProjectViewModel::class.java)
@@ -45,18 +39,22 @@ class DashboardFragment : Fragment() {
         webView.loadUrl("file:///android_asset/aboutProject.html");
         webView.addJavascriptInterface(this.context?.let { WebAppInterface(it) }, "Android")
 
-        val rdProject = root.findViewById<RadioButton>(R.id.rdProject)
-        val rgAbout = root.findViewById<RadioGroup>(R.id.rgAbout)
+        val titles = arrayOf(getString(R.string.about_project_tab), getString(R.string.about_us))
+        val tabAbout = root.findViewById<SegmentTabLayout>(R.id.tabAbout)
+        tabAbout.setTabData(titles)
 
-        rdProject.isChecked = true
-        rgAbout.setOnCheckedChangeListener(RadioGroup.OnCheckedChangeListener { group, checkedId -> // checkedId is the RadioButton selected
-
-            if (rdProject.isChecked) {
-                webView.loadUrl("file:///android_asset/aboutProject.html")
-            } else {
-                webView.loadUrl("file:///android_asset/aboutUs.html")
+        tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
+            override fun onTabSelect(position: Int) {
+                if (position == 0) {
+                    webView.loadUrl("file:///android_asset/aboutProject.html")
+                } else {
+                    webView.loadUrl("file:///android_asset/aboutUs.html")
+                }
             }
+
+            override fun onTabReselect(position: Int) {}
         })
+
         return root
     }
 }

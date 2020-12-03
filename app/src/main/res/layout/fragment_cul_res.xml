@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tl="http://schemas.android.com/apk/res-auto"
     android:background="@color/whiteText"
     android:orientation="vertical"
     tools:context=".ui.culture.CulResFragment">
@@ -14,45 +15,24 @@
         android:orientation="vertical"
         android:visibility="gone">
 
-        <RadioGroup
-            android:id="@+id/rg"
+        <com.dueeeke.tablayout.SegmentTabLayout
+            android:id="@+id/tabAbout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_2sdp"
-            android:background="@drawable/bg_gray_rounded"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal"
-            android:padding="@dimen/_2ssp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <RadioButton
-                android:id="@+id/rdCulture"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/radio_selector"
-                android:button="@android:color/transparent"
-                android:gravity="center"
-                android:padding="@dimen/_5sdp"
-                android:text="Culture"
-                android:textColor="@drawable/radio_text_selector"
-                android:textSize="@dimen/_14sdp" />
-
-            <RadioButton
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/radio_selector"
-                android:button="@android:color/transparent"
-                android:gravity="center"
-                android:padding="@dimen/_5sdp"
-                android:text="Resilience"
-                android:textColor="@drawable/radio_text_selector"
-                android:textSize="@dimen/_14sdp" />
-
-        </RadioGroup>
+            android:layout_height="@dimen/_35sdp"
+            android:layout_gravity="center_horizontal"
+            app:tl_bar_color="@color/tabBg"
+            app:tl_indicator_color="@color/whiteText"
+            app:tl_indicator_corner_radius="@dimen/_5sdp"
+            app:tl_textSelectColor="@color/blueText"
+            app:tl_textSize="@dimen/_13ssp"
+            app:tl_textUnselectedColor="@color/blackText"
+            tl:tl_indicator_anim_enable="true"
+            tl:tl_indicator_bounce_enable="false"
+            tl:tl_indicator_margin_bottom="@dimen/_3sdp"
+            tl:tl_indicator_margin_left="@dimen/_3sdp"
+            tl:tl_indicator_margin_right="@dimen/_3sdp"
+            tl:tl_indicator_margin_top="@dimen/_3sdp"
+            tl:tl_tab_space_equal="true" />
 
         <LinearLayout
             android:id="@+id/mediaContent"
@@ -98,6 +78,7 @@
             android:layout_weight="1" />
 
         <TextView
+            android:id="@+id/txtDownload"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_50sdp"
             android:background="@drawable/bg_white_rounded"

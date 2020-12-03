@@ -5,17 +5,19 @@ import android.app.Activity
 import android.content.Context
 import android.os.Build
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
-import android.widget.RadioButton
-import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.craigdietrich.covid19indigenous.R
+import com.craigdietrich.covid19indigenous.common.Constant
+import com.dueeeke.tablayout.SegmentTabLayout
+import com.dueeeke.tablayout.listener.OnTabSelectListener
 
 
 class NotificationsFragment : Fragment() {
@@ -29,40 +31,31 @@ class NotificationsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Constant.changeStatusBar(isDark = true, context = context as Activity)
+
         surveyViewModel =
             ViewModelProviders.of(this).get(SurveyViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_survey, container, false)
-
-        // for change statusbar color
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            val window: Window = (context as Activity?)!!.window
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            window.statusBarColor = ContextCompat.getColor(context as Activity, R.color.grayBg)
-            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-
-            val decorView: View = window.decorView
-            var systemUiVisibilityFlags = decorView.systemUiVisibility
-            systemUiVisibilityFlags =
-                systemUiVisibilityFlags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-            decorView.systemUiVisibility = systemUiVisibilityFlags
-        }
 
         val webView = root.findViewById<WebView>(R.id.webView)
         webView.settings.javaScriptEnabled = true
         webView.loadUrl("file:///android_asset/aboutSurvey.html");
         webView.addJavascriptInterface(this.context?.let { SurveyWebAppInterface(it) }, "Android")
 
-        val rdSurvey = root.findViewById<RadioButton>(R.id.rdSurvey)
-        val rg = root.findViewById<RadioGroup>(R.id.rg)
+        val titles = arrayOf(getString(R.string.about_survey), getString(R.string.take_survey_tab))
+        val tabAbout = root.findViewById<SegmentTabLayout>(R.id.tabAbout)
+        tabAbout.setTabData(titles)
 
-        rdSurvey.isChecked = true
-        rg.setOnCheckedChangeListener(RadioGroup.OnCheckedChangeListener { group, checkedId -> // checkedId is the RadioButton selected
-
-            if (rdSurvey.isChecked) {
-                webView.loadUrl("file:///android_asset/aboutSurvey.html")
-            } else {
-                webView.loadData("<HTML><BODY></BODY></HTML>", "text/html", "utf-8");
+        tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
+            override fun onTabSelect(position: Int) {
+                if (position == 0) {
+                    webView.loadUrl("file:///android_asset/aboutSurvey.html")
+                } else {
+                    webView.loadData("<HTML><BODY></BODY></HTML>", "text/html", "utf-8");
+                }
             }
+
+            override fun onTabReselect(position: Int) {}
         })
 
         return root
