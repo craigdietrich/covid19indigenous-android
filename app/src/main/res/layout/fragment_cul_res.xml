@@ -10,9 +10,11 @@
     tools:context=".ui.culture.CulResFragment">
 
     <LinearLayout
+        android:id="@+id/llList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:background="@color/colorPrimary"
         android:visibility="gone">
 
         <com.dueeeke.tablayout.SegmentTabLayout
@@ -34,30 +36,25 @@
             tl:tl_indicator_margin_top="@dimen/_3sdp"
             tl:tl_tab_space_equal="true" />
 
-        <LinearLayout
-            android:id="@+id/mediaContent"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#53596F"
             android:orientation="vertical"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ScrollView
-                android:id="@+id/scrollView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-        </LinearLayout>
+            android:paddingTop="@dimen/_10sdp" />
     </LinearLayout>
 
+
     <LinearLayout
+        android:id="@+id/llDownload"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/grayBg"
         android:gravity="center"
         android:orientation="vertical"
         android:paddingLeft="@dimen/_60sdp"
-        android:paddingRight="@dimen/_60sdp">
+        android:paddingRight="@dimen/_60sdp"
+        android:visibility="visible">
 
         <Space
             android:layout_width="wrap_content"
