@@ -7,7 +7,7 @@
     xmlns:tl="http://schemas.android.com/apk/res-auto"
     android:background="@color/whiteText"
     android:orientation="vertical"
-    tools:context=".ui.dashboard.DashboardFragment">
+    tools:context=".ui.project.DashboardFragment">
 
     <com.dueeeke.tablayout.SegmentTabLayout
         android:id="@+id/tabAbout"

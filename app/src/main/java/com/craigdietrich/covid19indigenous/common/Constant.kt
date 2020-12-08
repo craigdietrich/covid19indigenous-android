@@ -11,7 +11,6 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.craigdietrich.covid19indigenous.R
 import okhttp3.OkHttpClient
 import java.io.BufferedReader
 import java.security.SecureRandom
@@ -24,15 +23,21 @@ import javax.net.ssl.X509TrustManager
 
 class Constant {
     companion object {
-        fun changeStatusBar(isDark: Boolean, context: Context) {
+
+        const val BASE_URL = "https://covid19indigenous.ca/feeds/content/"
+        const val BASE_MEDIA_URL = "https://covid19indigenous.ca/feeds/content/"
+
+
+        const val CULTURE = "manifest.json?t=1607063769.361629"
+
+        fun changeStatusBar(isDark: Boolean, context: Context, color: Int) {
             // for change statusbar color
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 val window: Window = (context as Activity?)!!.window
                 window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-
+                window.statusBarColor = ContextCompat.getColor(context, color)
                 if (isDark) {
 
-                    window.statusBarColor = ContextCompat.getColor(context, R.color.grayBg)
                     window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
 
                     val decorView: View = window.decorView
@@ -41,7 +46,6 @@ class Constant {
                         systemUiVisibilityFlags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
                     decorView.systemUiVisibility = systemUiVisibilityFlags
                 } else {
-                    window.statusBarColor = ContextCompat.getColor(context, R.color.whiteText)
                     window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
                 }
             }

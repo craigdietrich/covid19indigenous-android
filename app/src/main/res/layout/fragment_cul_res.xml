@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tl="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tl="http://schemas.android.com/apk/res-auto"
     android:background="@color/whiteText"
     android:orientation="vertical"
     tools:context=".ui.culture.CulResFragment">
@@ -13,8 +13,8 @@
         android:id="@+id/llList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:background="@color/colorPrimary"
+        android:orientation="vertical"
         android:visibility="gone">
 
         <com.dueeeke.tablayout.SegmentTabLayout
@@ -104,9 +104,25 @@
             android:layout_weight="1" />
 
         <TextView
+            android:id="@+id/txtProgress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/whiteText"
+            android:textSize="@dimen/_12ssp"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/progress"
+            style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_2sdp"
-            android:background="@color/spacer" />
+            android:layout_marginTop="@dimen/_5sdp"
+            android:indeterminate="false"
+            android:indeterminateOnly="false"
+            android:max="100"
+            android:progress="0"
+            android:progressDrawable="@drawable/progress_color" />
 
         <Space
             android:layout_width="wrap_content"

@@ -6,34 +6,34 @@ import com.google.gson.annotations.SerializedName
 class CultureVo {
     @SerializedName("title")
     @Expose
-    var title: String? = null
+    var title: String = ""
 
     @SerializedName("url")
     @Expose
-    var url: String? = null
+    var url: String = ""
 
     @SerializedName("mp4_filename")
     @Expose
-    var mp4Filename: String? = null
+    var mp4Filename: String = ""
 
     @SerializedName("image_filename")
     @Expose
-    var imageFilename: String? = null
+    var imageFilename: String = ""
 
     @SerializedName("thumbnail_filename")
     @Expose
-    var thumbnailFilename: String? = null
+    var thumbnailFilename: String = ""
 
     @SerializedName("description")
     @Expose
-    var description: String? = null
+    var description: String = ""
 
     @SerializedName("category")
     @Expose
-    var category: String? = null
+    var category: String = ""
 
     @SerializedName("date")
     @Expose
-    var date: String? = null
+    var date: String = ""
 
 }

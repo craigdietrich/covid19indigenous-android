@@ -1,30 +1,34 @@
 package com.craigdietrich.covid19indigenous.ui.culture
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
+import android.os.StrictMode
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import com.craigdietrich.covid19indigenous.PlayerActivity
 import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.adapter.CultureAdapter
 import com.craigdietrich.covid19indigenous.common.Constant
 import com.craigdietrich.covid19indigenous.model.CultureVo
-import com.dueeeke.tablayout.SegmentTabLayout
 import com.dueeeke.tablayout.listener.OnTabSelectListener
 import com.google.gson.GsonBuilder
 import kotlinx.android.synthetic.main.fragment_cul_res.*
+import kotlinx.android.synthetic.main.fragment_cul_res.view.*
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import java.io.*
 import java.net.URL
 import java.net.URLConnection
@@ -32,7 +36,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class CulResFragment : Fragment() {
+class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     private lateinit var viewModel: CulResViewModel
     private val WRITE_REQUEST_CODE = 10111
@@ -43,61 +47,60 @@ class CulResFragment : Fragment() {
     var culData = ArrayList<CultureVo>()
     var resData = ArrayList<CultureVo>()
 
-    var list = ArrayList<String>()
+    private var root: View? = null
+
 
     var cookie =
-        "visid_incap_2404656=sHcz0ua6QLShh9sqkYvutnGoyF8AAAAAQUIPAAAAAAAxme0mS+ivAHOYS0TYjqYS; incap_ses_489_2404656=6JY/QHtzx17aGre8J0fJBjcEzl8AAAAA41nJ+mRVr/+NRQzJ/3MRrw==; incap_ses_139_2404656=U1HZJlCi5T4/IM2tLtTtAd4Izl8AAAAACQ65Ug0KoNdbzH1lRDPQFA==; incap_ses_305_2404656=1NX5EeoOcFISMOtOKJQ7BAgSzl8AAAAAAuiklVtv9Gpi77XYIix+9Q=="
+        "visid_incap_2404656=sHcz0ua6QLShh9sqkYvutnGoyF8AAAAAQUIPAAAAAAAxme0mS+ivAHOYS0TYjqYS; incap_ses_305_2404656=tFofD1KmazfkfA9QKJQ7BD8Mz18AAAAA9Gl+6SbqfJdahRWBJC44Fg==; incap_ses_1346_2404656=EitlEd/i/z3BsUSt5/OtEvgpz18AAAAAP1roPV55tiqOAxSpZa2xNg=="
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val root = inflater.inflate(R.layout.fragment_cul_res, container, false)
+        root = inflater.inflate(R.layout.fragment_cul_res, container, false)
 
-        Constant.changeStatusBar(isDark = true, context = context as Activity)
+        Constant.changeStatusBar(
+            isDark = true,
+            context = context as Activity,
+            color = R.color.grayBg
+        )
 
         val titles = arrayOf(getString(R.string.culture), getString(R.string.resilience))
-        val tabAbout = root.findViewById<SegmentTabLayout>(R.id.tabAbout)
-        val txtDownload = root.findViewById<TextView>(R.id.txtDownload)
-        val recyclerView = root.findViewById<RecyclerView>(R.id.recyclerView)
-        val llList = root.findViewById<LinearLayout>(R.id.llList)
-        val llDownload = root.findViewById<LinearLayout>(R.id.llDownload)
-
-        tabAbout.setTabData(titles)
-
-        tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
+        root!!.tabAbout.setTabData(titles)
+        root!!.tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
             override fun onTabSelect(position: Int) {
                 if (position == 0) {
                     val adapter = CultureAdapter(context as Activity, culData)
-                    recyclerView.adapter = adapter
+                    adapter.setOnItemClickListener(this@CulResFragment)
+                    root!!.recyclerView.adapter = adapter
                 } else {
                     val adapter = CultureAdapter(context as Activity, resData)
-                    recyclerView.adapter = adapter
+                    adapter.setOnItemClickListener(this@CulResFragment)
+                    root!!.recyclerView.adapter = adapter
                 }
             }
 
             override fun onTabReselect(position: Int) {}
         })
 
-        txtDownload.setOnClickListener {
+        checkData()
+
+        root!!.txtDownload.setOnClickListener {
             if (Constant.isOnline(context as AppCompatActivity)) {
 
-                /*try {
+                try {
                     val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
 
                     StrictMode.setThreadPolicy(policy)
 
                     val client: OkHttpClient = Constant.getUnsafeOkHttpClient()?.build()!!
-                    val msCookieManager = CookieManager()
+
                     val request: Request = Request.Builder()
-                        .url("https://covid19indigenous.ca/feeds/content/manifest.json?t=1607063769.361629")
+                        .url(Constant.BASE_URL + Constant.CULTURE)
                         .method("GET", null)
                         .addHeader(
                             "Cookie",
-                            "visid_incap_2404656=sHcz0ua6QLShh9sqkYvutnGoyF8AAAAAQUIPAAAAAAAxme0mS+ivAHOYS0TYjqYS; incap_ses_76_2404656=HECrU0IZBhu1FPJQqQEOAX8Syl8AAAAAOXoim9oAe7I46JvDjrShGQ=="
-                        )
-                        .addHeader(
-                            "Cookie",
-                            msCookieManager.cookieStore.cookies.toString()
+                            cookie
                         )
                         .build()
                     val response: Response = client.newCall(request).execute()
@@ -115,56 +118,19 @@ class CulResFragment : Fragment() {
 
                     listData = data
 
-                    llList.visibility = View.VISIBLE
-                    llDownload.visibility = View.GONE
-
-                    for (i in listData.indices) {
-                        if (listData[i].category == "culture") {
-                            culData.add(listData[i])
-                        } else {
-                            resData.add(listData[i])
-                        }
-                    }
-                    recyclerView.layoutManager = LinearLayoutManager(context)
-                    val adapter = CultureAdapter(context as Activity, culData)
-                    recyclerView.adapter = adapter
-
-                    requestPermissions(
-                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                        WRITE_REQUEST_CODE
-                    )
+                    setData()
 
                 } catch (e: Exception) {
                     Log.e("error", e.toString())
-                }*/
+                }
 
 
                 //offline
-                val stringJson = Constant.readAsset(context as Activity, "manifest.json")
+                /*val stringJson = Constant.readAsset(context as Activity, "manifest.json")
                 val gson = GsonBuilder().create()
                 listData = gson.fromJson(stringJson, Array<CultureVo>::class.java).toList()
 
-                setData(listData)
-
-                //set Data
-                llList.visibility = View.VISIBLE
-                llDownload.visibility = View.GONE
-
-                for (i in listData.indices) {
-                    if (listData[i].category == "culture") {
-                        culData.add(listData[i])
-                    } else {
-                        resData.add(listData[i])
-                    }
-                }
-                recyclerView.layoutManager = LinearLayoutManager(context)
-                val adapter = CultureAdapter(context as Activity, culData)
-                recyclerView.adapter = adapter
-
-                requestPermissions(
-                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    WRITE_REQUEST_CODE
-                )
+                setData()*/
 
             } else {
                 Constant.internetAlert(context as Activity)
@@ -173,9 +139,56 @@ class CulResFragment : Fragment() {
         return root
     }
 
-    private fun setData(data: List<CultureVo>) {
+    private fun checkData() {
 
+        val dir = File(
+            Environment.getExternalStorageDirectory(),
+            "/Covid19Indigenous"
+        )
 
+        val file = File(dir, "manifest.json")
+
+        if (file.exists()) {
+
+            val stringJson = Constant.readAsset(context as Activity, "manifest.json")
+            val gson = GsonBuilder().create()
+            listData = gson.fromJson(stringJson, Array<CultureVo>::class.java).toList()
+
+            for (i in listData.indices) {
+                if (listData[i].category == "culture") {
+                    culData.add(listData[i])
+                } else {
+                    resData.add(listData[i])
+                }
+            }
+            root!!.recyclerView.layoutManager = LinearLayoutManager(context)
+            val adapter = CultureAdapter(context as Activity, culData)
+            adapter.setOnItemClickListener(this@CulResFragment)
+            root!!.recyclerView.adapter = adapter
+
+            root!!.llList.visibility = View.VISIBLE
+            root!!.llDownload.visibility = View.GONE
+        }
+    }
+
+    private fun setData() {
+
+        for (i in listData.indices) {
+            if (listData[i].category == "culture") {
+                culData.add(listData[i])
+            } else {
+                resData.add(listData[i])
+            }
+        }
+        root!!.recyclerView.layoutManager = LinearLayoutManager(context)
+        val adapter = CultureAdapter(context as Activity, culData)
+        adapter.setOnItemClickListener(this@CulResFragment)
+        root!!.recyclerView.adapter = adapter
+
+        requestPermissions(
+            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            WRITE_REQUEST_CODE
+        )
     }
 
     override fun onRequestPermissionsResult(
@@ -217,77 +230,73 @@ class CulResFragment : Fragment() {
                 e.printStackTrace()
             }
 
-            for (i in listData.indices) {
-                val file = File(dir, listData[i].mp4Filename!!)
-
-                if (!file.exists()) {
-
-                    DownloadFileFromURL().execute(listData[i].mp4Filename, dir.path)
-                    break
-                }
-            }
+            DownloadFileFromURL(
+                data = listData,
+                cookie = cookie,
+                pos = 0,
+                dir = dir,
+                cContext = this
+            ).execute()
         } catch (e: java.lang.Exception) {
 
         }
     }
 
-    class DownloadFileFromURL :
-        AsyncTask<String?, String?, String?>() {
+    class DownloadFileFromURL internal constructor(
+        private var data: List<CultureVo>,
+        private var cookie: String,
+        private var pos: Int,
+        private var dir: File,
+        private var cContext: CulResFragment
+    ) : AsyncTask<String?, String?, String?>() {
+        @SuppressLint("SetTextI18n")
         override fun onPreExecute() {
             super.onPreExecute()
             //JColorChooser.showDialog(progress_bar_type)
+
+            cContext.txtProgress.visibility = View.VISIBLE
+
+            cContext.root!!.txtProgress.text = "Downloading video " + (pos + 1) + "/" + data.size
+
+            cContext.root!!.progress.progress = pos * 100 / data.size
         }
 
         override fun doInBackground(vararg params: String?): String? {
             var count: Int
             try {
-                val url = URL("https://covid19indigenous.ca/feeds/content/" + params[0])
+                val url = URL(Constant.BASE_MEDIA_URL + data[pos].mp4Filename)
                 val connection: URLConnection = url.openConnection()
                 connection.setRequestProperty(
                     "Cookie",
-                    "visid_incap_2404656=sHcz0ua6QLShh9sqkYvutnGoyF8AAAAAQUIPAAAAAAAxme0mS+ivAHOYS0TYjqYS; incap_ses_489_2404656=6JY/QHtzx17aGre8J0fJBjcEzl8AAAAA41nJ+mRVr/+NRQzJ/3MRrw==; incap_ses_139_2404656=U1HZJlCi5T4/IM2tLtTtAd4Izl8AAAAACQ65Ug0KoNdbzH1lRDPQFA==; incap_ses_305_2404656=1NX5EeoOcFISMOtOKJQ7BAgSzl8AAAAAAuiklVtv9Gpi77XYIix+9Q=="
+                    cookie
                 );
                 connection.connect()
 
-                // this will be useful so that you can show a tipical 0-100%
-                // progress bar
+                val fileDir = File(dir, data[pos].mp4Filename)
 
-                val dir = File(
-                    params[1].toString()
-                )
+                if (fileDir.exists()) {
+                    return null
+                } else {
+                    val lenghtOfFile: Int = connection.contentLength
+                    val input: InputStream = BufferedInputStream(
+                        url.openStream(),
+                        8192
+                    )
 
-                var fileDir = File(dir, params[0].toString())
-                //val gpxfile = File(dir, "manifest.json")
-                val lenghtOfFile: Int = connection.contentLength
-
-                // download the file
-                val input: InputStream = BufferedInputStream(
-                    url.openStream(),
-                    8192
-                )
-
-                // Output stream
-                val output: OutputStream = FileOutputStream(
-                    fileDir
-                )
-                val data = ByteArray(1024)
-                var total: Long = 0
-                while (input.read(data).also { count = it } != -1) {
-                    total += count.toLong()
-                    // publishing the progress....
-                    // After this onProgressUpdate will be called
-                    publishProgress("" + (total * 100 / lenghtOfFile).toInt())
-
-                    // writing data to file
-                    output.write(data, 0, count)
+                    val output: OutputStream = FileOutputStream(
+                        fileDir
+                    )
+                    val data = ByteArray(1024)
+                    var total: Long = 0
+                    while (input.read(data).also { count = it } != -1) {
+                        total += count.toLong()
+                        publishProgress("" + (total * 100 / lenghtOfFile).toInt())
+                        output.write(data, 0, count)
+                    }
+                    output.flush()
+                    output.close()
+                    input.close()
                 }
-
-                // flushing output
-                output.flush()
-
-                // closing streams
-                output.close()
-                input.close()
             } catch (e: java.lang.Exception) {
                 Log.e("Error: ", e.message!!)
             }
@@ -302,12 +311,42 @@ class CulResFragment : Fragment() {
         override fun onPostExecute(file_url: String?) {
             // dismiss the dialog after the file was downloaded
             //dismissDialog(progress_bar_type)
+
+            if (pos != data.size - 1) {
+                DownloadFileFromURL(
+                    data = data,
+                    cookie = cookie,
+                    pos = pos + 1,
+                    dir = dir,
+                    cContext = cContext
+                ).execute()
+            } else {
+                cContext.root!!.llList.visibility = View.VISIBLE
+                cContext.root!!.llDownload.visibility = View.GONE
+            }
         }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProviders.of(this).get(CulResViewModel::class.java)
+    }
+
+    override fun onAppointmentClicked(data: CultureVo) {
+
+        val dir = File(
+            Environment.getExternalStorageDirectory(),
+            "/Covid19Indigenous"
+        )
+        if (!dir.exists()) {
+            dir.mkdir()
+        }
+
+        val gpxfile = File(dir, data.mp4Filename)
+        activity?.let {
+            val intent = Intent(it, PlayerActivity::class.java).putExtra("path", gpxfile.path)
+            it.startActivity(intent)
+        }
     }
 
 }

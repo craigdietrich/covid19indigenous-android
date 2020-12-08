@@ -9,6 +9,7 @@
     <color name="blueTextLight">#C1CFD5</color>
     <color name="menu_de_select">#969696</color>
     <color name="blackText">#626262</color>
+    <color name="black">#000000</color>
     <color name="whiteTextLight">#E6F3FD</color>
     <color name="grayBg">#555555</color>
     <color name="greenText">#34C759</color>

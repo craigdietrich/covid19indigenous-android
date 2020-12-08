@@ -7,19 +7,19 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="com.craigdietrich.covid19indigenous.ui.home.BeginFragment"
+        android:name="com.craigdietrich.covid19indigenous.ui.begin.BeginFragment"
         android:label="@string/title_home"
         tools:layout="@layout/fragment_begin" />
 
     <fragment
         android:id="@+id/navigation_dashboard"
-        android:name="com.craigdietrich.covid19indigenous.ui.dashboard.DashboardFragment"
+        android:name="com.craigdietrich.covid19indigenous.ui.project.DashboardFragment"
         android:label="@string/title_project"
         tools:layout="@layout/fragment_project" />
 
     <fragment
         android:id="@+id/navigation_notifications"
-        android:name="com.craigdietrich.covid19indigenous.ui.notifications.NotificationsFragment"
+        android:name="com.craigdietrich.covid19indigenous.ui.survey.NotificationsFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_survey" />
 

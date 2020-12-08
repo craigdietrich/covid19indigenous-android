@@ -1,4 +1,4 @@
-package com.craigdietrich.covid19indigenous.ui.home
+package com.craigdietrich.covid19indigenous.ui.begin
 
 import android.app.Activity
 import android.os.Bundle
@@ -22,7 +22,11 @@ class BeginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
-        Constant.changeStatusBar(isDark = false, context = context as Activity)
+        Constant.changeStatusBar(
+            isDark = false,
+            context = context as Activity,
+            color = R.color.whiteText
+        )
 
         beginViewModel =
             ViewModelProviders.of(this).get(BeginViewModel::class.java)
