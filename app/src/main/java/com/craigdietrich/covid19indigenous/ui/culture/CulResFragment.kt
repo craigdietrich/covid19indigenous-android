@@ -49,10 +49,6 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     private var root: View? = null
 
-
-    var cookie =
-        "visid_incap_2404656=sHcz0ua6QLShh9sqkYvutnGoyF8AAAAAQUIPAAAAAAAxme0mS+ivAHOYS0TYjqYS; incap_ses_305_2404656=tFofD1KmazfkfA9QKJQ7BD8Mz18AAAAA9Gl+6SbqfJdahRWBJC44Fg==; incap_ses_1346_2404656=EitlEd/i/z3BsUSt5/OtEvgpz18AAAAAP1roPV55tiqOAxSpZa2xNg=="
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -100,7 +96,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                         .method("GET", null)
                         .addHeader(
                             "Cookie",
-                            cookie
+                            Constant.cookie
                         )
                         .build()
                     val response: Response = client.newCall(request).execute()
@@ -232,7 +228,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
             DownloadFileFromURL(
                 data = listData,
-                cookie = cookie,
+                cookie = Constant.cookie,
                 pos = 0,
                 dir = dir,
                 cContext = this
@@ -258,7 +254,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
             cContext.root!!.txtProgress.text = "Downloading video " + (pos + 1) + "/" + data.size
 
-            cContext.root!!.progress.progress = pos * 100 / data.size
+            cContext.root!!.seekBar.progress = pos * 100 / data.size
         }
 
         override fun doInBackground(vararg params: String?): String? {

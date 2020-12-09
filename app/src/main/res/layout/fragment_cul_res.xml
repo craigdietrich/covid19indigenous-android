@@ -113,7 +113,7 @@
             android:visibility="gone" />
 
         <ProgressBar
-            android:id="@+id/progress"
+            android:id="@+id/seekBar"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_2sdp"

@@ -67,6 +67,7 @@
             android:textSize="@dimen/_20ssp" />
 
         <EditText
+            android:id="@+id/edtCode"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_40sdp"
             android:layout_marginTop="@dimen/_20sdp"
@@ -79,6 +80,7 @@
             android:textSize="@dimen/_20ssp" />
 
         <TextView
+            android:id="@+id/txtSubmit"
             android:layout_width="match_parent"
             android:layout_height="@dimen/_40sdp"
             android:layout_marginTop="@dimen/_20sdp"

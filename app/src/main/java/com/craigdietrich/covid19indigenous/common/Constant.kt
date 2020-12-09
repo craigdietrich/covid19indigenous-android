@@ -21,6 +21,7 @@ import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
+
 class Constant {
     companion object {
 
@@ -29,6 +30,9 @@ class Constant {
 
 
         const val CULTURE = "manifest.json?t=1607063769.361629"
+
+        var cookie =
+            "visid_incap_2404656=sHcz0ua6QLShh9sqkYvutnGoyF8AAAAAQUIPAAAAAAAxme0mS+ivAHOYS0TYjqYS; incap_ses_305_2404656=tFofD1KmazfkfA9QKJQ7BD8Mz18AAAAA9Gl+6SbqfJdahRWBJC44Fg==; incap_ses_1346_2404656=EitlEd/i/z3BsUSt5/OtEvgpz18AAAAAP1roPV55tiqOAxSpZa2xNg=="
 
         fun changeStatusBar(isDark: Boolean, context: Context, color: Int) {
             // for change statusbar color
@@ -77,7 +81,7 @@ class Constant {
                 .bufferedReader()
                 .use(BufferedReader::readText)
 
-        fun getUnsafeOkHttpClient(): OkHttpClient.Builder? {
+        fun getUnsafeOkHttpClient(): OkHttpClient.Builder {
             return try {
                 // Create a trust manager that does not validate certificate chains
                 val trustAllCerts = arrayOf<TrustManager>(
@@ -115,6 +119,12 @@ class Constant {
             } catch (e: Exception) {
                 throw RuntimeException(e)
             }
+        }
+
+        fun millsToHS(millis: Long): String {
+            val minutes = millis / 1000 / 60
+            val seconds = (millis / 1000 % 60).toInt()
+            return String.format("%02d", minutes) + ":" + String.format("%02d", seconds)
         }
     }
 }

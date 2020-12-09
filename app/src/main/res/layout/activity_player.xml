@@ -6,18 +6,13 @@
     android:background="@color/black"
     android:orientation="vertical">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/black"
-        app:theme="@style/ToolbarTheme" />
-
     <com.google.android.exoplayer2.ui.PlayerView
         android:id="@+id/exoplayerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/black"
+        app:show_buffering="always"
+        app:use_controller="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -29,5 +24,125 @@
             android:layout_gravity="center"
             android:visibility="invisible" />
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_20sdp"
+            android:background="@drawable/bg_black_rounded"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/imgClose"
+                android:layout_width="@dimen/_40sdp"
+                android:layout_height="@dimen/_40sdp"
+                android:padding="@dimen/_10sdp"
+                android:src="@drawable/close"
+                app:tint="@color/whiteText" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/imgFull"
+                android:layout_width="@dimen/_40sdp"
+                android:layout_height="@dimen/_40sdp"
+                android:padding="@dimen/_10sdp"
+                android:src="@drawable/full"
+                app:tint="@color/whiteText" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llVolume"
+            android:layout_width="@dimen/_50sdp"
+            android:layout_height="@dimen/_40sdp"
+            android:layout_gravity="end"
+            android:layout_margin="@dimen/_20sdp"
+            android:background="@drawable/bg_black_rounded"
+            android:gravity="center"
+            android:padding="@dimen/_10sdp">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/imgVolume"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                app:tint="@color/whiteText" />
+        </LinearLayout>
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_margin="@dimen/_20sdp"
+            android:background="@drawable/bg_black_rounded"
+            android:orientation="horizontal"
+            android:padding="@dimen/_10sdp">
+
+            <SeekBar
+                android:id="@+id/seekBar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_3sdp"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:indeterminate="false"
+                android:indeterminateOnly="false"
+                android:max="10000"
+                android:progress="0"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
+                android:id="@+id/txtMin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0:03"
+                android:textColor="@color/whiteText"
+                android:textSize="@dimen/_10ssp"
+                app:layout_constraintStart_toStartOf="@+id/seekBar"
+                app:layout_constraintTop_toBottomOf="@+id/seekBar" />
+
+            <TextView
+                android:id="@+id/txtMinRem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-5:14"
+                android:textColor="@color/whiteText"
+                android:textSize="@dimen/_10ssp"
+                app:layout_constraintEnd_toEndOf="@+id/seekBar"
+                app:layout_constraintTop_toTopOf="@+id/txtMin" />
+
+            <ImageView
+                android:id="@+id/imgPlay"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:layout_marginTop="@dimen/_5sdp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/txtMin"
+                app:tint="@color/whiteText" />
+
+            <ImageView
+                android:id="@+id/imgBackward"
+                android:layout_width="@dimen/_25sdp"
+                android:layout_height="@dimen/_25sdp"
+                android:layout_marginEnd="@dimen/_20sdp"
+                android:layout_marginRight="@dimen/_20sdp"
+                android:src="@drawable/backward"
+                app:layout_constraintBottom_toBottomOf="@+id/imgPlay"
+                app:layout_constraintEnd_toStartOf="@+id/imgPlay"
+                app:layout_constraintTop_toTopOf="@+id/imgPlay"
+                app:tint="@color/whiteText" />
+
+            <ImageView
+                android:id="@+id/imgForward"
+                android:layout_width="@dimen/_25sdp"
+                android:layout_height="@dimen/_25sdp"
+                android:layout_marginStart="@dimen/_20sdp"
+                android:layout_marginLeft="@dimen/_20sdp"
+                android:src="@drawable/forward"
+                app:layout_constraintBottom_toBottomOf="@+id/imgPlay"
+                app:layout_constraintStart_toEndOf="@+id/imgPlay"
+                app:layout_constraintTop_toTopOf="@+id/imgPlay"
+                app:tint="@color/whiteText" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.exoplayer2.ui.PlayerView>
 </LinearLayout>
