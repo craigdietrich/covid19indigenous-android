@@ -15,6 +15,7 @@ class SplashActivity : AppCompatActivity() {
         Constant.changeStatusBar(true, this, color = R.color.colorPrimary)
         Handler(Looper.getMainLooper()).postDelayed({
             startActivity(Intent(this, MainActivity::class.java))
+            finish()
         }, 1500)
     }
 }

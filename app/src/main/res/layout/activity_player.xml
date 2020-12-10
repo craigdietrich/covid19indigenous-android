@@ -35,16 +35,15 @@
                 android:id="@+id/imgClose"
                 android:layout_width="@dimen/_40sdp"
                 android:layout_height="@dimen/_40sdp"
-                android:padding="@dimen/_10sdp"
+                android:padding="@dimen/_12sdp"
                 android:src="@drawable/close"
                 app:tint="@color/whiteText" />
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/imgFull"
-                android:layout_width="@dimen/_40sdp"
-                android:layout_height="@dimen/_40sdp"
-                android:padding="@dimen/_10sdp"
-                android:src="@drawable/full"
+                android:layout_width="@dimen/_20sdp"
+                android:layout_height="@dimen/_20sdp"
+                android:layout_margin="@dimen/_10sdp"
                 app:tint="@color/whiteText" />
 
         </LinearLayout>
@@ -78,12 +77,9 @@
 
             <SeekBar
                 android:id="@+id/seekBar"
-                style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/_3sdp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/_5sdp"
-                android:indeterminate="false"
-                android:indeterminateOnly="false"
                 android:max="10000"
                 android:progress="0"
                 app:layout_constraintEnd_toEndOf="parent"

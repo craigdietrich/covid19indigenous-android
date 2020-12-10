@@ -15,7 +15,6 @@
     <string name="codeBelow">Please enter your participant code below</string>
     <string name="internet_connection">This step require an Internet connection</string>
     <string name="dont_have_code">If you don\'t have a participant code, contact your local health coordinator or member of Covid-19 Indigenous team</string>
-    <string name="cancel">Cancel</string>
     <string name="participant_code">participant code</string>
     <string name="submit">Submit</string>
     <string name="media_content">The app needs to fetch media content from the server</string>
@@ -26,4 +25,8 @@
     <string name="resilience">Resilience</string>
     <string name="about_survey">About Survey</string>
     <string name="take_survey_tab">Take Survey</string>
+    <string name="cancel">Cancel</string>
+    <string name="consent_and_continue">Consent and continue</string>
+    <string name="before_continuing">Before continuing please read and consent to the following</string>
+    <string name="fetch_new_content">Fetch new content from the server</string>
 </resources>

@@ -11,14 +11,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
-import android.webkit.WebView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.common.Constant
-import com.dueeeke.tablayout.SegmentTabLayout
 import com.dueeeke.tablayout.listener.OnTabSelectListener
 import com.google.gson.GsonBuilder
 import kotlinx.android.synthetic.main.fragment_survey.view.*
@@ -27,10 +25,11 @@ import okhttp3.Request
 import okhttp3.Response
 
 
-class NotificationsFragment : Fragment() {
+open class NotificationsFragment : Fragment(), ClickListener {
 
     private lateinit var surveyViewModel: SurveyViewModel
     private var root: View? = null
+
     @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled", "AddJavascriptInterface")
     override fun onCreateView(
@@ -44,36 +43,44 @@ class NotificationsFragment : Fragment() {
             color = R.color.grayBg
         )
 
+        onWebButtonClick(this)
         surveyViewModel =
             ViewModelProviders.of(this).get(SurveyViewModel::class.java)
         root = inflater.inflate(R.layout.fragment_survey, container, false)
 
-        val webView = root!!.findViewById<WebView>(R.id.webView)
-        webView.settings.javaScriptEnabled = true
-        webView.loadUrl("file:///android_asset/aboutSurvey.html");
-        webView.addJavascriptInterface(this.context?.let { SurveyWebAppInterface(it) }, "Android")
+        root!!.webView.settings.javaScriptEnabled = true
+        root!!.webView.loadUrl("file:///android_asset/aboutSurvey.html");
+        root!!.webView.addJavascriptInterface(
+            this.context?.let { SurveyWebAppInterface(it!!) },
+            "Android"
+        )
 
         val titles = arrayOf(getString(R.string.about_survey), getString(R.string.take_survey_tab))
-        val tabAbout = root!!.findViewById<SegmentTabLayout>(R.id.tabAbout)
-        tabAbout.setTabData(titles)
+        root!!.tabAbout.setTabData(titles)
 
-        tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
+        root!!.tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
             override fun onTabSelect(position: Int) {
                 if (position == 0) {
-                    webView.loadUrl("file:///android_asset/aboutSurvey.html")
+                    root!!.webView.loadUrl("file:///android_asset/aboutSurvey.html")
                 } else {
-                    webView.loadData("<HTML><BODY></BODY></HTML>", "text/html", "utf-8");
+                    root!!.webView.loadData("<HTML><BODY></BODY></HTML>", "text/html", "utf-8");
                 }
             }
 
             override fun onTabReselect(position: Int) {}
         })
-
         root!!.txtSubmit.setOnClickListener {
-            if (root!!.edtCode.text.isNotEmpty() && root!!.edtCode.text.length == 5) {
+            if (root!!.edtCode.text.isNotEmpty()) {
                 downloadFile()
             }
         }
+
+        root!!.webViewConsent.settings.javaScriptEnabled = true
+        root!!.webViewConsent.addJavascriptInterface(
+            this.context?.let { SurveyWebAppInterface(it) },
+            "Android"
+        )
+        root!!.webViewConsent.loadUrl("file:///android_asset/consent.html")
 
         return root
     }
@@ -111,13 +118,41 @@ class NotificationsFragment : Fragment() {
             Log.e("error", e.toString())
         }
     }
+
+    override fun changeTab(pos: Int) {
+        runOnUiThread {
+            root!!.tabAbout.currentTab = pos
+            root!!.webView.loadData("<HTML><BODY></BODY></HTML>", "text/html", "utf-8")
+        }
+
+    }
+
+    private fun Fragment?.runOnUiThread(action: () -> Unit) {
+        this ?: return
+        if (!isAdded) return // Fragment not attached to an Activity
+        activity?.runOnUiThread(action)
+    }
 }
 
 class SurveyWebAppInterface(private val mContext: Context) {
-
     /** Show a toast from the web page  */
     @JavascriptInterface
     fun showToast(toast: String) {
-        Toast.makeText(mContext, toast, Toast.LENGTH_SHORT).show()
+        if (toast == "takeSurvey") {
+            clickListener!!.changeTab(1)
+            //root!!.tabAbout.currentTab = 1
+        } else {
+            Toast.makeText(mContext, toast, Toast.LENGTH_SHORT).show()
+        }
     }
+}
+
+private var clickListener: ClickListener? = null
+
+fun onWebButtonClick(clickListener1: ClickListener?) {
+    clickListener = clickListener1
+}
+
+interface ClickListener {
+    fun changeTab(pos: Int)
 }

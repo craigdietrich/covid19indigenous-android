@@ -4,6 +4,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.os.Build
 import android.view.View
@@ -25,14 +26,17 @@ import javax.net.ssl.X509TrustManager
 class Constant {
     companion object {
 
-        const val BASE_URL = "https://covid19indigenous.ca/feeds/content/"
+        const val BASE_URL = "http://covid19indigenous.ca/feeds/content/"
         const val BASE_MEDIA_URL = "https://covid19indigenous.ca/feeds/content/"
 
+        const val SHARE_PREF = "SHARE_PREF"
 
         const val CULTURE = "manifest.json?t=1607063769.361629"
 
-        var cookie =
-            "visid_incap_2404656=sHcz0ua6QLShh9sqkYvutnGoyF8AAAAAQUIPAAAAAAAxme0mS+ivAHOYS0TYjqYS; incap_ses_305_2404656=tFofD1KmazfkfA9QKJQ7BD8Mz18AAAAA9Gl+6SbqfJdahRWBJC44Fg==; incap_ses_1346_2404656=EitlEd/i/z3BsUSt5/OtEvgpz18AAAAAP1roPV55tiqOAxSpZa2xNg=="
+        const val TIME = "1607063769.361629"
+
+        const val cookie =
+            "visid_incap_2404656=rDI/08e0SSWyIy0S0JOYugAT0l8AAAAAQUIPAAAAAADh4QFWymWVTDoRdWOjpg19; incap_ses_883_2404656=zv27NDOeAjB9ucKW/gtBDAAT0l8AAAAAfWWBkOPC1j1nUAX4r4WSkw=="
 
         fun changeStatusBar(isDark: Boolean, context: Context, color: Int) {
             // for change statusbar color
@@ -66,6 +70,18 @@ class Constant {
             AlertDialog.Builder(context)
                 .setTitle("No Connection")
                 .setMessage("Your device does not appear to have an Internet connection. Please establish a connection and try again.") // Specifying a listener allows you to take an action before dismissing the dialog.
+                // The dialog is automatically dismissed when a dialog button is clicked.
+                .setPositiveButton("Ok",
+                    DialogInterface.OnClickListener { dialog, which ->
+                        dialog.cancel()
+                    }) // A null listener allows the button to dismiss the dialog and take no further action.
+                .show()
+        }
+
+        fun showAlert(context: Context, title: String, msg: String) {
+            AlertDialog.Builder(context)
+                .setTitle(title)
+                .setMessage(msg) // Specifying a listener allows you to take an action before dismissing the dialog.
                 // The dialog is automatically dismissed when a dialog button is clicked.
                 .setPositiveButton("Ok",
                     DialogInterface.OnClickListener { dialog, which ->
@@ -121,10 +137,42 @@ class Constant {
             }
         }
 
+        fun millsToRemainingHS(millis: Long): String {
+            val minutes = millis / 1000 / 60
+            val seconds = (millis / 1000 % 60).toInt()
+
+            if (minutes <= 0 && seconds <= 0) {
+                return String.format("%02d", minutes) + ":" + String.format("%02d", seconds)
+            }
+            return "-" + String.format("%02d", minutes) + ":" + String.format("%02d", seconds)
+        }
+
         fun millsToHS(millis: Long): String {
             val minutes = millis / 1000 / 60
             val seconds = (millis / 1000 % 60).toInt()
+
             return String.format("%02d", minutes) + ":" + String.format("%02d", seconds)
+        }
+
+        fun writeSP(context: Context, key: String?, values: String?) {
+            val writeData = context.getSharedPreferences(
+                Constant.SHARE_PREF, Context.MODE_PRIVATE
+            )
+            val editor = writeData.edit()
+            editor.putString(key, values)
+            editor.apply()
+        }
+
+        fun readSP(context: Context, key: String?): String {
+            var readData: SharedPreferences? = null
+            try {
+                readData = context.getSharedPreferences(
+                    Constant.SHARE_PREF, Context.MODE_PRIVATE
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            return readData!!.getString(key, "").toString()
         }
     }
 }

@@ -33,6 +33,8 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
     private val updateTextTask = object : Runnable {
         override fun run() {
             txtMin.text = Constant.millsToHS(simpleExoplayer.currentPosition)
+            txtMinRem.text =
+                Constant.millsToRemainingHS(simpleExoplayer.duration - simpleExoplayer.currentPosition)
             mainHandler.postDelayed(this, 1)
 
             seekBar.progress =
@@ -105,6 +107,7 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
 
         imgPlay.setBackgroundResource(R.drawable.pause)
         imgVolume.setBackgroundResource(R.drawable.volume)
+        imgFull.setBackgroundResource(R.drawable.full)
 
         imgPlay.setOnClickListener {
             if (simpleExoplayer.isPlaying) {
@@ -143,13 +146,16 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
 
         imgFull.setOnClickListener {
             if (isFull) {
+                imgFull.setBackgroundResource(R.drawable.full)
                 exoplayerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
             } else {
+                imgFull.setBackgroundResource(R.drawable.exit)
                 exoplayerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
             }
             isFull = !isFull
         }
     }
+
     private fun buildMediaSource(uri: Uri): MediaSource {
         return ProgressiveMediaSource.Factory(dataSourceFactory)
             .createMediaSource(uri)
@@ -178,13 +184,12 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
             }
             Player.STATE_READY -> {
                 progressBar.visibility = View.INVISIBLE
-                txtMinRem.text = Constant.millsToHS(simpleExoplayer.duration)
             }
             Player.STATE_ENDED -> {
                 initializePlayer()
             }
             Player.STATE_IDLE -> {
-                TODO()
+                initializePlayer()
             }
         }
     }

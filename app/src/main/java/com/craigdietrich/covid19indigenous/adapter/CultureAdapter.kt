@@ -9,8 +9,13 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.model.LazyHeaders
 import com.craigdietrich.covid19indigenous.R
+import com.craigdietrich.covid19indigenous.common.Constant
 import com.craigdietrich.covid19indigenous.model.CultureVo
+
 
 class CultureAdapter(private val context: Context, private val data: ArrayList<CultureVo>) :
     RecyclerView.Adapter<CultureAdapter.MyViewHolder>() {
@@ -41,10 +46,16 @@ class CultureAdapter(private val context: Context, private val data: ArrayList<C
         holder.txtDate.text = "Published: " + data.date
         //holder.im = data.title
 
-        //Glide.with(context).load("https://covid19indigenous.ca/feeds/content/E4-Kahkakiw-Straight-Talk-Kids-and-Coronaviru.png").into(holder.img);
+        val glideUrl = GlideUrl(
+            "https://covid19indigenous.ca/feeds/content/" + data.thumbnailFilename,
+            LazyHeaders.Builder()
+                .addHeader("Cookie", Constant.cookie)
+                .build()
+        )
+        Glide.with(context).load(glideUrl).into(holder.img);
 
         holder.llMain.setOnClickListener {
-            clickListener!!.onAppointmentClicked(data)
+            clickListener!!.onItemClick(data)
         }
     }
 
@@ -55,6 +66,6 @@ class CultureAdapter(private val context: Context, private val data: ArrayList<C
     }
 
     interface ClickListener {
-        fun onAppointmentClicked(data: CultureVo)
+        fun onItemClick(data: CultureVo)
     }
 }

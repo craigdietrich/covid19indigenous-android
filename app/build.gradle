@@ -65,4 +65,7 @@ dependencies {
 
     implementation "com.google.android.exoplayer:exoplayer:2.12.2"//exo video player
     implementation 'com.android.support:multidex:1.0.3'//multiDex
+
+    implementation "com.squareup.retrofit2:retrofit:2.3.0"//retrofit for api call
+    implementation 'com.squareup.retrofit2:converter-gson:2.1.0'//retrofit gson converter
 }

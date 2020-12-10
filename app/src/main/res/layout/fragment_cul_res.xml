@@ -39,9 +39,20 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:orientation="vertical"
             android:paddingTop="@dimen/_10sdp" />
+
+        <TextView
+            android:id="@+id/txtFetch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="@dimen/_5sdp"
+            android:text="@string/fetch_new_content"
+            android:textColor="@color/blueText"
+            android:textSize="@dimen/_12ssp" />
     </LinearLayout>
 
 
