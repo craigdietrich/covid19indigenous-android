@@ -168,6 +168,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     private fun checkData() {
 
+
         val dir = File(
             Environment.getExternalStorageDirectory(),
             "/Covid19Indigenous"
