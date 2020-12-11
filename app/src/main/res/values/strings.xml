@@ -29,4 +29,5 @@
     <string name="consent_and_continue">Consent and continue</string>
     <string name="before_continuing">Before continuing please read and consent to the following</string>
     <string name="fetch_new_content">Fetch new content from the server</string>
+    <string name="download_manifest">Downloading manifest</string>
 </resources>

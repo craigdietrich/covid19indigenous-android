@@ -2,6 +2,7 @@ package com.craigdietrich.covid19indigenous.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,11 +11,9 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.load.model.LazyHeaders
 import com.craigdietrich.covid19indigenous.R
-import com.craigdietrich.covid19indigenous.common.Constant
 import com.craigdietrich.covid19indigenous.model.CultureVo
+import java.io.File
 
 
 class CultureAdapter(private val context: Context, private val data: ArrayList<CultureVo>) :
@@ -44,15 +43,17 @@ class CultureAdapter(private val context: Context, private val data: ArrayList<C
         holder.txtTitle.text = data.title
         holder.txtDesc.text = data.description
         holder.txtDate.text = "Published: " + data.date
-        //holder.im = data.title
 
-        val glideUrl = GlideUrl(
-            "https://covid19indigenous.ca/feeds/content/" + data.thumbnailFilename,
-            LazyHeaders.Builder()
-                .addHeader("Cookie", Constant.cookie)
-                .build()
+        val dir = File(
+            Environment.getExternalStorageDirectory(),
+            "/Covid19Indigenous"
         )
-        Glide.with(context).load(glideUrl).into(holder.img);
+        if (!dir.exists()) {
+            dir.mkdir()
+        }
+
+        val file = File(dir, data.thumbnailFilename)
+        Glide.with(context).load(file).into(holder.img);
 
         holder.llMain.setOnClickListener {
             clickListener!!.onItemClick(data)

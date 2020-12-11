@@ -12,8 +12,10 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.craigdietrich.covid19indigenous.ui.culture.CulResFragment
 import okhttp3.OkHttpClient
 import java.io.BufferedReader
+import java.io.File
 import java.security.SecureRandom
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
@@ -26,17 +28,20 @@ import javax.net.ssl.X509TrustManager
 class Constant {
     companion object {
 
-        const val BASE_URL = "http://covid19indigenous.ca/feeds/content/"
+        const val BASE_URL = "http://covid19indigenous.ca/"
         const val BASE_MEDIA_URL = "https://covid19indigenous.ca/feeds/content/"
 
         const val SHARE_PREF = "SHARE_PREF"
 
-        const val CULTURE = "manifest.json?t=1607063769.361629"
+        const val CULTURE = "feeds/content/manifest.json?"
+        const val QUESTIONS = "dashboard/pages/app?"
 
         const val TIME = "1607063769.361629"
 
         const val cookie =
-            "visid_incap_2404656=rDI/08e0SSWyIy0S0JOYugAT0l8AAAAAQUIPAAAAAADh4QFWymWVTDoRdWOjpg19; incap_ses_883_2404656=zv27NDOeAjB9ucKW/gtBDAAT0l8AAAAAfWWBkOPC1j1nUAX4r4WSkw=="
+            "visid_incap_2404656=rDI/08e0SSWyIy0S0JOYugAT0l8AAAAAQUIPAAAAAADh4QFWymWVTDoRdWOjpg19; incap_ses_1292_2404656=U2ZMYZD3+nZ2ecBCMxvuEThu018AAAAA8zyR6doQGL3KIdj9zu8VmQ=="
+
+        var myTask: CulResFragment.DownloadFileFromURL? = null
 
         fun changeStatusBar(isDark: Boolean, context: Context, color: Int) {
             // for change statusbar color
@@ -173,6 +178,13 @@ class Constant {
                 e.printStackTrace()
             }
             return readData!!.getString(key, "").toString()
+        }
+
+        fun deleteFiles(fileOrDirectory: File) {
+            if (fileOrDirectory.isDirectory) for (child in fileOrDirectory.listFiles()!!) deleteFiles(
+                child
+            )
+            fileOrDirectory.delete()
         }
     }
 }

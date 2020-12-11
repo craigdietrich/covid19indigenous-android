@@ -21,13 +21,18 @@ import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.adapter.CultureAdapter
 import com.craigdietrich.covid19indigenous.common.Constant
 import com.craigdietrich.covid19indigenous.model.CultureVo
+import com.craigdietrich.covid19indigenous.retrfit.GetApi
+import com.craigdietrich.covid19indigenous.retrfit.RetrofitInstance
 import com.dueeeke.tablayout.listener.OnTabSelectListener
 import com.google.gson.GsonBuilder
 import kotlinx.android.synthetic.main.fragment_cul_res.*
 import kotlinx.android.synthetic.main.fragment_cul_res.view.*
+import kotlinx.coroutines.runBlocking
+import retrofit2.Call
+import retrofit2.Callback
 import java.io.*
+import java.net.HttpURLConnection
 import java.net.URL
-import java.net.URLConnection
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -35,27 +40,39 @@ import kotlin.collections.ArrayList
 class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     private lateinit var viewModel: CulResViewModel
-    private val WRITE_REQUEST_CODE = 10111
+    private val writeRequestCode = 10111
 
-    private var responseJson = ""
     lateinit var listData: List<CultureVo>
 
     var culData = ArrayList<CultureVo>()
     var resData = ArrayList<CultureVo>()
-
     private var root: View? = null
+
+    private var dir = File(
+        Environment.getExternalStorageDirectory().absolutePath,
+        "/Covid19Indigenous"
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         root = inflater.inflate(R.layout.fragment_cul_res, container, false)
-
         Constant.changeStatusBar(
             isDark = true,
             context = context as Activity,
             color = R.color.grayBg
         )
+
+        if (!dir.exists()) {
+            dir.mkdir()
+        }
+
+        dir = File(dir, "/Content")
+        if (!dir.exists()) {
+            dir.mkdir()
+        }
+
 
         val titles = arrayOf(getString(R.string.culture), getString(R.string.resilience))
         root!!.tabAbout.setTabData(titles)
@@ -81,8 +98,10 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
             if (Constant.isOnline(context as AppCompatActivity)) {
 
                 try {
+                    txtProgress.visibility = View.VISIBLE
+                    txtProgress.text = getString(R.string.download_manifest)
 
-                    /*val service: GetApi =
+                    val service: GetApi =
                         RetrofitInstance.getRetrofitInstance().create(
                             GetApi::class.java
                         )
@@ -93,74 +112,38 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                             response: retrofit2.Response<List<CultureVo>>
                         ) {
                             Log.e("res", response.body().toString())
-
-                            val gson = GsonBuilder().create()
-
                             listData = response.body() as List<CultureVo>
 
-                            *//*val data = gson.fromJson(responseJson, Array<CultureVo>::class.java).toList()
+                            checkData()
 
-                            listData = data*//*
-
-                            setData()
-
+                            requestPermissions(
+                                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                                writeRequestCode
+                            )
                         }
 
                         override fun onFailure(call: Call<List<CultureVo>>, t: Throwable) {
+                            txtProgress.visibility = View.GONE
                             Log.e("res", t.toString())
                         }
-                    })*/
-
-
-                    /*val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
-
-                    StrictMode.setThreadPolicy(policy)
-
-                    val client: OkHttpClient = Constant.getUnsafeOkHttpClient().build()
-
-                    val request: Request = Request.Builder()
-                        .url(Constant.BASE_URL + Constant.CULTURE)
-                        .method("GET", null)
-                        .addHeader(
-                            "Cookie",
-                            Constant.cookie
-                        )
-                        .build()
-                    val response: Response = client.newCall(request).execute()
-
-                    requestPermissions(
-                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                        WRITE_REQUEST_CODE
-                    )
-
-                    val gson = GsonBuilder().create()
-
-                    responseJson = response.body!!.string()
-
-                    val data = gson.fromJson(responseJson, Array<CultureVo>::class.java).toList()
-
-                    listData = data
-
-                    setData()*/
-
+                    })
                 } catch (e: Exception) {
+                    txtProgress.visibility = View.GONE
                     Log.e("error", e.toString())
                 }
-
-
-                //offline
-                val stringJson = Constant.readAsset(context as Activity, "manifest.json")
-                val gson = GsonBuilder().create()
-                listData = gson.fromJson(stringJson, Array<CultureVo>::class.java).toList()
-
-                setData()
-
             } else {
                 Constant.internetAlert(context as Activity)
             }
         }
 
         root!!.txtFetch.setOnClickListener {
+            resetData()
+        }
+
+        root!!.txtCancel.setOnClickListener {
+
+            Constant.myTask!!.cancel(true)
+            resetData()
 
         }
         return root
@@ -168,25 +151,38 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     private fun checkData() {
 
-
-        val dir = File(
-            Environment.getExternalStorageDirectory(),
-            "/Covid19Indigenous"
-        )
-
         val file = File(dir, "manifest.json")
 
         if (file.exists()) {
 
-            val stringJson = Constant.readAsset(context as Activity, "manifest.json")
+            val text = StringBuilder()
+
+            try {
+                val br = BufferedReader(FileReader(file))
+                var line: String?
+                while (br.readLine().also { line = it } != null) {
+                    text.append(line)
+                    text.append('\n')
+                }
+                br.close()
+            } catch (e: IOException) {
+                //You'll need to add proper error handling here
+            }
+            //val stringJson = Constant.readAsset(context as Activity, "manifest.json")
             val gson = GsonBuilder().create()
-            listData = gson.fromJson(stringJson, Array<CultureVo>::class.java).toList()
+            listData = gson.fromJson(text.toString(), Array<CultureVo>::class.java).toList()
 
             for (i in listData.indices) {
-                if (listData[i].category == "culture") {
-                    culData.add(listData[i])
-                } else {
-                    resData.add(listData[i])
+
+                val image = File(dir, listData[i].thumbnailFilename)
+                val video = File(dir, listData[i].mp4Filename)
+
+                if (image.exists() || video.exists()) {
+                    if (listData[i].category == "culture") {
+                        culData.add(listData[i])
+                    } else {
+                        resData.add(listData[i])
+                    }
                 }
             }
             root!!.recyclerView.layoutManager = LinearLayoutManager(context)
@@ -196,27 +192,10 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
             root!!.llList.visibility = View.VISIBLE
             root!!.llDownload.visibility = View.GONE
+        } else {
+            root!!.llList.visibility = View.GONE
+            root!!.llDownload.visibility = View.VISIBLE
         }
-    }
-
-    private fun setData() {
-
-        for (i in listData.indices) {
-            if (listData[i].category == "culture") {
-                culData.add(listData[i])
-            } else {
-                resData.add(listData[i])
-            }
-        }
-        root!!.recyclerView.layoutManager = LinearLayoutManager(context)
-        val adapter = CultureAdapter(context as Activity, culData)
-        adapter.setOnItemClickListener(this@CulResFragment)
-        root!!.recyclerView.adapter = adapter
-
-        requestPermissions(
-            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-            WRITE_REQUEST_CODE
-        )
     }
 
     override fun onRequestPermissionsResult(
@@ -228,7 +207,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
         if (grantResults.isNotEmpty()
             && grantResults[0] == PackageManager.PERMISSION_GRANTED
         ) {
-            if (requestCode == WRITE_REQUEST_CODE) {
+            if (requestCode == writeRequestCode) {
                 writeFiles()
             }
         }
@@ -240,32 +219,26 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
         try {
             Log.e("data", listData.toString())
 
-            val dir = File(
-                Environment.getExternalStorageDirectory(),
-                "/Covid19Indigenous"
-            )
-            if (!dir.exists()) {
-                dir.mkdir()
-            }
+            val gson = GsonBuilder().create()
+            val responseJson = gson.toJsonTree(listData).asJsonArray
 
             try {
                 val gpxfile = File(dir, "manifest.json")
                 val writer = FileWriter(gpxfile)
-                writer.append(responseJson)
+                writer.append(responseJson.toString())
                 writer.flush()
                 writer.close()
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
             }
 
-            DownloadFileFromURL(
+            Constant.myTask = DownloadFileFromURL(
                 data = listData,
-                cookie = Constant.cookie,
                 pos = 0,
                 dir = dir,
                 cContext = this,
                 type = "image"
-            ).execute()
+            ).execute() as DownloadFileFromURL?
         } catch (e: java.lang.Exception) {
 
         }
@@ -273,7 +246,6 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     class DownloadFileFromURL internal constructor(
         private var data: List<CultureVo>,
-        private var cookie: String,
         private var pos: Int,
         private var dir: File,
         private var cContext: CulResFragment,
@@ -283,34 +255,50 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
         override fun onPreExecute() {
             super.onPreExecute()
 
-            cContext.txtProgress.visibility = View.VISIBLE
-            if (type == "image") {
-                cContext.root!!.txtProgress.text =
-                    "Downloading image " + (pos + 1) + "/" + data.size
+            if (isCancelled) {
+                return
             } else {
-                cContext.root!!.txtProgress.text =
-                    "Downloading video " + (pos + 1) + "/" + data.size
-            }
+                cContext.txtProgress.visibility = View.VISIBLE
+                if (type == "image") {
+                    cContext.root!!.txtProgress.text =
+                        "Downloading image " + (pos + 1) + "/" + data.size
+                } else {
+                    cContext.root!!.txtProgress.text =
+                        "Downloading video " + (pos + 1) + "/" + data.size
+                }
 
-            cContext.root!!.seekBar.progress = pos * 100 / data.size
+                cContext.root!!.seekBar.progress = (pos + 1) * 100 / data.size
+            }
         }
 
         override fun doInBackground(vararg params: String?): String? {
-            var count: Int
-            try {
 
+            var input: InputStream? = null
+            var output: OutputStream? = null
+            var connection: HttpURLConnection? = null
+            try {
                 val url = if (type == "image") {
                     URL(Constant.BASE_MEDIA_URL + data[pos].thumbnailFilename)
                 } else {
                     URL(Constant.BASE_MEDIA_URL + data[pos].mp4Filename)
                 }
-
-                val connection: URLConnection = url.openConnection()
+                connection = url.openConnection() as HttpURLConnection
                 connection.setRequestProperty(
                     "Cookie",
-                    cookie
-                );
+                    Constant.cookie
+                )
                 connection.connect()
+
+                if (connection.responseCode != HttpURLConnection.HTTP_OK) {
+                    return "Server returned HTTP " + connection.responseCode
+                        .toString() + " " + connection.responseMessage
+                }
+
+                val fileLength: Int = connection.contentLength
+
+                // download the file
+                input = connection.inputStream
+
 
                 val file: File = if (type == "image") {
                     File(dir, data[pos].thumbnailFilename)
@@ -318,67 +306,85 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                     File(dir, data[pos].mp4Filename)
                 }
 
-
                 if (file.exists()) {
                     return null
-                } else {
-                    val lengthOfFile: Int = connection.contentLength
-                    val input: InputStream = BufferedInputStream(
-                        url.openStream(),
-                        8192
-                    )
-
-                    val output: OutputStream = FileOutputStream(
-                        file
-                    )
-                    val data = ByteArray(1024)
-                    var total: Long = 0
-                    while (input.read(data).also { count = it } != -1) {
-                        total += count.toLong()
-                        publishProgress("" + (total * 100 / lengthOfFile).toInt())
-                        output.write(data, 0, count)
+                }
+                output = FileOutputStream(file)
+                val data = ByteArray(4096)
+                var total: Long = 0
+                var count: Int
+                while (input.read(data).also { count = it } != -1) {
+                    // allow canceling with back button
+                    if (isCancelled) {
+                        input.close()
+                        return null
                     }
-                    output.flush()
-                    output.close()
-                    input.close()
+                    total += count.toLong()
+
+                    if (fileLength > 0) // only if total length is known
+                        publishProgress((total * 100 / fileLength).toInt().toString())
+                    output.write(data, 0, count)
                 }
             } catch (e: java.lang.Exception) {
-                Log.e("Error: ", e.message!!)
+                return e.toString()
+            } finally {
+                try {
+                    output?.close()
+                    input?.close()
+                } catch (ignored: IOException) {
+                }
+                connection?.disconnect()
             }
             return null
         }
 
         override fun onProgressUpdate(vararg values: String?) {
+            if (isCancelled) {
+                return
+            }
         }
 
         override fun onPostExecute(file_url: String?) {
-            if (pos != data.size - 1 || type == "image") {
-
-                if (type == "image") {
-                    DownloadFileFromURL(
-                        data = data,
-                        cookie = cookie,
-                        pos = pos,
-                        dir = dir,
-                        cContext = cContext,
-                        type = "video"
-                    ).execute()
-                } else {
-                    DownloadFileFromURL(
-                        data = data,
-                        cookie = cookie,
-                        pos = pos + 1,
-                        dir = dir,
-                        cContext = cContext,
-                        type = "image"
-                    ).execute()
-                }
-
+            if (isCancelled) {
+                return
             } else {
-                cContext.root!!.llList.visibility = View.VISIBLE
-                cContext.root!!.llDownload.visibility = View.GONE
+                if (pos != data.size - 1 || type == "image") {
+
+                    if (type == "image") {
+                        Constant.myTask = DownloadFileFromURL(
+                            data = data,
+                            pos = pos,
+                            dir = dir,
+                            cContext = cContext,
+                            type = "video"
+                        ).execute() as DownloadFileFromURL?
+                    } else {
+                        Constant.myTask = DownloadFileFromURL(
+                            data = data,
+                            pos = pos + 1,
+                            dir = dir,
+                            cContext = cContext,
+                            type = "image"
+                        ).execute() as DownloadFileFromURL?
+                    }
+
+                } else {
+                    cContext.checkData()
+                    cContext.root!!.llList.visibility = View.VISIBLE
+                    cContext.root!!.llDownload.visibility = View.GONE
+                }
             }
         }
+    }
+
+    private fun resetData() {
+        runBlocking {
+            Constant.deleteFiles(dir)
+        }
+
+        txtProgress.visibility = View.GONE
+        seekBar.progress = 0
+        checkData()
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -388,19 +394,11 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     override fun onItemClick(data: CultureVo) {
 
-        val dir = File(
-            Environment.getExternalStorageDirectory(),
-            "/Covid19Indigenous"
-        )
-        if (!dir.exists()) {
-            dir.mkdir()
-        }
+        val file = File(dir, data.mp4Filename)
 
-        val gpxfile = File(dir, data.mp4Filename)
-
-        if (gpxfile.exists()) {
+        if (file.exists()) {
             activity?.let {
-                val intent = Intent(it, PlayerActivity::class.java).putExtra("path", gpxfile.path)
+                val intent = Intent(it, PlayerActivity::class.java).putExtra("path", file.path)
                 it.startActivity(intent)
             }
         } else {
@@ -412,7 +410,5 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                 )
             }
         }
-
     }
-
 }

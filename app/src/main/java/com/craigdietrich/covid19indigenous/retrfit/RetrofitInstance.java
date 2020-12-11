@@ -1,5 +1,6 @@
 package com.craigdietrich.covid19indigenous.retrfit;
 
+import com.craigdietrich.covid19indigenous.common.Constant;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -15,7 +16,6 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitInstance {
-    private static final String BASE_URL = "https://covid19indigenous.ca/";
     private static Retrofit retrofit;
 
     /**
@@ -35,7 +35,7 @@ public class RetrofitInstance {
 
         if (retrofit == null) {
             retrofit = new Retrofit.Builder()
-                    .baseUrl(BASE_URL)
+                    .baseUrl(Constant.BASE_URL)
                     .client(new OkHttpClient().newBuilder().cookieJar(new SessionCookieJar()).build())
                     //.client(Constant.getUnsafeOkHttpClient().build())
                     .addConverterFactory(GsonConverterFactory.create(gson))
