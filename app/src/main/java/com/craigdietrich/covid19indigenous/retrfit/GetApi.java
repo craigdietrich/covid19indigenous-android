@@ -20,7 +20,7 @@ public interface GetApi {
     );
 
     @GET(Constant.QUESTIONS)
-    Call<Object> getQuestions(
+    Call<String> getQuestions(
             @Query("key") String key,
             @Query("t") String t,
             @Header("Cookie") String cookie

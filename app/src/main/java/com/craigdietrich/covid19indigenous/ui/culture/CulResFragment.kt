@@ -261,7 +261,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                 cContext.txtProgress.visibility = View.VISIBLE
                 if (type == "image") {
                     cContext.root!!.txtProgress.text =
-                        "Downloading image " + (pos + 1) + "/" + data.size
+                        "Downloading thumb " + (pos + 1) + "/" + data.size
                 } else {
                     cContext.root!!.txtProgress.text =
                         "Downloading video " + (pos + 1) + "/" + data.size

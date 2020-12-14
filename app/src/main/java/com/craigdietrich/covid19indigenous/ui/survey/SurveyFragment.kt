@@ -13,6 +13,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
@@ -22,13 +24,13 @@ import com.craigdietrich.covid19indigenous.common.Constant
 import com.craigdietrich.covid19indigenous.retrfit.GetApi
 import com.craigdietrich.covid19indigenous.retrfit.RetrofitInstance
 import com.dueeeke.tablayout.listener.OnTabSelectListener
+import com.google.gson.GsonBuilder
 import kotlinx.android.synthetic.main.fragment_cul_res.*
 import kotlinx.android.synthetic.main.fragment_survey.*
 import kotlinx.android.synthetic.main.fragment_survey.view.*
 import retrofit2.Call
 import retrofit2.Callback
-import java.io.File
-import java.io.FileWriter
+import java.io.*
 
 
 open class NotificationsFragment : Fragment(), ClickListener {
@@ -70,7 +72,8 @@ open class NotificationsFragment : Fragment(), ClickListener {
         root = inflater.inflate(R.layout.fragment_survey, container, false)
 
         root!!.webView.settings.javaScriptEnabled = true
-        root!!.webView.loadUrl("file:///android_asset/aboutSurvey.html");
+        root!!.webView.loadUrl("file:///android_asset/aboutSurvey.html")
+        root!!.webView.settings.javaScriptEnabled = true;
         root!!.webView.addJavascriptInterface(
             this.context?.let { SurveyWebAppInterface(it) },
             "Android"
@@ -84,7 +87,38 @@ open class NotificationsFragment : Fragment(), ClickListener {
                 if (position == 0) {
                     root!!.webView.loadUrl("file:///android_asset/aboutSurvey.html")
                 } else {
-                    root!!.webView.loadData("<HTML><BODY></BODY></HTML>", "text/html", "utf-8");
+
+
+                    val file = File(dir, "questionnaires.json")
+                    val text = StringBuilder()
+
+                    try {
+                        val br = BufferedReader(FileReader(file))
+                        var line: String?
+                        while (br.readLine().also { line = it } != null) {
+                            text.append(line)
+                            text.append('\n')
+                        }
+                        br.close()
+                    } catch (e: IOException) {
+                        //You'll need to add proper error handling here
+                        Log.e("error", e.toString())
+                    }
+
+                    var json = text.toString()
+                    json = json.replace("'", "\\'")
+                    json = json.replace("(", "\\(")
+                    json = json.replace(")", "\\)")
+                    json = json.replace("\"", "\\\"")
+                    json = json.trim()
+
+                    root!!.webView.loadUrl("file:///android_asset/common/index.html")
+                    root!!.webView.webViewClient = object : WebViewClient() {
+                        override fun onPageFinished(view: WebView, url: String) {
+                            root!!.webView.loadUrl("javascript:getJsonFromSystem('$json')")
+                        }
+                    }
+
                 }
             }
 
@@ -96,12 +130,12 @@ open class NotificationsFragment : Fragment(), ClickListener {
             }
         }
 
-        root!!.webViewConsent.settings.javaScriptEnabled = true
+        /*root!!.webViewConsent.settings.javaScriptEnabled = true
         root!!.webViewConsent.addJavascriptInterface(
             this.context?.let { SurveyWebAppInterface(it) },
             "Android"
         )
-        root!!.webViewConsent.loadUrl("file:///android_asset/consent.html")
+        root!!.webViewConsent.loadUrl("file:///android_asset/consent.html")*/
 
         return root
     }
@@ -111,25 +145,34 @@ open class NotificationsFragment : Fragment(), ClickListener {
         try {
             val service: GetApi = RetrofitInstance.getRetrofitInstance().create(GetApi::class.java)
             val call = service.getQuestions(edtCode.text.toString(), Constant.TIME, Constant.cookie)
-            call.enqueue(object : Callback<Any?> {
-                override fun onResponse(call: Call<Any?>, response: retrofit2.Response<Any?>) {
+            call.enqueue(object : Callback<String> {
+                override fun onResponse(call: Call<String>, response: retrofit2.Response<String>) {
                     Log.e("res", response.body().toString())
 
-                    jsonResponse = response.body().toString()
-                    requestPermissions(
-                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                        writeRequestCode
-                    )
-                    /*listData = response.body() as Any?
-                    checkData()*/
+                    try {
+                        jsonResponse = response.body().toString()
 
-                    /*requestPermissions(
-                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                        writeRequestCode
-                    )*/
+                        val gson = GsonBuilder().create()
+                        val responseJson = gson.toJsonTree(jsonResponse).asJsonObject
+
+                        requestPermissions(
+                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                            writeRequestCode
+                        )
+                        /*listData = response.body() as String
+                        checkData()*/
+
+                        /*requestPermissions(
+                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                            writeRequestCode
+                        )*/
+                    } catch (e: Exception) {
+                        Log.e("error", e.toString())
+                    }
+
                 }
 
-                override fun onFailure(call: Call<Any?>, t: Throwable) {
+                override fun onFailure(call: Call<String>, t: Throwable) {
                     txtProgress.visibility = View.GONE
                     Log.e("res", t.toString())
                 }
