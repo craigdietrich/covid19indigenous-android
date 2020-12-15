@@ -4,6 +4,8 @@ import com.craigdietrich.covid19indigenous.common.Constant;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,7 +51,7 @@ public class RetrofitInstance {
         private List<Cookie> cookies;
 
         @Override
-        public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+        public void saveFromResponse(HttpUrl url, @NotNull List<Cookie> cookies) {
             if (url.encodedPath().endsWith("login")) {
                 this.cookies = new ArrayList<>(cookies);
             }
@@ -58,6 +60,7 @@ public class RetrofitInstance {
         }
 
 
+        @NotNull
         @Override
         public List<Cookie> loadForRequest(HttpUrl url) {
             if (!url.encodedPath().endsWith("login") && cookies != null) {

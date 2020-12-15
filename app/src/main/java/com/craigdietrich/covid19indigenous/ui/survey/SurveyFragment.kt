@@ -25,7 +25,6 @@ import com.craigdietrich.covid19indigenous.retrfit.GetApi
 import com.craigdietrich.covid19indigenous.retrfit.RetrofitInstance
 import com.dueeeke.tablayout.listener.OnTabSelectListener
 import com.google.gson.GsonBuilder
-import kotlinx.android.synthetic.main.fragment_cul_res.*
 import kotlinx.android.synthetic.main.fragment_survey.*
 import kotlinx.android.synthetic.main.fragment_survey.view.*
 import retrofit2.Call
@@ -33,7 +32,7 @@ import retrofit2.Callback
 import java.io.*
 
 
-open class NotificationsFragment : Fragment(), ClickListener {
+class NotificationsFragment : Fragment(), ClickListener {
 
     private lateinit var surveyViewModel: SurveyViewModel
     private var root: View? = null
@@ -73,7 +72,7 @@ open class NotificationsFragment : Fragment(), ClickListener {
 
         root!!.webView.settings.javaScriptEnabled = true
         root!!.webView.loadUrl("file:///android_asset/aboutSurvey.html")
-        root!!.webView.settings.javaScriptEnabled = true;
+        root!!.webView.settings.javaScriptEnabled = true
         root!!.webView.addJavascriptInterface(
             this.context?.let { SurveyWebAppInterface(it) },
             "Android"
@@ -143,6 +142,7 @@ open class NotificationsFragment : Fragment(), ClickListener {
     private fun downloadFile() {
 
         try {
+
             val service: GetApi = RetrofitInstance.getRetrofitInstance().create(GetApi::class.java)
             val call = service.getQuestions(edtCode.text.toString(), Constant.TIME, Constant.cookie)
             call.enqueue(object : Callback<String> {
@@ -159,13 +159,6 @@ open class NotificationsFragment : Fragment(), ClickListener {
                             arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
                             writeRequestCode
                         )
-                        /*listData = response.body() as String
-                        checkData()*/
-
-                        /*requestPermissions(
-                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                            writeRequestCode
-                        )*/
                     } catch (e: Exception) {
                         Log.e("error", e.toString())
                     }
@@ -173,7 +166,7 @@ open class NotificationsFragment : Fragment(), ClickListener {
                 }
 
                 override fun onFailure(call: Call<String>, t: Throwable) {
-                    txtProgress.visibility = View.GONE
+
                     Log.e("res", t.toString())
                 }
             })
@@ -250,6 +243,16 @@ class SurveyWebAppInterface(private val mContext: Context) {
         } else {
             Toast.makeText(mContext, toast, Toast.LENGTH_SHORT).show()
         }
+    }
+
+    @JavascriptInterface
+    fun showAns(toast: String) {
+        /*if (toast == "takeSurvey") {
+            clickListener!!.changeTab(1)
+            //root!!.tabAbout.currentTab = 1
+        } else {*/
+        Toast.makeText(mContext, toast, Toast.LENGTH_SHORT).show()
+        //}
     }
 }
 

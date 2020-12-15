@@ -39,7 +39,7 @@ class Constant {
         const val TIME = "1607063769.361629"
 
         const val cookie =
-            "incap_ses_884_2404656=ABv1G5lpFBu3YDg/fZlEDD8v118AAAAAu2Z/v2zvLtL4Cy5QgH2m9w=="
+            "incap_ses_1229_2404656=afvKbFcokSQ6BzabMkkOEchS2F8AAAAAfzj26Bhb2uXHjT0hSbV3cg==; visid_incap_2404656=nryry30xSRKPTPy5Z7vvxr1N2F8AAAAAQkIPAAAAAABN5HXV4XVQavx+UrIrpZha"
 
         var myTask: CulResFragment.DownloadFileFromURL? = null
 

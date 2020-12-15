@@ -86,7 +86,9 @@
 		    	};
 	    		console.log(json);
 
-                webkit.messageHandlers.buttonAction.postMessage(JSON.stringify(json));
+                Android.showAns(JSON.stringify(json));
+                /*javascript:doButtonClick('takeSurvey');
+                webkit.messageHandlers.buttonAction.postMessage(JSON.stringify(json));*/
                 callback();
 	    		
 	    	};

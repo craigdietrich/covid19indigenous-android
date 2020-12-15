@@ -22,7 +22,7 @@ class DashboardFragment : Fragment() {
 
     private lateinit var projectViewModel: ProjectViewModel
 
-    @SuppressLint("JavascriptInterface")
+    @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled", "AddJavascriptInterface")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -39,7 +39,7 @@ class DashboardFragment : Fragment() {
         val root = inflater.inflate(R.layout.fragment_project, container, false)
 
         val webView = root.findViewById<WebView>(R.id.webView)
-        webView.settings.setJavaScriptEnabled(true)
+        webView.settings.javaScriptEnabled = true
         webView.loadUrl("file:///android_asset/aboutProject.html");
         webView.addJavascriptInterface(this.context?.let { WebAppInterface(it) }, "Android")
 
