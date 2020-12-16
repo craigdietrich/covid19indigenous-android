@@ -25,10 +25,9 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
 
     private lateinit var simpleExoplayer: SimpleExoPlayer
     private var playbackPosition: Long = 0
-    private var dashUrl = ""
+    private var vidUrl = ""
     lateinit var mainHandler: Handler
-    var isFull = false
-    var isMute = false
+    private var isFull = false
 
     private val updateTextTask = object : Runnable {
         override fun run() {
@@ -42,13 +41,18 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
         }
     }
 
+    override fun onBackPressed() {
+        onStop()
+        super.onBackPressed()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
 
         Constant.changeStatusBar(isDark = true, context = this, color = R.color.black)
 
-        dashUrl = intent.getStringExtra("path")!!
+        vidUrl = intent.getStringExtra("path")!!
 
         mainHandler = Handler(Looper.getMainLooper())
 
@@ -89,9 +93,9 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
 
     private fun initializePlayer() {
         simpleExoplayer = SimpleExoPlayer.Builder(this).build()
-        preparePlayer(dashUrl)
+        preparePlayer(vidUrl)
         exoplayerView.player = simpleExoplayer
-        val firstItem: MediaItem = MediaItem.fromUri(dashUrl)
+        val firstItem: MediaItem = MediaItem.fromUri(vidUrl)
         simpleExoplayer.seekTo(playbackPosition)
         simpleExoplayer.addMediaItem(firstItem)
         simpleExoplayer.playWhenReady = true
@@ -140,7 +144,6 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
         }
 
         imgClose.setOnClickListener {
-            onStop()
             onBackPressed()
         }
 

@@ -4,16 +4,6 @@ import com.craigdietrich.covid19indigenous.common.Constant;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import okhttp3.Cookie;
-import okhttp3.CookieJar;
-import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -38,35 +28,9 @@ public class RetrofitInstance {
         if (retrofit == null) {
             retrofit = new Retrofit.Builder()
                     .baseUrl(Constant.BASE_URL)
-                    .client(new OkHttpClient().newBuilder().cookieJar(new SessionCookieJar()).build())
-                    //.client(Constant.getUnsafeOkHttpClient().build())
                     .addConverterFactory(GsonConverterFactory.create(gson))
                     .build();
         }
         return retrofit;
-    }
-
-    private static class SessionCookieJar implements CookieJar {
-
-        private List<Cookie> cookies;
-
-        @Override
-        public void saveFromResponse(HttpUrl url, @NotNull List<Cookie> cookies) {
-            if (url.encodedPath().endsWith("login")) {
-                this.cookies = new ArrayList<>(cookies);
-            }
-
-
-        }
-
-
-        @NotNull
-        @Override
-        public List<Cookie> loadForRequest(HttpUrl url) {
-            if (!url.encodedPath().endsWith("login") && cookies != null) {
-                return cookies;
-            }
-            return Collections.emptyList();
-        }
     }
 }

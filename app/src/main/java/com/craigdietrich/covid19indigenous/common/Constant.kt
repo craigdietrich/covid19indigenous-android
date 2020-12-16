@@ -2,27 +2,26 @@ package com.craigdietrich.covid19indigenous.common
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.os.Build
+import android.os.Environment
+import android.util.Log
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.ui.culture.CulResFragment
-import okhttp3.OkHttpClient
 import java.io.BufferedReader
 import java.io.File
-import java.security.SecureRandom
-import java.security.cert.CertificateException
-import java.security.cert.X509Certificate
-import javax.net.ssl.HostnameVerifier
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
+import java.io.FileReader
+import java.io.IOException
+import java.util.*
 
 
 class Constant {
@@ -35,11 +34,6 @@ class Constant {
 
         const val CULTURE = "feeds/content/manifest.json?"
         const val QUESTIONS = "dashboard/pages/app?"
-
-        const val TIME = "1607063769.361629"
-
-        const val cookie =
-            "incap_ses_1229_2404656=afvKbFcokSQ6BzabMkkOEchS2F8AAAAAfzj26Bhb2uXHjT0hSbV3cg==; visid_incap_2404656=nryry30xSRKPTPy5Z7vvxr1N2F8AAAAAQkIPAAAAAABN5HXV4XVQavx+UrIrpZha"
 
         var myTask: CulResFragment.DownloadFileFromURL? = null
 
@@ -95,53 +89,6 @@ class Constant {
                 .show()
         }
 
-        fun readAsset(context: Context, fileName: String): String =
-            context
-                .assets
-                .open(fileName)
-                .bufferedReader()
-                .use(BufferedReader::readText)
-
-        fun getUnsafeOkHttpClient(): OkHttpClient.Builder {
-            return try {
-                // Create a trust manager that does not validate certificate chains
-                val trustAllCerts = arrayOf<TrustManager>(
-                    object : X509TrustManager {
-                        @Throws(CertificateException::class)
-                        override fun checkClientTrusted(
-                            chain: Array<X509Certificate>,
-                            authType: String
-                        ) {
-                        }
-
-                        @Throws(CertificateException::class)
-                        override fun checkServerTrusted(
-                            chain: Array<X509Certificate>,
-                            authType: String
-                        ) {
-                        }
-
-                        override fun getAcceptedIssuers(): Array<X509Certificate> {
-                            return arrayOf()
-                        }
-                    }
-                )
-
-                // Install the all-trusting trust manager
-                val sslContext = SSLContext.getInstance("SSL")
-                sslContext.init(null, trustAllCerts, SecureRandom())
-
-                // Create an ssl socket factory with our all-trusting manager
-                val sslSocketFactory = sslContext.socketFactory
-                val builder = OkHttpClient.Builder()
-                builder.sslSocketFactory(sslSocketFactory, trustAllCerts[0] as X509TrustManager)
-                builder.hostnameVerifier(HostnameVerifier { hostname, session -> true })
-                builder
-            } catch (e: Exception) {
-                throw RuntimeException(e)
-            }
-        }
-
         fun millsToRemainingHS(millis: Long): String {
             val minutes = millis / 1000 / 60
             val seconds = (millis / 1000 % 60).toInt()
@@ -185,6 +132,76 @@ class Constant {
                 child
             )
             fileOrDirectory.delete()
+        }
+
+        fun culturePath(): File {
+            var dir = File(
+                Environment.getExternalStorageDirectory(),
+                "/Covid19Indigenous"
+            )
+            if (!dir.exists()) {
+                dir.mkdir()
+            }
+            dir = File(dir, "/Content")
+            if (!dir.exists()) {
+                dir.mkdir()
+            }
+
+            return dir
+        }
+
+        fun surveyFile(): File {
+
+            var dir = File(
+                Environment.getExternalStorageDirectory(),
+                "/Covid19Indigenous"
+            )
+            if (!dir.exists()) {
+                dir.mkdir()
+            }
+            dir = File(dir, "/Survey")
+            if (!dir.exists()) {
+                dir.mkdir()
+            }
+
+            return File(dir, "questionnaires.json")
+        }
+
+        fun stringFromFile(file: File): StringBuilder {
+            val text = StringBuilder()
+
+            try {
+                val br = BufferedReader(FileReader(file))
+                var line: String?
+                while (br.readLine().also { line = it } != null) {
+                    text.append(line)
+                    text.append('\n')
+                }
+                br.close()
+            } catch (e: IOException) {
+                Log.e("error", e.toString())
+            }
+
+            return text
+        }
+
+        fun timeStamp(): String {
+            val rnd = Random()
+            val number: Int = rnd.nextInt(999999)
+            return System.currentTimeMillis().toString() + "." + String.format("%06d", number)
+        }
+
+        fun openImageDialog(c: Context) {
+            val dialog = Dialog(c, R.style.NewDialog)
+            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+            dialog.setCancelable(false)
+            dialog.setContentView(R.layout.dialog_upload)
+            dialog.window!!.setBackgroundDrawableResource(R.color.transparent)
+            /*val llCancel: LinearLayout = dialog.findViewById(R.id.llCancel)
+            val llTakePicture: LinearLayout = dialog.findViewById(R.id.llTakePicture)
+            val llGallery: LinearLayout = dialog.findViewById(R.id.llGallery)*/
+
+            dialog.show()
         }
     }
 }

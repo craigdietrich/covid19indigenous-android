@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -19,17 +18,18 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
+import com.craigdietrich.covid19indigenous.BuildConfig
 import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.common.Constant
 import com.craigdietrich.covid19indigenous.retrfit.GetApi
 import com.craigdietrich.covid19indigenous.retrfit.RetrofitInstance
 import com.dueeeke.tablayout.listener.OnTabSelectListener
-import com.google.gson.GsonBuilder
 import kotlinx.android.synthetic.main.fragment_survey.*
 import kotlinx.android.synthetic.main.fragment_survey.view.*
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
-import java.io.*
+import java.io.FileWriter
 
 
 class NotificationsFragment : Fragment(), ClickListener {
@@ -38,10 +38,6 @@ class NotificationsFragment : Fragment(), ClickListener {
     private var root: View? = null
     private val writeRequestCode = 10111
     var jsonResponse = ""
-    private var dir = File(
-        Environment.getExternalStorageDirectory().absolutePath,
-        "/Covid19Indigenous"
-    )
 
     @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled", "AddJavascriptInterface")
@@ -56,27 +52,13 @@ class NotificationsFragment : Fragment(), ClickListener {
             color = R.color.grayBg
         )
 
-        if (!dir.exists()) {
-            dir.mkdir()
-        }
-
-        dir = File(dir, "/Survey")
-        if (!dir.exists()) {
-            dir.mkdir()
-        }
-
         onWebButtonClick(this)
-        surveyViewModel =
-            ViewModelProviders.of(this).get(SurveyViewModel::class.java)
+        surveyViewModel = ViewModelProviders.of(this).get(SurveyViewModel::class.java)
         root = inflater.inflate(R.layout.fragment_survey, container, false)
 
-        root!!.webView.settings.javaScriptEnabled = true
+        initWebView()
+
         root!!.webView.loadUrl("file:///android_asset/aboutSurvey.html")
-        root!!.webView.settings.javaScriptEnabled = true
-        root!!.webView.addJavascriptInterface(
-            this.context?.let { SurveyWebAppInterface(it) },
-            "Android"
-        )
 
         val titles = arrayOf(getString(R.string.about_survey), getString(R.string.take_survey_tab))
         root!!.tabAbout.setTabData(titles)
@@ -86,38 +68,7 @@ class NotificationsFragment : Fragment(), ClickListener {
                 if (position == 0) {
                     root!!.webView.loadUrl("file:///android_asset/aboutSurvey.html")
                 } else {
-
-
-                    val file = File(dir, "questionnaires.json")
-                    val text = StringBuilder()
-
-                    try {
-                        val br = BufferedReader(FileReader(file))
-                        var line: String?
-                        while (br.readLine().also { line = it } != null) {
-                            text.append(line)
-                            text.append('\n')
-                        }
-                        br.close()
-                    } catch (e: IOException) {
-                        //You'll need to add proper error handling here
-                        Log.e("error", e.toString())
-                    }
-
-                    var json = text.toString()
-                    json = json.replace("'", "\\'")
-                    json = json.replace("(", "\\(")
-                    json = json.replace(")", "\\)")
-                    json = json.replace("\"", "\\\"")
-                    json = json.trim()
-
-                    root!!.webView.loadUrl("file:///android_asset/common/index.html")
-                    root!!.webView.webViewClient = object : WebViewClient() {
-                        override fun onPageFinished(view: WebView, url: String) {
-                            root!!.webView.loadUrl("javascript:getJsonFromSystem('$json')")
-                        }
-                    }
-
+                    setSurveyForm()
                 }
             }
 
@@ -129,14 +80,55 @@ class NotificationsFragment : Fragment(), ClickListener {
             }
         }
 
-        /*root!!.webViewConsent.settings.javaScriptEnabled = true
-        root!!.webViewConsent.addJavascriptInterface(
+        root!!.txtConsent.setOnClickListener {
+            setSurveyForm()
+        }
+
+        root!!.txtCancel.setOnClickListener {
+
+        }
+
+        return root
+    }
+
+    private fun setSurveyForm() {
+
+        root!!.tabAbout.currentTab = 1
+
+        if (Constant.surveyFile().exists()) {
+
+            root!!.llSurvey.visibility = View.VISIBLE
+
+            root!!.webView.loadUrl("file:///android_asset/common/index.html")
+            root!!.webView.webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView, url: String) {
+                    if (root!!.tabAbout.currentTab == 1) {
+                        root!!.webView.loadUrl(
+                            "javascript:getJsonFromSystem('" + Constant.stringFromFile(
+                                Constant.surveyFile()
+                            ).toString() + "')"
+                        )
+                    }
+                }
+            }
+        } else {
+            root!!.llSurvey.visibility = View.GONE
+            root!!.llSurveyDownload.visibility = View.VISIBLE
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled", "AddJavascriptInterface")
+    private fun initWebView() {
+
+        val settings = root!!.webView.settings
+        settings.domStorageEnabled = true
+        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
+        root!!.webView.settings.javaScriptEnabled = true
+        root!!.webView.addJavascriptInterface(
             this.context?.let { SurveyWebAppInterface(it) },
             "Android"
         )
-        root!!.webViewConsent.loadUrl("file:///android_asset/consent.html")*/
-
-        return root
     }
 
     private fun downloadFile() {
@@ -144,16 +136,14 @@ class NotificationsFragment : Fragment(), ClickListener {
         try {
 
             val service: GetApi = RetrofitInstance.getRetrofitInstance().create(GetApi::class.java)
-            val call = service.getQuestions(edtCode.text.toString(), Constant.TIME, Constant.cookie)
-            call.enqueue(object : Callback<String> {
-                override fun onResponse(call: Call<String>, response: retrofit2.Response<String>) {
-                    Log.e("res", response.body().toString())
-
+            val call = service.getQuestions(edtCode.text.toString(), Constant.timeStamp())
+            call.enqueue(object : Callback<ResponseBody> {
+                override fun onResponse(
+                    call: Call<ResponseBody>,
+                    response: retrofit2.Response<ResponseBody>
+                ) {
                     try {
-                        jsonResponse = response.body().toString()
-
-                        val gson = GsonBuilder().create()
-                        val responseJson = gson.toJsonTree(jsonResponse).asJsonObject
+                        jsonResponse = response.body()!!.string()
 
                         requestPermissions(
                             arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
@@ -165,7 +155,7 @@ class NotificationsFragment : Fragment(), ClickListener {
 
                 }
 
-                override fun onFailure(call: Call<String>, t: Throwable) {
+                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
 
                     Log.e("res", t.toString())
                 }
@@ -188,26 +178,30 @@ class NotificationsFragment : Fragment(), ClickListener {
                 writeFiles()
             }
         }
-
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     private fun writeFiles() {
 
         try {
-            //Log.e("data", listData.toString())
-
-            /*val gson = GsonBuilder().create()
-            val responseJson = gson.toJsonTree(listData).asJsonArray*/
-
             try {
-                val gpxfile = File(dir, "manifest.json")
-                val writer = FileWriter(gpxfile)
+
+                jsonResponse = jsonResponse.replace("'", "\\'")
+                jsonResponse = jsonResponse.replace("(", "\\(")
+                jsonResponse = jsonResponse.replace(")", "\\)")
+                jsonResponse = jsonResponse.replace("\"", "\\\"")
+                jsonResponse = jsonResponse.trim()
+
+                val writer = FileWriter(Constant.surveyFile())
                 writer.append(jsonResponse)
                 writer.flush()
                 writer.close()
 
                 llSurveyDownload.visibility = View.GONE
-                llSurveyBeforeContinue.visibility = View.VISIBLE
+                llSurveyContent.visibility = View.VISIBLE
+
+                root!!.webViewConsent.settings.javaScriptEnabled = true
+                root!!.webViewConsent.loadUrl("file:///android_asset/consent.html")
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
             }
@@ -220,8 +214,7 @@ class NotificationsFragment : Fragment(), ClickListener {
 
     override fun changeTab(pos: Int) {
         runOnUiThread {
-            root!!.tabAbout.currentTab = pos
-            root!!.webView.loadData("<HTML><BODY></BODY></HTML>", "text/html", "utf-8")
+            setSurveyForm()
         }
 
     }
@@ -246,13 +239,8 @@ class SurveyWebAppInterface(private val mContext: Context) {
     }
 
     @JavascriptInterface
-    fun showAns(toast: String) {
-        /*if (toast == "takeSurvey") {
-            clickListener!!.changeTab(1)
-            //root!!.tabAbout.currentTab = 1
-        } else {*/
-        Toast.makeText(mContext, toast, Toast.LENGTH_SHORT).show()
-        //}
+    fun showAns(msg: String) {
+        Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show()
     }
 }
 

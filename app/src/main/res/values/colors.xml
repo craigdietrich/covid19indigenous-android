@@ -16,5 +16,6 @@
     <color name="spacer">#5C5C5D</color>
     <color name="grayLight">#878788</color>
     <color name="tabBg">#e5e5e6</color>
+    <color name="transparent">#00FFFFFF</color>
 
 </resources>

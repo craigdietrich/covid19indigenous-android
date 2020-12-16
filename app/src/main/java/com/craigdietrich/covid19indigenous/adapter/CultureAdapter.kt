@@ -2,7 +2,6 @@ package com.craigdietrich.covid19indigenous.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +11,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.craigdietrich.covid19indigenous.R
+import com.craigdietrich.covid19indigenous.common.Constant
 import com.craigdietrich.covid19indigenous.model.CultureVo
 import java.io.File
 
@@ -44,16 +44,19 @@ class CultureAdapter(private val context: Context, private val data: ArrayList<C
         holder.txtDesc.text = data.description
         holder.txtDate.text = "Published: " + data.date
 
-        val dir = File(
-            Environment.getExternalStorageDirectory(),
-            "/Covid19Indigenous"
-        )
-        if (!dir.exists()) {
-            dir.mkdir()
+
+        val file = File(Constant.culturePath(), data.thumbnailFilename)
+
+        if (file.exists()) {
+            Glide.with(context)
+                .load(file)
+                .into(holder.img)
+        } else {
+            Glide.with(context)
+                .load(Constant.BASE_MEDIA_URL + data.thumbnailFilename)
+                .into(holder.img)
         }
 
-        val file = File(dir, data.thumbnailFilename)
-        Glide.with(context).load(file).into(holder.img);
 
         holder.llMain.setOnClickListener {
             clickListener!!.onItemClick(data)

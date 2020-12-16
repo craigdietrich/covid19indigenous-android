@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.AsyncTask
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -48,11 +47,6 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
     var resData = ArrayList<CultureVo>()
     private var root: View? = null
 
-    private var dir = File(
-        Environment.getExternalStorageDirectory().absolutePath,
-        "/Covid19Indigenous"
-    )
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -63,16 +57,6 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
             context = context as Activity,
             color = R.color.grayBg
         )
-
-        if (!dir.exists()) {
-            dir.mkdir()
-        }
-
-        dir = File(dir, "/Content")
-        if (!dir.exists()) {
-            dir.mkdir()
-        }
-
 
         val titles = arrayOf(getString(R.string.culture), getString(R.string.resilience))
         root!!.tabAbout.setTabData(titles)
@@ -105,7 +89,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                         RetrofitInstance.getRetrofitInstance().create(
                             GetApi::class.java
                         )
-                    val call = service.getCultureManifest(Constant.TIME, Constant.cookie)
+                    val call = service.getCultureManifest(Constant.timeStamp())
                     call.enqueue(object : Callback<List<CultureVo>> {
                         override fun onResponse(
                             call: Call<List<CultureVo>>,
@@ -151,7 +135,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     private fun checkData() {
 
-        val file = File(dir, "manifest.json")
+        val file = File(Constant.culturePath(), "manifest.json")
 
         if (file.exists()) {
 
@@ -174,8 +158,8 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
             for (i in listData.indices) {
 
-                val image = File(dir, listData[i].thumbnailFilename)
-                val video = File(dir, listData[i].mp4Filename)
+                val image = File(Constant.culturePath(), listData[i].thumbnailFilename)
+                val video = File(Constant.culturePath(), listData[i].mp4Filename)
 
                 if (image.exists() || video.exists()) {
                     if (listData[i].category == "culture") {
@@ -223,7 +207,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
             val responseJson = gson.toJsonTree(listData).asJsonArray
 
             try {
-                val gpxfile = File(dir, "manifest.json")
+                val gpxfile = File(Constant.culturePath(), "manifest.json")
                 val writer = FileWriter(gpxfile)
                 writer.append(responseJson.toString())
                 writer.flush()
@@ -235,7 +219,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
             Constant.myTask = DownloadFileFromURL(
                 data = listData,
                 pos = 0,
-                dir = dir,
+                dir = Constant.culturePath(),
                 cContext = this,
                 type = "image"
             ).execute() as DownloadFileFromURL?
@@ -283,10 +267,6 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                     URL(Constant.BASE_MEDIA_URL + data[pos].mp4Filename)
                 }
                 connection = url.openConnection() as HttpURLConnection
-                connection.setRequestProperty(
-                    "Cookie",
-                    Constant.cookie
-                )
                 connection.connect()
 
                 if (connection.responseCode != HttpURLConnection.HTTP_OK) {
@@ -379,7 +359,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     private fun resetData() {
         runBlocking {
-            Constant.deleteFiles(dir)
+            Constant.deleteFiles(Constant.culturePath())
         }
 
         txtProgress.visibility = View.GONE
@@ -394,7 +374,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     override fun onItemClick(data: CultureVo) {
 
-        val file = File(dir, data.mp4Filename)
+        val file = File(Constant.culturePath(), data.mp4Filename)
 
         if (file.exists()) {
             activity?.let {

@@ -141,7 +141,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/llSurveyBeforeContinue"
+        android:id="@+id/llSurveyContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/grayBg"
@@ -176,6 +176,7 @@
             android:layout_height="@dimen/_20sdp" />
 
         <TextView
+            android:id="@+id/txtConsent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/_30sdp"
@@ -190,6 +191,7 @@
             android:layout_height="@dimen/_20sdp" />
 
         <TextView
+            android:id="@+id/txtCancel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/_30sdp"
@@ -199,51 +201,5 @@
             android:textColor="@color/blueText"
             android:textSize="@dimen/_12ssp" />
 
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/llUploading"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/grayBg"
-        android:orientation="vertical"
-        android:padding="@dimen/_30sdp"
-        android:visibility="gone">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:text="Past completed surveys are ready to be uploaded"
-            android:textColor="@color/whiteText"
-            android:textSize="@dimen/_18ssp" />
-
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <TextView
-            android:id="@+id/txtUploading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Past answers 23423489.590"
-            android:textColor="@color/whiteText"
-            android:textSize="@dimen/_16ssp" />
-
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="Uploading answers..."
-            android:textColor="@color/whiteText"
-            android:textSize="@dimen/_16ssp" />
     </LinearLayout>
 </LinearLayout>
