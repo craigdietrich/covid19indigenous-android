@@ -9,19 +9,29 @@ import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Environment
+import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.craigdietrich.covid19indigenous.R
+import com.craigdietrich.covid19indigenous.model.AnswerVo
+import com.craigdietrich.covid19indigenous.retrfit.GetApi
+import com.craigdietrich.covid19indigenous.retrfit.RetrofitInstance
 import com.craigdietrich.covid19indigenous.ui.culture.CulResFragment
+import com.google.gson.Gson
+import kotlinx.coroutines.runBlocking
+import retrofit2.Call
+import retrofit2.Callback
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.io.IOException
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class Constant {
@@ -34,6 +44,7 @@ class Constant {
 
         const val CULTURE = "feeds/content/manifest.json?"
         const val QUESTIONS = "dashboard/pages/app?"
+        const val ANSWERS = "dashboard/pages/handler"
 
         var myTask: CulResFragment.DownloadFileFromURL? = null
 
@@ -150,8 +161,7 @@ class Constant {
             return dir
         }
 
-        fun surveyFile(): File {
-
+        fun surveyPath(): File {
             var dir = File(
                 Environment.getExternalStorageDirectory(),
                 "/Covid19Indigenous"
@@ -164,7 +174,11 @@ class Constant {
                 dir.mkdir()
             }
 
-            return File(dir, "questionnaires.json")
+            return dir
+        }
+
+        fun surveyFile(): File {
+            return File(surveyPath(), "questionnaires.json")
         }
 
         fun stringFromFile(file: File): StringBuilder {
@@ -187,21 +201,118 @@ class Constant {
 
         fun timeStamp(): String {
             val rnd = Random()
-            val number: Int = rnd.nextInt(999999)
-            return System.currentTimeMillis().toString() + "." + String.format("%06d", number)
+            val number: Int = rnd.nextInt(888889) + 111111
+            return (System.currentTimeMillis() / 1000).toString() + "." + String.format(
+                "%06d",
+                number
+            )
         }
 
-        fun openImageDialog(c: Context) {
+        fun uploadingAnswerDialog(c: Context) {
             val dialog = Dialog(c, R.style.NewDialog)
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
             dialog.setCancelable(false)
             dialog.setContentView(R.layout.dialog_upload)
             dialog.window!!.setBackgroundDrawableResource(R.color.transparent)
-            /*val llCancel: LinearLayout = dialog.findViewById(R.id.llCancel)
-            val llTakePicture: LinearLayout = dialog.findViewById(R.id.llTakePicture)
-            val llGallery: LinearLayout = dialog.findViewById(R.id.llGallery)*/
 
+            val txtUploading: TextView = dialog.findViewById(R.id.txtUploading)
+            val txtInfo: TextView = dialog.findViewById(R.id.txtInfo)
+
+            txtInfo.text = c.getString(R.string.checking_internet)
+
+            val answerFile = ArrayList<File>()
+            var pastTitle = ""
+            Handler().postDelayed({
+
+                if (isOnline(c as AppCompatActivity)) {
+                    val files = surveyPath().listFiles()
+                    for (i in files.indices) {
+                        //Log.d("Files", "FileName:" + files[i].name)
+                        if (files[i].name.startsWith("answer")) {
+                            answerFile.add(files[i])
+
+                            var name = files[i].name.substring(files[i].name.lastIndexOf("_") + 1)
+                            name = name.substring(0, name.lastIndexOf("."))
+
+                            name = "Past answers\n$name"
+                            pastTitle += if (pastTitle == "") {
+                                name
+                            } else {
+                                "\n\n" + name
+                            }
+
+                        }
+                    }
+
+                    if (answerFile.size > 0) {
+                        txtUploading.text = pastTitle
+
+
+                        for (i in answerFile.indices) {
+
+                            runBlocking {
+                                val text = StringBuilder()
+
+                                try {
+                                    val br = BufferedReader(FileReader(answerFile[i]))
+                                    var line: String?
+                                    while (br.readLine().also { line = it } != null) {
+                                        text.append(line)
+                                        text.append('\n')
+                                    }
+                                    br.close()
+                                } catch (e: IOException) {
+
+                                }
+
+                                val answer = Gson().fromJson(text.toString(), AnswerVo::class.java)
+
+                                val service: GetApi = RetrofitInstance.getRetrofitInstance()
+                                    .create(GetApi::class.java)
+                                val call = service.uploadAnswer(answer)
+                                call.enqueue(object : Callback<AnswerVo> {
+                                    override fun onResponse(
+                                        call: Call<AnswerVo>,
+                                        response: retrofit2.Response<AnswerVo>
+                                    ) {
+                                        Log.d("res", response.body().toString())
+
+                                        try {
+                                            var answerVo = response.body() as AnswerVo
+
+                                            answerFile[i].delete()
+                                        } catch (e: java.lang.Exception) {
+                                            Log.e("errorUploading", e.toString())
+                                            answerFile[i].delete()
+                                        }
+
+                                        if (i == answerFile.size - 1) {
+                                            dialog.dismiss()
+                                        }
+                                    }
+
+                                    override fun onFailure(call: Call<AnswerVo>, t: Throwable) {
+                                        Log.e("failUploading", t.toString())
+                                        answerFile[i].delete()
+
+                                        if (i == answerFile.size - 1) {
+                                            dialog.dismiss()
+                                        }
+                                    }
+                                })
+                            }
+                        }
+                    } else {
+                        dialog.dismiss()
+                    }
+                } else {
+                    dialog.dismiss()
+                }
+
+            }, 3000)
             dialog.show()
         }
+
+
     }
 }

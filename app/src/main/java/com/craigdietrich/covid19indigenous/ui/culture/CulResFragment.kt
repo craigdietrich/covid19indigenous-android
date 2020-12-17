@@ -207,8 +207,8 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
             val responseJson = gson.toJsonTree(listData).asJsonArray
 
             try {
-                val gpxfile = File(Constant.culturePath(), "manifest.json")
-                val writer = FileWriter(gpxfile)
+                val file = File(Constant.culturePath(), "manifest.json")
+                val writer = FileWriter(file)
                 writer.append(responseJson.toString())
                 writer.flush()
                 writer.close()

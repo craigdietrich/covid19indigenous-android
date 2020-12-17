@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
@@ -29,8 +28,8 @@ import kotlinx.android.synthetic.main.fragment_survey.view.*
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
+import java.io.File
 import java.io.FileWriter
-
 
 class NotificationsFragment : Fragment(), ClickListener {
 
@@ -88,6 +87,7 @@ class NotificationsFragment : Fragment(), ClickListener {
 
         }
 
+        Constant.uploadingAnswerDialog(context as Activity)
         return root
     }
 
@@ -214,7 +214,11 @@ class NotificationsFragment : Fragment(), ClickListener {
 
     override fun changeTab(pos: Int) {
         runOnUiThread {
-            setSurveyForm()
+            if (pos == 0) {
+                webView.loadUrl("file:///android_asset/aboutSurvey.html")
+            } else {
+                setSurveyForm()
+            }
         }
 
     }
@@ -232,15 +236,23 @@ class SurveyWebAppInterface(private val mContext: Context) {
     fun showToast(toast: String) {
         if (toast == "takeSurvey") {
             clickListener!!.changeTab(1)
-            //root!!.tabAbout.currentTab = 1
-        } else {
-            Toast.makeText(mContext, toast, Toast.LENGTH_SHORT).show()
         }
     }
 
     @JavascriptInterface
     fun showAns(msg: String) {
-        Toast.makeText(mContext, msg, Toast.LENGTH_SHORT).show()
+        try {
+            val file = File(Constant.surveyPath(), "answers_" + Constant.timeStamp() + ".json")
+            val writer = FileWriter(file)
+            writer.append(msg)
+            writer.flush()
+            writer.close()
+
+            Constant.uploadingAnswerDialog(mContext)
+            clickListener!!.changeTab(0)
+        } catch (e: java.lang.Exception) {
+            e.printStackTrace()
+        }
     }
 }
 
