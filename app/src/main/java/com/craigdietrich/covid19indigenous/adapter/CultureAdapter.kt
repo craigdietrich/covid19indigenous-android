@@ -51,12 +51,7 @@ class CultureAdapter(private val context: Context, private val data: ArrayList<C
             Glide.with(context)
                 .load(file)
                 .into(holder.img)
-        } else {
-            Glide.with(context)
-                .load(Constant.BASE_MEDIA_URL + data.thumbnailFilename)
-                .into(holder.img)
         }
-
 
         holder.llMain.setOnClickListener {
             clickListener!!.onItemClick(data)

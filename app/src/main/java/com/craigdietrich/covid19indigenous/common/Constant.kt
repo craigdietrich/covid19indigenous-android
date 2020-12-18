@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.os.Build
@@ -40,31 +39,36 @@ class Constant {
         const val BASE_URL = "http://covid19indigenous.ca/"
         const val BASE_MEDIA_URL = "https://covid19indigenous.ca/feeds/content/"
 
-        const val SHARE_PREF = "SHARE_PREF"
+        private const val SHARE_PREF = "SHARE_PREF"
 
         const val CULTURE = "feeds/content/manifest.json?"
         const val QUESTIONS = "dashboard/pages/app?"
         const val ANSWERS = "dashboard/pages/handler"
 
+        const val isAcceptSurvey = "isAcceptSurvey"
         var myTask: CulResFragment.DownloadFileFromURL? = null
 
         fun changeStatusBar(isDark: Boolean, context: Context, color: Int) {
-            // for change statusbar color
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 val window: Window = (context as Activity?)!!.window
                 window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
                 window.statusBarColor = ContextCompat.getColor(context, color)
                 if (isDark) {
 
-                    window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                        val decorView: View = window.decorView
+                        var systemUiVisibilityFlags = decorView.systemUiVisibility
+                        systemUiVisibilityFlags =
+                            systemUiVisibilityFlags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                        decorView.systemUiVisibility = systemUiVisibilityFlags
+                    }
 
-                    val decorView: View = window.decorView
-                    var systemUiVisibilityFlags = decorView.systemUiVisibility
-                    systemUiVisibilityFlags =
-                        systemUiVisibilityFlags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                    decorView.systemUiVisibility = systemUiVisibilityFlags
+
                 } else {
-                    window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    }
                 }
             }
         }
@@ -76,27 +80,13 @@ class Constant {
             return networkInfo != null && networkInfo.isConnected
         }
 
-        fun internetAlert(context: Context) {
-            AlertDialog.Builder(context)
-                .setTitle("No Connection")
-                .setMessage("Your device does not appear to have an Internet connection. Please establish a connection and try again.") // Specifying a listener allows you to take an action before dismissing the dialog.
-                // The dialog is automatically dismissed when a dialog button is clicked.
-                .setPositiveButton("Ok",
-                    DialogInterface.OnClickListener { dialog, which ->
-                        dialog.cancel()
-                    }) // A null listener allows the button to dismiss the dialog and take no further action.
-                .show()
-        }
-
         fun showAlert(context: Context, title: String, msg: String) {
             AlertDialog.Builder(context)
                 .setTitle(title)
-                .setMessage(msg) // Specifying a listener allows you to take an action before dismissing the dialog.
-                // The dialog is automatically dismissed when a dialog button is clicked.
-                .setPositiveButton("Ok",
-                    DialogInterface.OnClickListener { dialog, which ->
-                        dialog.cancel()
-                    }) // A null listener allows the button to dismiss the dialog and take no further action.
+                .setMessage(msg)
+                .setPositiveButton("Ok") { dialog, _ ->
+                    dialog.cancel()
+                }
                 .show()
         }
 
@@ -117,29 +107,15 @@ class Constant {
             return String.format("%02d", minutes) + ":" + String.format("%02d", seconds)
         }
 
-        fun writeSP(context: Context, key: String?, values: String?) {
-            val writeData = context.getSharedPreferences(
-                Constant.SHARE_PREF, Context.MODE_PRIVATE
+        fun deleteCultureFiles(fileOrDirectory: File) {
+            if (fileOrDirectory.isDirectory) for (child in fileOrDirectory.listFiles()!!) deleteCultureFiles(
+                child
             )
-            val editor = writeData.edit()
-            editor.putString(key, values)
-            editor.apply()
+            fileOrDirectory.delete()
         }
 
-        fun readSP(context: Context, key: String?): String {
-            var readData: SharedPreferences? = null
-            try {
-                readData = context.getSharedPreferences(
-                    Constant.SHARE_PREF, Context.MODE_PRIVATE
-                )
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-            return readData!!.getString(key, "").toString()
-        }
-
-        fun deleteFiles(fileOrDirectory: File) {
-            if (fileOrDirectory.isDirectory) for (child in fileOrDirectory.listFiles()!!) deleteFiles(
+        fun deleteSurveyFiles(fileOrDirectory: File) {
+            if (fileOrDirectory.isDirectory) for (child in fileOrDirectory.listFiles()!!) deleteSurveyFiles(
                 child
             )
             fileOrDirectory.delete()
@@ -222,31 +198,32 @@ class Constant {
 
             val answerFile = ArrayList<File>()
             var pastTitle = ""
-            Handler().postDelayed({
 
-                if (isOnline(c as AppCompatActivity)) {
-                    val files = surveyPath().listFiles()
-                    for (i in files.indices) {
-                        //Log.d("Files", "FileName:" + files[i].name)
-                        if (files[i].name.startsWith("answer")) {
-                            answerFile.add(files[i])
+            val files = surveyPath().listFiles()
+            for (i in files.indices) {
+                //Log.d("Files", "FileName:" + files[i].name)
+                if (files[i].name.startsWith("answer")) {
+                    answerFile.add(files[i])
 
-                            var name = files[i].name.substring(files[i].name.lastIndexOf("_") + 1)
-                            name = name.substring(0, name.lastIndexOf("."))
+                    var name = files[i].name.substring(files[i].name.lastIndexOf("_") + 1)
+                    name = name.substring(0, name.lastIndexOf("."))
 
-                            name = "Past answers\n$name"
-                            pastTitle += if (pastTitle == "") {
-                                name
-                            } else {
-                                "\n\n" + name
-                            }
-
-                        }
+                    name = "Past answers\n$name"
+                    pastTitle += if (pastTitle == "") {
+                        name
+                    } else {
+                        "\n\n" + name
                     }
 
-                    if (answerFile.size > 0) {
-                        txtUploading.text = pastTitle
+                }
+            }
 
+            if (answerFile.size > 0) {
+                Handler().postDelayed({
+
+                    if (isOnline(c as AppCompatActivity)) {
+                        txtInfo.text = c.getString(R.string.uploading_answers)
+                        txtUploading.text = pastTitle
 
                         for (i in answerFile.indices) {
 
@@ -281,6 +258,7 @@ class Constant {
                                             var answerVo = response.body() as AnswerVo
 
                                             answerFile[i].delete()
+                                            Log.e("success", "success")
                                         } catch (e: java.lang.Exception) {
                                             Log.e("errorUploading", e.toString())
                                             answerFile[i].delete()
@@ -305,14 +283,31 @@ class Constant {
                     } else {
                         dialog.dismiss()
                     }
-                } else {
-                    dialog.dismiss()
-                }
 
-            }, 3000)
-            dialog.show()
+                }, 3000)
+                dialog.show()
+            }
         }
 
+        fun writeSP(context: Context, key: String?, values: String?) {
+            val writeData = context.getSharedPreferences(
+                Constant.SHARE_PREF, Context.MODE_PRIVATE
+            )
+            val editor = writeData.edit()
+            editor.putString(key, values)
+            editor.apply()
+        }
 
+        fun readSP(context: Context, key: String?): String {
+            var readData: SharedPreferences? = null
+            try {
+                readData = context.getSharedPreferences(
+                    Constant.SHARE_PREF, Context.MODE_PRIVATE
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            return readData!!.getString(key, "").toString()
+        }
     }
 }

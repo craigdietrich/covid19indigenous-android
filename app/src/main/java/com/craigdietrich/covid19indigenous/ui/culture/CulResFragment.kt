@@ -116,7 +116,11 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                     Log.e("error", e.toString())
                 }
             } else {
-                Constant.internetAlert(context as Activity)
+                Constant.showAlert(
+                    context as AppCompatActivity,
+                    getString(R.string.no_connection),
+                    getString(R.string.no_connection_desc)
+                )
             }
         }
 
@@ -126,9 +130,12 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
         root!!.txtCancel.setOnClickListener {
 
-            Constant.myTask!!.cancel(true)
-            resetData()
-
+            try {
+                Constant.myTask!!.cancel(true)
+                checkData()
+            } catch (e: java.lang.Exception) {
+                Log.e("error", e.toString())
+            }
         }
         return root
     }
@@ -150,11 +157,11 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                 }
                 br.close()
             } catch (e: IOException) {
-                //You'll need to add proper error handling here
             }
-            //val stringJson = Constant.readAsset(context as Activity, "manifest.json")
-            val gson = GsonBuilder().create()
-            listData = gson.fromJson(text.toString(), Array<CultureVo>::class.java).toList()
+
+            listData =
+                GsonBuilder().create().fromJson(text.toString(), Array<CultureVo>::class.java)
+                    .toList()
 
             for (i in listData.indices) {
 
@@ -275,8 +282,6 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                 }
 
                 val fileLength: Int = connection.contentLength
-
-                // download the file
                 input = connection.inputStream
 
 
@@ -359,7 +364,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     private fun resetData() {
         runBlocking {
-            Constant.deleteFiles(Constant.culturePath())
+            Constant.deleteCultureFiles(Constant.culturePath())
         }
 
         txtProgress.visibility = View.GONE
@@ -385,8 +390,8 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
             context?.let {
                 Constant.showAlert(
                     it,
-                    "File not found",
-                    "This content has not been downloaded. Please refresh content and try again."
+                    getString(R.string.file_not_found),
+                    getString(R.string.not_found_desc)
                 )
             }
         }

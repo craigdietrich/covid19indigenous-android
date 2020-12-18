@@ -3,6 +3,7 @@ package com.craigdietrich.covid19indigenous.ui.survey
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
@@ -15,6 +16,7 @@ import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.craigdietrich.covid19indigenous.BuildConfig
@@ -25,6 +27,7 @@ import com.craigdietrich.covid19indigenous.retrfit.RetrofitInstance
 import com.dueeeke.tablayout.listener.OnTabSelectListener
 import kotlinx.android.synthetic.main.fragment_survey.*
 import kotlinx.android.synthetic.main.fragment_survey.view.*
+import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -80,41 +83,25 @@ class NotificationsFragment : Fragment(), ClickListener {
         }
 
         root!!.txtConsent.setOnClickListener {
+            context?.let { Constant.writeSP(it, Constant.isAcceptSurvey, "true") }
             setSurveyForm()
         }
 
         root!!.txtCancel.setOnClickListener {
-
+            cancelClicked()
         }
 
-        Constant.uploadingAnswerDialog(context as Activity)
+        root!!.txtCancelDownload.setOnClickListener {
+            cancelClicked()
+        }
         return root
     }
 
-    private fun setSurveyForm() {
-
-        root!!.tabAbout.currentTab = 1
-
-        if (Constant.surveyFile().exists()) {
-
-            root!!.llSurvey.visibility = View.VISIBLE
-
-            root!!.webView.loadUrl("file:///android_asset/common/index.html")
-            root!!.webView.webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView, url: String) {
-                    if (root!!.tabAbout.currentTab == 1) {
-                        root!!.webView.loadUrl(
-                            "javascript:getJsonFromSystem('" + Constant.stringFromFile(
-                                Constant.surveyFile()
-                            ).toString() + "')"
-                        )
-                    }
-                }
-            }
-        } else {
-            root!!.llSurvey.visibility = View.GONE
-            root!!.llSurveyDownload.visibility = View.VISIBLE
-        }
+    private fun cancelClicked() {
+        llSurvey.visibility = View.VISIBLE
+        llSurveyDownload.visibility = View.GONE
+        root!!.tabAbout.currentTab = 0
+        root!!.webViewConsent.loadUrl("file:///android_asset/consent.html")
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
@@ -123,7 +110,7 @@ class NotificationsFragment : Fragment(), ClickListener {
 
         val settings = root!!.webView.settings
         settings.domStorageEnabled = true
-        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
+        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
         root!!.webView.settings.javaScriptEnabled = true
         root!!.webView.addJavascriptInterface(
             this.context?.let { SurveyWebAppInterface(it) },
@@ -131,37 +118,97 @@ class NotificationsFragment : Fragment(), ClickListener {
         )
     }
 
+    private fun Fragment?.runOnUiThread(action: () -> Unit) {
+        this ?: return
+        if (!isAdded) return // Fragment not attached to an Activity
+        activity?.runOnUiThread(action)
+    }
+
+    override fun changeTab(pos: Int) {
+        runOnUiThread {
+            if (pos == 0) {
+                root!!.tabAbout.currentTab = 0
+                webView.loadUrl("file:///android_asset/aboutSurvey.html")
+            } else {
+                setSurveyForm()
+            }
+        }
+
+    }
+
+    private fun setSurveyForm() {
+
+        root!!.tabAbout.currentTab = 1
+
+        if (Constant.surveyFile().exists()) {
+
+            if (context?.let { Constant.readSP(it, Constant.isAcceptSurvey) } == "true") {
+                root!!.llSurvey.visibility = View.VISIBLE
+
+                root!!.webView.loadUrl("file:///android_asset/common/index.html")
+                root!!.webView.webViewClient = object : WebViewClient() {
+                    override fun onPageFinished(view: WebView, url: String) {
+                        if (root!!.tabAbout.currentTab == 1) {
+                            root!!.webView.loadUrl(
+                                "javascript:getJsonFromSystem('" + Constant.stringFromFile(
+                                    Constant.surveyFile()
+                                ).toString() + "')"
+                            )
+                        }
+                    }
+                }
+            } else {
+                root!!.llSurvey.visibility = View.GONE
+                root!!.llSurveyDownload.visibility = View.GONE
+                root!!.llSurveyContent.visibility = View.VISIBLE
+            }
+
+        } else {
+            root!!.llSurvey.visibility = View.GONE
+            root!!.llSurveyDownload.visibility = View.VISIBLE
+        }
+    }
+
     private fun downloadFile() {
 
-        try {
+        if (Constant.isOnline(context as AppCompatActivity)) {
+            try {
 
-            val service: GetApi = RetrofitInstance.getRetrofitInstance().create(GetApi::class.java)
-            val call = service.getQuestions(edtCode.text.toString(), Constant.timeStamp())
-            call.enqueue(object : Callback<ResponseBody> {
-                override fun onResponse(
-                    call: Call<ResponseBody>,
-                    response: retrofit2.Response<ResponseBody>
-                ) {
-                    try {
-                        jsonResponse = response.body()!!.string()
+                val service: GetApi =
+                    RetrofitInstance.getRetrofitInstance().create(GetApi::class.java)
+                val call = service.getQuestions(edtCode.text.toString(), Constant.timeStamp())
+                call.enqueue(object : Callback<ResponseBody> {
+                    override fun onResponse(
+                        call: Call<ResponseBody>,
+                        response: retrofit2.Response<ResponseBody>
+                    ) {
+                        try {
+                            jsonResponse = response.body()!!.string()
 
-                        requestPermissions(
-                            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                            writeRequestCode
-                        )
-                    } catch (e: Exception) {
-                        Log.e("error", e.toString())
+                            requestPermissions(
+                                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                                writeRequestCode
+                            )
+                        } catch (e: Exception) {
+                            Log.e("error", e.toString())
+                        }
+
                     }
 
-                }
+                    override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
 
-                override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-
-                    Log.e("res", t.toString())
-                }
-            })
-        } catch (e: Exception) {
-            Log.e("error", e.toString())
+                        Log.e("res", t.toString())
+                    }
+                })
+            } catch (e: Exception) {
+                Log.e("error", e.toString())
+            }
+        } else {
+            Constant.showAlert(
+                context as AppCompatActivity,
+                getString(R.string.no_connection),
+                getString(R.string.no_connection_desc)
+            )
         }
     }
 
@@ -199,8 +246,6 @@ class NotificationsFragment : Fragment(), ClickListener {
 
                 llSurveyDownload.visibility = View.GONE
                 llSurveyContent.visibility = View.VISIBLE
-
-                root!!.webViewConsent.settings.javaScriptEnabled = true
                 root!!.webViewConsent.loadUrl("file:///android_asset/consent.html")
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
@@ -211,23 +256,6 @@ class NotificationsFragment : Fragment(), ClickListener {
 
         }
     }
-
-    override fun changeTab(pos: Int) {
-        runOnUiThread {
-            if (pos == 0) {
-                webView.loadUrl("file:///android_asset/aboutSurvey.html")
-            } else {
-                setSurveyForm()
-            }
-        }
-
-    }
-
-    private fun Fragment?.runOnUiThread(action: () -> Unit) {
-        this ?: return
-        if (!isAdded) return // Fragment not attached to an Activity
-        activity?.runOnUiThread(action)
-    }
 }
 
 class SurveyWebAppInterface(private val mContext: Context) {
@@ -236,6 +264,22 @@ class SurveyWebAppInterface(private val mContext: Context) {
     fun showToast(toast: String) {
         if (toast == "takeSurvey") {
             clickListener!!.changeTab(1)
+        } else {
+            AlertDialog.Builder(mContext)
+                .setTitle(mContext.getString(R.string.reset_data))
+                .setMessage(mContext.getString(R.string.reset_desc))
+                .setPositiveButton("Ok") { dialog, _ ->
+                    dialog.cancel()
+                    runBlocking {
+                        Constant.deleteSurveyFiles(Constant.surveyPath())
+                        Constant.deleteCultureFiles(Constant.culturePath())
+                        Constant.writeSP(mContext, Constant.isAcceptSurvey, "false")
+                    }
+                }
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.cancel()
+                }
+                .show()
         }
     }
 

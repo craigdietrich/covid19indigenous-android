@@ -33,4 +33,10 @@
     <string name="past_completed_surveys">Past completed surveys are ready to be uploaded</string>
     <string name="uploading_answers">Uploading answers…</string>
     <string name="checking_internet">Checking internet connection…</string>
+    <string name="reset_data">Reset Data</string>
+    <string name="reset_desc">This will delete your participant code, any saved questionnaires and answers, and any downloaded media. Are you sure you wish to reset data?</string>
+    <string name="file_not_found">File not found</string>
+    <string name="not_found_desc">This content has not been downloaded. Please refresh content and try again.</string>
+    <string name="no_connection">No Connection</string>
+    <string name="no_connection_desc">Your device does not appear to have an Internet connection. Please establish a connection and try again.</string>
 </resources>

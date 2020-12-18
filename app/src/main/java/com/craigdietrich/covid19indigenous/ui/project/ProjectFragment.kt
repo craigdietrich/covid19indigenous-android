@@ -3,13 +3,14 @@ package com.craigdietrich.covid19indigenous.ui.project
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.craigdietrich.covid19indigenous.R
@@ -68,6 +69,11 @@ class WebAppInterface(private val mContext: Context) {
     /** Show a toast from the web page  */
     @JavascriptInterface
     fun showToast(toast: String) {
-        Toast.makeText(mContext, toast, Toast.LENGTH_SHORT).show()
+        var url = toast
+        if (!url.startsWith("http://") && !url.startsWith("https://"))
+            url = "http://$url"
+
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        mContext.startActivity(browserIntent)
     }
 }
