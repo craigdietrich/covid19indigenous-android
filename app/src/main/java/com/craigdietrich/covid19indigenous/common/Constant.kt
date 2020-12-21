@@ -46,6 +46,10 @@ class Constant {
         const val ANSWERS = "dashboard/pages/handler"
 
         const val isAcceptSurvey = "isAcceptSurvey"
+        const val surveyCode = "surveyCode"
+
+        var isfetch = false
+
         var myTask: CulResFragment.DownloadFileFromURL? = null
 
         fun changeStatusBar(isDark: Boolean, context: Context, color: Int) {
@@ -200,93 +204,97 @@ class Constant {
             var pastTitle = ""
 
             val files = surveyPath().listFiles()
-            for (i in files.indices) {
-                //Log.d("Files", "FileName:" + files[i].name)
-                if (files[i].name.startsWith("answer")) {
-                    answerFile.add(files[i])
+            if (files != null) {
+                for (i in files.indices) {
+                    //Log.d("Files", "FileName:" + files[i].name)
+                    if (files[i].name.startsWith("answer")) {
+                        answerFile.add(files[i])
 
-                    var name = files[i].name.substring(files[i].name.lastIndexOf("_") + 1)
-                    name = name.substring(0, name.lastIndexOf("."))
+                        var name = files[i].name.substring(files[i].name.lastIndexOf("_") + 1)
+                        name = name.substring(0, name.lastIndexOf("."))
 
-                    name = "Past answers\n$name"
-                    pastTitle += if (pastTitle == "") {
-                        name
-                    } else {
-                        "\n\n" + name
+                        name = "Past answers\n$name"
+                        pastTitle += if (pastTitle == "") {
+                            name
+                        } else {
+                            "\n\n" + name
+                        }
+
                     }
+                }
 
+                if (answerFile.size > 0) {
+                    Handler().postDelayed({
+
+                        if (isOnline(c as AppCompatActivity)) {
+                            txtInfo.text = c.getString(R.string.uploading_answers)
+                            txtUploading.text = pastTitle
+
+                            for (i in answerFile.indices) {
+
+                                runBlocking {
+                                    val text = StringBuilder()
+
+                                    try {
+                                        val br = BufferedReader(FileReader(answerFile[i]))
+                                        var line: String?
+                                        while (br.readLine().also { line = it } != null) {
+                                            text.append(line)
+                                            text.append('\n')
+                                        }
+                                        br.close()
+                                    } catch (e: IOException) {
+
+                                    }
+
+                                    val answer =
+                                        Gson().fromJson(text.toString(), AnswerVo::class.java)
+
+                                    val service: GetApi = RetrofitInstance.getRetrofitInstance()
+                                        .create(GetApi::class.java)
+                                    val call = service.uploadAnswer(answer)
+                                    call.enqueue(object : Callback<AnswerVo> {
+                                        override fun onResponse(
+                                            call: Call<AnswerVo>,
+                                            response: retrofit2.Response<AnswerVo>
+                                        ) {
+                                            Log.d("res", response.body().toString())
+
+                                            try {
+                                                var answerVo = response.body() as AnswerVo
+
+                                                answerFile[i].delete()
+                                                Log.e("success", "success")
+                                            } catch (e: java.lang.Exception) {
+                                                Log.e("errorUploading", e.toString())
+                                                answerFile[i].delete()
+                                            }
+
+                                            if (i == answerFile.size - 1) {
+                                                dialog.dismiss()
+                                            }
+                                        }
+
+                                        override fun onFailure(call: Call<AnswerVo>, t: Throwable) {
+                                            Log.e("failUploading", t.toString())
+                                            answerFile[i].delete()
+
+                                            if (i == answerFile.size - 1) {
+                                                dialog.dismiss()
+                                            }
+                                        }
+                                    })
+                                }
+                            }
+                        } else {
+                            dialog.dismiss()
+                        }
+
+                    }, 3000)
+                    dialog.show()
                 }
             }
 
-            if (answerFile.size > 0) {
-                Handler().postDelayed({
-
-                    if (isOnline(c as AppCompatActivity)) {
-                        txtInfo.text = c.getString(R.string.uploading_answers)
-                        txtUploading.text = pastTitle
-
-                        for (i in answerFile.indices) {
-
-                            runBlocking {
-                                val text = StringBuilder()
-
-                                try {
-                                    val br = BufferedReader(FileReader(answerFile[i]))
-                                    var line: String?
-                                    while (br.readLine().also { line = it } != null) {
-                                        text.append(line)
-                                        text.append('\n')
-                                    }
-                                    br.close()
-                                } catch (e: IOException) {
-
-                                }
-
-                                val answer = Gson().fromJson(text.toString(), AnswerVo::class.java)
-
-                                val service: GetApi = RetrofitInstance.getRetrofitInstance()
-                                    .create(GetApi::class.java)
-                                val call = service.uploadAnswer(answer)
-                                call.enqueue(object : Callback<AnswerVo> {
-                                    override fun onResponse(
-                                        call: Call<AnswerVo>,
-                                        response: retrofit2.Response<AnswerVo>
-                                    ) {
-                                        Log.d("res", response.body().toString())
-
-                                        try {
-                                            var answerVo = response.body() as AnswerVo
-
-                                            answerFile[i].delete()
-                                            Log.e("success", "success")
-                                        } catch (e: java.lang.Exception) {
-                                            Log.e("errorUploading", e.toString())
-                                            answerFile[i].delete()
-                                        }
-
-                                        if (i == answerFile.size - 1) {
-                                            dialog.dismiss()
-                                        }
-                                    }
-
-                                    override fun onFailure(call: Call<AnswerVo>, t: Throwable) {
-                                        Log.e("failUploading", t.toString())
-                                        answerFile[i].delete()
-
-                                        if (i == answerFile.size - 1) {
-                                            dialog.dismiss()
-                                        }
-                                    }
-                                })
-                            }
-                        }
-                    } else {
-                        dialog.dismiss()
-                    }
-
-                }, 3000)
-                dialog.show()
-            }
         }
 
         fun writeSP(context: Context, key: String?, values: String?) {

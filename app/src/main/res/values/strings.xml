@@ -39,4 +39,7 @@
     <string name="not_found_desc">This content has not been downloaded. Please refresh content and try again.</string>
     <string name="no_connection">No Connection</string>
     <string name="no_connection_desc">Your device does not appear to have an Internet connection. Please establish a connection and try again.</string>
+    <string name="error">Error</string>
+    <string name="code_not_valid">Code is not associated with any user. Please try again.</string>
+    <string name="updating_questionnaires">Updating questionnaires \n from server…</string>
 </resources>
