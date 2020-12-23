@@ -6,22 +6,22 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import android.webkit.JavascriptInterface
-import android.webkit.ValueCallback
-import android.webkit.WebChromeClient
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.craigdietrich.covid19indigenous.BuildConfig
@@ -38,6 +38,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import java.io.File
 import java.io.FileWriter
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class NotificationsFragment : Fragment(), ClickListener {
@@ -118,6 +120,8 @@ class NotificationsFragment : Fragment(), ClickListener {
         root!!.webView.settings.domStorageEnabled = true
         root!!.webView.settings.allowContentAccess = true
         root!!.webView.settings.allowFileAccess = true
+        root!!.webView.settings.setLoadWithOverviewMode(true)
+        root!!.webView.settings.setAllowFileAccess(true)
 
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
 
@@ -125,11 +129,124 @@ class NotificationsFragment : Fragment(), ClickListener {
             this.context?.let { SurveyWebAppInterface(it) },
             "Android"
         )
-        root!!.webView.webChromeClient = PQChromeClient()
+       // root!!.webView.webChromeClient = PQChromeClient(this.activity?.applicationContext)
 
+        root!!.webView.webChromeClient = object : WebChromeClient() {
+            override fun onShowFileChooser(
+                webView: WebView,
+                filePathCallback: ValueCallback<Array<Uri>>,
+                fileChooserParams: FileChooserParams
+            ): Boolean {
+                /*if (mUMA != null) {
+                    mUMA!!.onReceiveValue(null)
+                }
+                mUMA = filePathCallback*/
+                var takePictureIntent: Intent? = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+              /*  if (takePictureIntent!!.resolveActivity(this@NotificationsFragment.getPackageManager()) != null) {
+                    var photoFile: File? = null
+                    try {
+                        photoFile = createImageFile()
+                        takePictureIntent.putExtra("PhotoPath", mCM)
+                    } catch (ex: Exception) {
+                        Log.e("Webview", "Image file creation failed", ex)
+                    }
+                    if (photoFile != null) {
+                        mCM = "file:" + photoFile.getAbsolutePath()
+                        takePictureIntent.putExtra(
+                            MediaStore.EXTRA_OUTPUT,
+                            Uri.fromFile(photoFile)
+                        )
+                    } else {
+                        takePictureIntent = null
+                    }
+                }*/
+                val contentSelectionIntent = Intent(Intent.ACTION_GET_CONTENT)
+                contentSelectionIntent.addCategory(Intent.CATEGORY_OPENABLE)
+                contentSelectionIntent.type = "*/*"
+                val intentArray: Array<Intent>
+                intentArray = takePictureIntent?.let { arrayOf(it) } ?: arrayOf<Intent>()
+                val chooserIntent = Intent(Intent.ACTION_CHOOSER)
+                chooserIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent)
+                chooserIntent.putExtra(Intent.EXTRA_TITLE, "Image Chooser")
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray)
+                startActivityForResult(chooserIntent, 1)
+                return true
+            }
+        }
     }
 
-    class PQChromeClient : WebChromeClient() {
+    // Create an image file
+    private fun createImageFile(): File? {
+        @SuppressLint("SimpleDateFormat") val timeStamp: String =
+            SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        val imageFileName = "img_" + timeStamp + "_"
+        val storageDir: File =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+        return File.createTempFile(imageFileName, ".jpg", storageDir)
+    }
+
+    fun openFileChooser(
+        uploadMsg: ValueCallback<Uri?>?,
+        acceptType: String?
+    ) {
+        this.openFileChooser(uploadMsg, acceptType, null)
+    }
+
+    fun openFileChooser(
+        uploadMsg: ValueCallback<Uri?>?,
+        acceptType: String?,
+        capture: String?
+    ) {
+        val i = Intent(Intent.ACTION_GET_CONTENT)
+        i.addCategory(Intent.CATEGORY_OPENABLE)
+        i.type = "*/*"
+        this@NotificationsFragment.startActivityForResult(
+            Intent.createChooser(i, "File Browser"),
+            1
+        )
+    }
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        intent: Intent?
+    ) {
+        super.onActivityResult(requestCode, resultCode, intent)
+      /*  if (Build.VERSION.SDK_INT >= 21) {
+            var results: Array<Uri>? = null
+            //Check if response is positive
+            if (resultCode == Activity.RESULT_OK) {
+                if (requestCode == FCR) {
+                    if (null == mUMA) {
+                        return
+                    }
+                    if (intent == null) { //Capture Photo if no image available
+                        if (mCM != null) {
+                            results = arrayOf(Uri.parse(mCM))
+                        }
+                    } else {
+                        val dataString = intent.dataString
+                        if (dataString != null) {
+                            results = arrayOf(Uri.parse(dataString))
+                        }
+                    }
+                }
+            }
+            mUMA!!.onReceiveValue(results)
+            mUMA = null
+        } else {
+            if (requestCode == FCR) {
+                if (null == mUM) return
+                val result =
+                    if (intent == null || resultCode != Activity.RESULT_OK) null else intent.data
+                mUM!!.onReceiveValue(result)
+                mUM = null
+            }
+        }*/
+    }
+
+
+    class PQChromeClient(private val context: Context?) : WebChromeClient() {
         override fun onShowFileChooser(
             webView: WebView,
             filePathCallback: ValueCallback<Array<Uri>>,
@@ -140,18 +257,28 @@ class NotificationsFragment : Fragment(), ClickListener {
                 mUploadMessage.onReceiveValue(null)
             }
             mUploadMessage = filePathCallback*/
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
+            intent.addCategory(Intent.CATEGORY_OPENABLE)
+            intent.type = "image/*"
 
+            startActivityForResult(intent, 1);
             Log.e("clicked", "image picker")
             //openFileSelectionDialog()
             return true
         }
+
+        private fun startActivityForResult(intent: Intent, i: Int) {
+
+        }
     }
+
 
     private fun Fragment?.runOnUiThread(action: () -> Unit) {
         this ?: return
         if (!isAdded) return // Fragment not attached to an Activity
         activity?.runOnUiThread(action)
     }
+
 
     override fun changeTab(pos: Int) {
         runOnUiThread {
