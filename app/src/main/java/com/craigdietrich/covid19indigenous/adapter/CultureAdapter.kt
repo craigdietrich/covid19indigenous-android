@@ -45,7 +45,7 @@ class CultureAdapter(private val context: Context, private val data: ArrayList<C
         holder.txtDate.text = "Published: " + data.date
 
 
-        val file = File(Constant.culturePath(), data.thumbnailFilename)
+        val file = File(Constant.culturePath(context), data.thumbnailFilename)
 
         if (file.exists()) {
             Glide.with(context)

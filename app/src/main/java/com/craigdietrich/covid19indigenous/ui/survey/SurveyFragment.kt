@@ -11,7 +11,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
@@ -21,7 +20,6 @@ import android.view.Window
 import android.webkit.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.craigdietrich.covid19indigenous.BuildConfig
@@ -38,9 +36,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import java.io.File
 import java.io.FileWriter
-import java.text.SimpleDateFormat
-import java.util.*
-
 
 class NotificationsFragment : Fragment(), ClickListener {
 
@@ -112,6 +107,11 @@ class NotificationsFragment : Fragment(), ClickListener {
         root!!.webViewConsent.loadUrl("file:///android_asset/consent.html")
     }
 
+    private var mCM: String? = null
+    private var mUM: ValueCallback<Uri>? = null
+    private var mUMA: ValueCallback<Array<Uri>>? = null
+    private val FCR = 1
+
     @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled", "AddJavascriptInterface")
     private fun initWebView() {
@@ -120,8 +120,7 @@ class NotificationsFragment : Fragment(), ClickListener {
         root!!.webView.settings.domStorageEnabled = true
         root!!.webView.settings.allowContentAccess = true
         root!!.webView.settings.allowFileAccess = true
-        root!!.webView.settings.setLoadWithOverviewMode(true)
-        root!!.webView.settings.setAllowFileAccess(true)
+        root!!.webView.settings.loadWithOverviewMode = true
 
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
 
@@ -129,7 +128,6 @@ class NotificationsFragment : Fragment(), ClickListener {
             this.context?.let { SurveyWebAppInterface(it) },
             "Android"
         )
-       // root!!.webView.webChromeClient = PQChromeClient(this.activity?.applicationContext)
 
         root!!.webView.webChromeClient = object : WebChromeClient() {
             override fun onShowFileChooser(
@@ -137,73 +135,23 @@ class NotificationsFragment : Fragment(), ClickListener {
                 filePathCallback: ValueCallback<Array<Uri>>,
                 fileChooserParams: FileChooserParams
             ): Boolean {
-                /*if (mUMA != null) {
+                if (mUMA != null) {
                     mUMA!!.onReceiveValue(null)
                 }
-                mUMA = filePathCallback*/
-                var takePictureIntent: Intent? = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-              /*  if (takePictureIntent!!.resolveActivity(this@NotificationsFragment.getPackageManager()) != null) {
-                    var photoFile: File? = null
-                    try {
-                        photoFile = createImageFile()
-                        takePictureIntent.putExtra("PhotoPath", mCM)
-                    } catch (ex: Exception) {
-                        Log.e("Webview", "Image file creation failed", ex)
-                    }
-                    if (photoFile != null) {
-                        mCM = "file:" + photoFile.getAbsolutePath()
-                        takePictureIntent.putExtra(
-                            MediaStore.EXTRA_OUTPUT,
-                            Uri.fromFile(photoFile)
-                        )
-                    } else {
-                        takePictureIntent = null
-                    }
-                }*/
-                val contentSelectionIntent = Intent(Intent.ACTION_GET_CONTENT)
-                contentSelectionIntent.addCategory(Intent.CATEGORY_OPENABLE)
-                contentSelectionIntent.type = "*/*"
-                val intentArray: Array<Intent>
-                intentArray = takePictureIntent?.let { arrayOf(it) } ?: arrayOf<Intent>()
-                val chooserIntent = Intent(Intent.ACTION_CHOOSER)
-                chooserIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent)
-                chooserIntent.putExtra(Intent.EXTRA_TITLE, "Image Chooser")
-                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray)
-                startActivityForResult(chooserIntent, 1)
+                mUMA = filePathCallback
+
+                if (Constant.fileType == "image") {
+                    val i = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                    startActivityForResult(i, FCR)
+                } else {
+                    val i = Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+                    startActivityForResult(i, FCR)
+                }
+
                 return true
             }
         }
-    }
 
-    // Create an image file
-    private fun createImageFile(): File? {
-        @SuppressLint("SimpleDateFormat") val timeStamp: String =
-            SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val imageFileName = "img_" + timeStamp + "_"
-        val storageDir: File =
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile(imageFileName, ".jpg", storageDir)
-    }
-
-    fun openFileChooser(
-        uploadMsg: ValueCallback<Uri?>?,
-        acceptType: String?
-    ) {
-        this.openFileChooser(uploadMsg, acceptType, null)
-    }
-
-    fun openFileChooser(
-        uploadMsg: ValueCallback<Uri?>?,
-        acceptType: String?,
-        capture: String?
-    ) {
-        val i = Intent(Intent.ACTION_GET_CONTENT)
-        i.addCategory(Intent.CATEGORY_OPENABLE)
-        i.type = "*/*"
-        this@NotificationsFragment.startActivityForResult(
-            Intent.createChooser(i, "File Browser"),
-            1
-        )
     }
 
     override fun onActivityResult(
@@ -212,7 +160,7 @@ class NotificationsFragment : Fragment(), ClickListener {
         intent: Intent?
     ) {
         super.onActivityResult(requestCode, resultCode, intent)
-      /*  if (Build.VERSION.SDK_INT >= 21) {
+        if (Build.VERSION.SDK_INT >= 21) {
             var results: Array<Uri>? = null
             //Check if response is positive
             if (resultCode == Activity.RESULT_OK) {
@@ -242,36 +190,8 @@ class NotificationsFragment : Fragment(), ClickListener {
                 mUM!!.onReceiveValue(result)
                 mUM = null
             }
-        }*/
-    }
-
-
-    class PQChromeClient(private val context: Context?) : WebChromeClient() {
-        override fun onShowFileChooser(
-            webView: WebView,
-            filePathCallback: ValueCallback<Array<Uri>>,
-            fileChooserParams: FileChooserParams
-        ): Boolean {
-            // Double check that we don't have any existing callbacks
-            /*if (mUploadMessage != null) {
-                mUploadMessage.onReceiveValue(null)
-            }
-            mUploadMessage = filePathCallback*/
-            val intent = Intent(Intent.ACTION_GET_CONTENT)
-            intent.addCategory(Intent.CATEGORY_OPENABLE)
-            intent.type = "image/*"
-
-            startActivityForResult(intent, 1);
-            Log.e("clicked", "image picker")
-            //openFileSelectionDialog()
-            return true
-        }
-
-        private fun startActivityForResult(intent: Intent, i: Int) {
-
         }
     }
-
 
     private fun Fragment?.runOnUiThread(action: () -> Unit) {
         this ?: return
@@ -289,14 +209,13 @@ class NotificationsFragment : Fragment(), ClickListener {
                 setSurveyForm()
             }
         }
-
     }
 
     private fun setSurveyForm() {
 
         root!!.tabAbout.currentTab = 1
 
-        if (Constant.surveyFile().exists()) {
+        if (Constant.surveyFile(context as AppCompatActivity).exists()) {
 
             if (context?.let { Constant.readSP(it, Constant.isAcceptSurvey) } == "true") {
                 if (Constant.isOnline(context as AppCompatActivity) && !Constant.isfetch) {
@@ -356,7 +275,7 @@ class NotificationsFragment : Fragment(), ClickListener {
                             if (root!!.tabAbout.currentTab == 1) {
                                 root!!.webView.loadUrl(
                                     "javascript:getJsonFromSystem('" + Constant.stringFromFile(
-                                        Constant.surveyFile()
+                                        Constant.surveyFile(context as AppCompatActivity)
                                     ).toString() + "')"
                                 )
                             }
@@ -456,6 +375,8 @@ class NotificationsFragment : Fragment(), ClickListener {
             if (requestCode == writeRequestCode) {
                 writeFiles()
             }
+        } else {
+            changeTab(0)
         }
     }
 
@@ -470,7 +391,7 @@ class NotificationsFragment : Fragment(), ClickListener {
             jsonResponse = jsonResponse.replace("\"", "\\\"")
             jsonResponse = jsonResponse.trim()
 
-            val writer = FileWriter(Constant.surveyFile())
+            val writer = FileWriter(Constant.surveyFile(context as AppCompatActivity))
             writer.append(jsonResponse)
             writer.flush()
             writer.close()
@@ -493,32 +414,41 @@ class SurveyWebAppInterface(private val mContext: Context) {
     /** Show a toast from the web page  */
     @JavascriptInterface
     fun showToast(toast: String) {
-        if (toast == "takeSurvey") {
-            clickListener!!.changeTab(1)
-        } else {
-            AlertDialog.Builder(mContext)
-                .setTitle(mContext.getString(R.string.reset_data))
-                .setMessage(mContext.getString(R.string.reset_desc))
-                .setPositiveButton("Ok") { dialog, _ ->
-                    dialog.cancel()
-                    runBlocking {
-                        Constant.deleteSurveyFiles(Constant.surveyPath())
-                        Constant.deleteCultureFiles(Constant.culturePath())
-                        Constant.writeSP(mContext, Constant.isAcceptSurvey, "false")
-                        Constant.writeSP(mContext as AppCompatActivity, Constant.surveyCode, "")
+        when (toast) {
+            "takeSurvey" -> {
+                clickListener!!.changeTab(1)
+            }
+            "deleteUserData" -> {
+                AlertDialog.Builder(mContext)
+                    .setTitle(mContext.getString(R.string.reset_data))
+                    .setMessage(mContext.getString(R.string.reset_desc))
+                    .setPositiveButton("Ok") { dialog, _ ->
+                        dialog.cancel()
+                        runBlocking {
+                            Constant.deleteSurveyFiles(Constant.surveyPath(mContext))
+                            Constant.deleteCultureFiles(Constant.culturePath(mContext))
+                            Constant.writeSP(mContext, Constant.isAcceptSurvey, "false")
+                            Constant.writeSP(mContext as AppCompatActivity, Constant.surveyCode, "")
+                        }
                     }
-                }
-                .setNegativeButton("Cancel") { dialog, _ ->
-                    dialog.cancel()
-                }
-                .show()
+                    .setNegativeButton("Cancel") { dialog, _ ->
+                        dialog.cancel()
+                    }
+                    .show()
+            }
         }
+    }
+
+    @JavascriptInterface
+    fun setFileType(type: String) {
+        Constant.fileType = type
     }
 
     @JavascriptInterface
     fun showAns(msg: String) {
         try {
-            val file = File(Constant.surveyPath(), "answers_" + Constant.timeStamp() + ".json")
+            val file =
+                File(Constant.surveyPath(mContext), "answers_" + Constant.timeStamp() + ".json")
             val writer = FileWriter(file)
             writer.append(msg)
             writer.flush()

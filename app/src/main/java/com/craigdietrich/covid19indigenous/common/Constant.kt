@@ -6,8 +6,8 @@ import android.app.Dialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Build
-import android.os.Environment
 import android.os.Handler
 import android.util.Log
 import android.view.View
@@ -49,6 +49,7 @@ class Constant {
         const val surveyCode = "surveyCode"
 
         var isfetch = false
+        var fileType = "image"// for file picker in survey form
 
         var myTask: CulResFragment.DownloadFileFromURL? = null
 
@@ -80,8 +81,23 @@ class Constant {
         fun isOnline(activity: AppCompatActivity): Boolean {
             val connectivityManager =
                 activity.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val networkInfo = connectivityManager.activeNetworkInfo
-            return networkInfo != null && networkInfo.isConnected
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                val networkCapabilities = connectivityManager.activeNetwork ?: return false
+                val activeNetwork =
+                    connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
+
+                return when {
+
+                    activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) ||
+                            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                    else -> false
+                }
+            } else {
+                return connectivityManager.activeNetworkInfo != null &&
+                        connectivityManager.activeNetworkInfo!!.isConnectedOrConnecting
+            }
         }
 
         fun showAlert(context: Context, title: String, msg: String) {
@@ -125,9 +141,9 @@ class Constant {
             fileOrDirectory.delete()
         }
 
-        fun culturePath(): File {
+        fun culturePath(c: Context): File {
             var dir = File(
-                Environment.getExternalStorageDirectory(),
+                c.externalCacheDir!!.absolutePath,
                 "/Covid19Indigenous"
             )
             if (!dir.exists()) {
@@ -141,9 +157,9 @@ class Constant {
             return dir
         }
 
-        fun surveyPath(): File {
+        fun surveyPath(c: Context): File {
             var dir = File(
-                Environment.getExternalStorageDirectory(),
+                c.externalCacheDir!!.absolutePath,
                 "/Covid19Indigenous"
             )
             if (!dir.exists()) {
@@ -157,8 +173,8 @@ class Constant {
             return dir
         }
 
-        fun surveyFile(): File {
-            return File(surveyPath(), "questionnaires.json")
+        fun surveyFile(c: Context): File {
+            return File(surveyPath(c), "questionnaires.json")
         }
 
         fun stringFromFile(file: File): StringBuilder {
@@ -203,7 +219,7 @@ class Constant {
             val answerFile = ArrayList<File>()
             var pastTitle = ""
 
-            val files = surveyPath().listFiles()
+            val files = surveyPath(c).listFiles()
             if (files != null) {
                 for (i in files.indices) {
                     //Log.d("Files", "FileName:" + files[i].name)
@@ -225,6 +241,8 @@ class Constant {
 
                 if (answerFile.size > 0) {
                     Handler().postDelayed({
+
+                        isfetch = false
 
                         if (isOnline(c as AppCompatActivity)) {
                             txtInfo.text = c.getString(R.string.uploading_answers)
@@ -261,7 +279,7 @@ class Constant {
                                             Log.d("res", response.body().toString())
 
                                             try {
-                                                var answerVo = response.body() as AnswerVo
+                                                response.body() as AnswerVo//if success than it converts
 
                                                 answerFile[i].delete()
                                                 Log.e("success", "success")
@@ -289,7 +307,6 @@ class Constant {
                         } else {
                             dialog.dismiss()
                         }
-
                     }, 3000)
                     dialog.show()
                 }
@@ -299,7 +316,7 @@ class Constant {
 
         fun writeSP(context: Context, key: String?, values: String?) {
             val writeData = context.getSharedPreferences(
-                Constant.SHARE_PREF, Context.MODE_PRIVATE
+                SHARE_PREF, Context.MODE_PRIVATE
             )
             val editor = writeData.edit()
             editor.putString(key, values)
@@ -310,7 +327,7 @@ class Constant {
             var readData: SharedPreferences? = null
             try {
                 readData = context.getSharedPreferences(
-                    Constant.SHARE_PREF, Context.MODE_PRIVATE
+                    SHARE_PREF, Context.MODE_PRIVATE
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
