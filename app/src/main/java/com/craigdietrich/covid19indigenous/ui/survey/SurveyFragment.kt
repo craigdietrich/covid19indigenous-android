@@ -21,7 +21,6 @@ import android.webkit.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
 import com.craigdietrich.covid19indigenous.BuildConfig
 import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.common.Constant
@@ -39,7 +38,6 @@ import java.io.FileWriter
 
 class NotificationsFragment : Fragment(), ClickListener {
 
-    private lateinit var surveyViewModel: SurveyViewModel
     private var root: View? = null
     private val writeRequestCode = 10111
     var jsonResponse = ""
@@ -58,12 +56,11 @@ class NotificationsFragment : Fragment(), ClickListener {
         )
 
         onWebButtonClick(this)
-        surveyViewModel = ViewModelProviders.of(this).get(SurveyViewModel::class.java)
         root = inflater.inflate(R.layout.fragment_survey, container, false)
 
         initWebView()
 
-        root!!.webView.loadUrl("file:///android_asset/aboutSurvey.html")
+        root!!.webView.loadUrl(Constant.aboutSurveyPath)
 
         val titles = arrayOf(getString(R.string.about_survey), getString(R.string.take_survey_tab))
         root!!.tabAbout.setTabData(titles)
@@ -71,7 +68,7 @@ class NotificationsFragment : Fragment(), ClickListener {
         root!!.tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
             override fun onTabSelect(position: Int) {
                 if (position == 0) {
-                    root!!.webView.loadUrl("file:///android_asset/aboutSurvey.html")
+                    root!!.webView.loadUrl(Constant.aboutSurveyPath)
                 } else {
                     setSurveyForm()
                 }
@@ -104,13 +101,13 @@ class NotificationsFragment : Fragment(), ClickListener {
         llSurvey.visibility = View.VISIBLE
         llSurveyDownload.visibility = View.GONE
         root!!.tabAbout.currentTab = 0
-        root!!.webViewConsent.loadUrl("file:///android_asset/consent.html")
+        root!!.webViewConsent.loadUrl(Constant.aboutSurveyPath)
     }
 
     private var mCM: String? = null
     private var mUM: ValueCallback<Uri>? = null
     private var mUMA: ValueCallback<Array<Uri>>? = null
-    private val FCR = 1
+    private val fileRequestCode = 1
 
     @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled", "AddJavascriptInterface")
@@ -142,10 +139,10 @@ class NotificationsFragment : Fragment(), ClickListener {
 
                 if (Constant.fileType == "image") {
                     val i = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                    startActivityForResult(i, FCR)
+                    startActivityForResult(i, fileRequestCode)
                 } else {
                     val i = Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-                    startActivityForResult(i, FCR)
+                    startActivityForResult(i, fileRequestCode)
                 }
 
                 return true
@@ -164,7 +161,7 @@ class NotificationsFragment : Fragment(), ClickListener {
             var results: Array<Uri>? = null
             //Check if response is positive
             if (resultCode == Activity.RESULT_OK) {
-                if (requestCode == FCR) {
+                if (requestCode == fileRequestCode) {
                     if (null == mUMA) {
                         return
                     }
@@ -183,7 +180,7 @@ class NotificationsFragment : Fragment(), ClickListener {
             mUMA!!.onReceiveValue(results)
             mUMA = null
         } else {
-            if (requestCode == FCR) {
+            if (requestCode == fileRequestCode) {
                 if (null == mUM) return
                 val result =
                     if (intent == null || resultCode != Activity.RESULT_OK) null else intent.data
@@ -204,7 +201,7 @@ class NotificationsFragment : Fragment(), ClickListener {
         runOnUiThread {
             if (pos == 0) {
                 root!!.tabAbout.currentTab = 0
-                webView.loadUrl("file:///android_asset/aboutSurvey.html")
+                webView.loadUrl(Constant.aboutSurveyPath)
             } else {
                 setSurveyForm()
             }
@@ -269,7 +266,7 @@ class NotificationsFragment : Fragment(), ClickListener {
                 } else {
                     root!!.llSurvey.visibility = View.VISIBLE
 
-                    root!!.webView.loadUrl("file:///android_asset/common/index.html")
+                    root!!.webView.loadUrl(Constant.indexSurveyPath)
                     root!!.webView.webViewClient = object : WebViewClient() {
                         override fun onPageFinished(view: WebView, url: String) {
                             if (root!!.tabAbout.currentTab == 1) {
@@ -402,7 +399,7 @@ class NotificationsFragment : Fragment(), ClickListener {
             } else {
                 llSurveyDownload.visibility = View.GONE
                 llSurveyContent.visibility = View.VISIBLE
-                root!!.webViewConsent.loadUrl("file:///android_asset/consent.html")
+                root!!.webViewConsent.loadUrl(Constant.consentSurveyPath)
             }
         } catch (e: java.lang.Exception) {
             e.printStackTrace()

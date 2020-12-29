@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import com.craigdietrich.covid19indigenous.common.Constant
+import com.craigdietrich.covid19indigenous.common.Constant.Companion.DoubleClickListener
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
@@ -72,6 +73,13 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
                 val offset = ((seek.progress.toDouble() / seek.max))
                 simpleExoplayer.seekTo(((offset * simpleExoplayer.duration).toLong()))
 
+            }
+        })
+
+        llPlayer.setOnClickListener(object : DoubleClickListener() {
+            override fun onSingleClick(v: View?) {}
+            override fun onDoubleClick(v: View?) {
+                setFullScreen()
             }
         })
     }
@@ -148,20 +156,23 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
         }
 
         imgFull.setOnClickListener {
-            if (isFull) {
-                imgFull.setBackgroundResource(R.drawable.full)
-                exoplayerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-            } else {
-                imgFull.setBackgroundResource(R.drawable.exit)
-                exoplayerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-            }
-            isFull = !isFull
+            setFullScreen()
         }
     }
 
+    private fun setFullScreen() {
+        if (isFull) {
+            imgFull.setBackgroundResource(R.drawable.full)
+            exoplayerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+        } else {
+            imgFull.setBackgroundResource(R.drawable.exit)
+            exoplayerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+        }
+        isFull = !isFull
+    }
+
     private fun buildMediaSource(uri: Uri): MediaSource {
-        return ProgressiveMediaSource.Factory(dataSourceFactory)
-            .createMediaSource(uri)
+        return ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(uri)
     }
 
     private fun preparePlayer(videoUrl: String) {

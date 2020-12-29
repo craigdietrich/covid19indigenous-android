@@ -13,7 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.craigdietrich.covid19indigenous.PlayerActivity
 import com.craigdietrich.covid19indigenous.R
@@ -38,7 +37,6 @@ import kotlin.collections.ArrayList
 
 class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
-    private lateinit var viewModel: CulResViewModel
     private val writeRequestCode = 10111
 
     lateinit var listData: List<CultureVo>
@@ -255,16 +253,20 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
             if (isCancelled) {
                 return
             } else {
-                cContext.txtProgress.visibility = View.VISIBLE
-                if (type == "image") {
-                    cContext.root!!.txtProgress.text =
-                        "Downloading thumb " + (pos + 1) + "/" + data.size
-                } else {
-                    cContext.root!!.txtProgress.text =
-                        "Downloading video " + (pos + 1) + "/" + data.size
-                }
+                try {
+                    cContext.txtProgress.visibility = View.VISIBLE
+                    if (type == "image") {
+                        cContext.root!!.txtProgress.text =
+                            "Downloading thumb " + (pos + 1) + "/" + data.size
+                    } else {
+                        cContext.root!!.txtProgress.text =
+                            "Downloading video " + (pos + 1) + "/" + data.size
+                    }
 
-                cContext.root!!.seekBar.progress = (pos + 1) * 100 / data.size
+                    cContext.root!!.seekBar.progress = (pos + 1) * 100 / data.size
+                } catch (e: Exception) {
+                    Log.e("errorDownloading", e.toString())
+                }
             }
         }
 
@@ -376,11 +378,6 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
         txtProgress.visibility = View.GONE
         seekBar.progress = 0
         checkData()
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProviders.of(this).get(CulResViewModel::class.java)
     }
 
     override fun onItemClick(data: CultureVo) {

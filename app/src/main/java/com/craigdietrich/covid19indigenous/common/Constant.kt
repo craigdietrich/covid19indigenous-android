@@ -48,6 +48,12 @@ class Constant {
         const val isAcceptSurvey = "isAcceptSurvey"
         const val surveyCode = "surveyCode"
 
+        const val aboutSurveyPath = "file:///android_asset/aboutSurvey.html"
+        const val indexSurveyPath = "file:///android_asset/common/index.html"
+        const val consentSurveyPath = "file:///android_asset/consent.html"
+        const val aboutProjectPath = "file:///android_asset/aboutProject.html"
+        const val aboutUsPath = "file:///android_asset/aboutUs.html"
+
         var isfetch = false
         var fileType = "image"// for file picker in survey form
 
@@ -333,6 +339,26 @@ class Constant {
                 e.printStackTrace()
             }
             return readData!!.getString(key, "").toString()
+        }
+
+        abstract class DoubleClickListener : View.OnClickListener {
+
+            private val doubleClickTime: Long = 300 //milliseconds
+
+            var lastClickTime: Long = 0
+            override fun onClick(v: View?) {
+                val clickTime = System.currentTimeMillis()
+                if (clickTime - lastClickTime < doubleClickTime) {
+                    onDoubleClick(v)
+                } else {
+                    onSingleClick(v)
+                }
+                lastClickTime = clickTime
+            }
+
+            abstract fun onSingleClick(v: View?)
+            abstract fun onDoubleClick(v: View?)
+
         }
     }
 }

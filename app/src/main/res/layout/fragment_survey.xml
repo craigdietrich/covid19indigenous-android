@@ -80,7 +80,6 @@
             android:hint="@string/participant_code"
             android:padding="@dimen/_5sdp"
             android:inputType="text"
-            android:text="pt-jalpesh"
             android:textSize="@dimen/_18ssp" />
 
         <TextView

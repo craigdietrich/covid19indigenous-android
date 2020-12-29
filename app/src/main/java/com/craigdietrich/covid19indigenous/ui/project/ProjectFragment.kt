@@ -12,16 +12,12 @@ import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProviders
 import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.common.Constant
 import com.dueeeke.tablayout.SegmentTabLayout
 import com.dueeeke.tablayout.listener.OnTabSelectListener
 
-
 class DashboardFragment : Fragment() {
-
-    private lateinit var projectViewModel: ProjectViewModel
 
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled", "AddJavascriptInterface")
     override fun onCreateView(
@@ -35,13 +31,11 @@ class DashboardFragment : Fragment() {
             color = R.color.whiteText
         )
 
-        projectViewModel =
-            ViewModelProviders.of(this).get(ProjectViewModel::class.java)
         val root = inflater.inflate(R.layout.fragment_project, container, false)
 
         val webView = root.findViewById<WebView>(R.id.webView)
         webView.settings.javaScriptEnabled = true
-        webView.loadUrl("file:///android_asset/aboutProject.html");
+        webView.loadUrl(Constant.aboutProjectPath)
         webView.addJavascriptInterface(this.context?.let { WebAppInterface(it) }, "Android")
 
         val titles = arrayOf(getString(R.string.about_project_tab), getString(R.string.about_us))
@@ -51,9 +45,9 @@ class DashboardFragment : Fragment() {
         tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
             override fun onTabSelect(position: Int) {
                 if (position == 0) {
-                    webView.loadUrl("file:///android_asset/aboutProject.html")
+                    webView.loadUrl(Constant.aboutProjectPath)
                 } else {
-                    webView.loadUrl("file:///android_asset/aboutUs.html")
+                    webView.loadUrl(Constant.aboutUsPath)
                 }
             }
 
