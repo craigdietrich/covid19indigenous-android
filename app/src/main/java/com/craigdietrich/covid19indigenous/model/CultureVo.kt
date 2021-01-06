@@ -36,4 +36,8 @@ class CultureVo {
     @Expose
     var date: String = ""
 
+    @SerializedName("link")
+    @Expose
+    var link: String = ""
+
 }

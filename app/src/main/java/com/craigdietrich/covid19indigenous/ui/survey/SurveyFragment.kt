@@ -41,6 +41,7 @@ class NotificationsFragment : Fragment(), ClickListener {
     private var root: View? = null
     private val writeRequestCode = 10111
     var jsonResponse = ""
+    var isFirstTimeConsentAccept = false
 
     @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("JavascriptInterface", "we", "AddJavascriptInterface")
@@ -84,6 +85,7 @@ class NotificationsFragment : Fragment(), ClickListener {
 
         root!!.txtConsent.setOnClickListener {
             context?.let { Constant.writeSP(it, Constant.isAcceptSurvey, "true") }
+            isFirstTimeConsentAccept = true
             setSurveyForm()
         }
 
@@ -215,7 +217,7 @@ class NotificationsFragment : Fragment(), ClickListener {
         if (Constant.surveyFile(context as AppCompatActivity).exists()) {
 
             if (context?.let { Constant.readSP(it, Constant.isAcceptSurvey) } == "true") {
-                if (Constant.isOnline(context as AppCompatActivity) && !Constant.isfetch) {
+                if (Constant.isOnline(context as AppCompatActivity) && !Constant.isfetch && !isFirstTimeConsentAccept) {
                     try {
 
                         val dialog = Dialog(context as AppCompatActivity, R.style.NewDialog)
@@ -283,6 +285,8 @@ class NotificationsFragment : Fragment(), ClickListener {
                 root!!.llSurvey.visibility = View.GONE
                 root!!.llSurveyDownload.visibility = View.GONE
                 root!!.llSurveyContent.visibility = View.VISIBLE
+
+                setSurveyConsentWeb()
             }
         } else {
             root!!.llSurvey.visibility = View.GONE
@@ -377,7 +381,7 @@ class NotificationsFragment : Fragment(), ClickListener {
         }
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
+
     private fun writeFiles() {
 
         try {
@@ -399,11 +403,28 @@ class NotificationsFragment : Fragment(), ClickListener {
             } else {
                 llSurveyDownload.visibility = View.GONE
                 llSurveyContent.visibility = View.VISIBLE
-                root!!.webViewConsent.loadUrl(Constant.consentSurveyPath)
+
+                setSurveyConsentWeb()
             }
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
         }
+    }
+
+    @SuppressLint("SetJavaScriptEnabled", "JavascriptInterface", "AddJavascriptInterface")
+    private fun setSurveyConsentWeb() {
+        root!!.webViewConsent.settings.javaScriptEnabled = true
+        root!!.webViewConsent.settings.domStorageEnabled = true
+        root!!.webViewConsent.settings.allowContentAccess = true
+        root!!.webViewConsent.settings.allowFileAccess = true
+        root!!.webViewConsent.settings.loadWithOverviewMode = true
+
+        root!!.webViewConsent.loadUrl(Constant.consentSurveyPath)
+
+        root!!.webViewConsent.addJavascriptInterface(
+            this.context?.let { SurveyWebAppInterface(it) },
+            "Android"
+        )
     }
 }
 
@@ -456,6 +477,17 @@ class SurveyWebAppInterface(private val mContext: Context) {
         } catch (e: java.lang.Exception) {
             e.printStackTrace()
         }
+    }
+
+    @JavascriptInterface
+    fun showConsent(msg: String) {
+        var url = msg
+
+        if (!url.startsWith("http://") && !url.startsWith("https://"))
+            url = "http://$url"
+
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        mContext.startActivity(browserIntent)
     }
 }
 

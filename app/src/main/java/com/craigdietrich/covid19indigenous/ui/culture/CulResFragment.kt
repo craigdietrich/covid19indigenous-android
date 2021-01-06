@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
@@ -140,56 +141,62 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     private fun checkData() {
 
-        val file = File(Constant.culturePath(context as AppCompatActivity), "manifest.json")
+        try {
+            val file = File(Constant.culturePath(context as AppCompatActivity), "manifest.json")
 
-        if (file.exists()) {
+            if (file.exists()) {
 
-            val text = StringBuilder()
+                val text = StringBuilder()
 
-            try {
-                val br = BufferedReader(FileReader(file))
-                var line: String?
-                while (br.readLine().also { line = it } != null) {
-                    text.append(line)
-                    text.append('\n')
+                try {
+                    val br = BufferedReader(FileReader(file))
+                    var line: String?
+                    while (br.readLine().also { line = it } != null) {
+                        text.append(line)
+                        text.append('\n')
+                    }
+                    br.close()
+                } catch (e: IOException) {
                 }
-                br.close()
-            } catch (e: IOException) {
-            }
 
-            listData =
-                GsonBuilder().create().fromJson(text.toString(), Array<CultureVo>::class.java)
-                    .toList()
+                listData =
+                    GsonBuilder().create().fromJson(text.toString(), Array<CultureVo>::class.java)
+                        .toList()
 
-            for (i in listData.indices) {
+                for (i in listData.indices) {
 
-                val image = File(
-                    Constant.culturePath(context as AppCompatActivity),
-                    listData[i].thumbnailFilename
-                )
-                val video = File(
-                    Constant.culturePath(context as AppCompatActivity),
-                    listData[i].mp4Filename
-                )
+                    val image = File(
+                        Constant.culturePath(context as AppCompatActivity),
+                        listData[i].thumbnailFilename
+                    )
+                    val video = File(
+                        Constant.culturePath(context as AppCompatActivity),
+                        listData[i].mp4Filename
+                    )
 
-                if (image.exists() || video.exists()) {
-                    if (listData[i].category == "culture") {
-                        culData.add(listData[i])
-                    } else {
-                        resData.add(listData[i])
+                    if (image.exists() || video.exists()) {
+                        if (listData[i].category == "culture") {
+                            culData.add(listData[i])
+                        } else {
+                            resData.add(listData[i])
+                        }
                     }
                 }
-            }
-            root!!.recyclerView.layoutManager = LinearLayoutManager(context)
-            val adapter = CultureAdapter(context as Activity, culData)
-            adapter.setOnItemClickListener(this@CulResFragment)
-            root!!.recyclerView.adapter = adapter
 
-            root!!.llList.visibility = View.VISIBLE
-            root!!.llDownload.visibility = View.GONE
-        } else {
-            root!!.llList.visibility = View.GONE
-            root!!.llDownload.visibility = View.VISIBLE
+                root!!.tabAbout.currentTab = 0
+                root!!.recyclerView.layoutManager = LinearLayoutManager(context)
+                val adapter = CultureAdapter(context as Activity, culData)
+                adapter.setOnItemClickListener(this@CulResFragment)
+                root!!.recyclerView.adapter = adapter
+
+                root!!.llList.visibility = View.VISIBLE
+                root!!.llDownload.visibility = View.GONE
+            } else {
+                root!!.llList.visibility = View.GONE
+                root!!.llDownload.visibility = View.VISIBLE
+            }
+        } catch (e: Exception) {
+            Log.e("exception", e.toString())
         }
     }
 
@@ -377,6 +384,10 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
         txtProgress.visibility = View.GONE
         seekBar.progress = 0
+
+        culData = ArrayList()
+        resData = ArrayList()
+
         checkData()
     }
 
@@ -398,5 +409,16 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                 )
             }
         }
+    }
+
+    override fun onLinkClick(uri: String) {
+
+        var url = uri
+
+        if (!url.startsWith("http://") && !url.startsWith("https://"))
+            url = "http://$url"
+
+        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        context?.startActivity(browserIntent)
     }
 }

@@ -28,6 +28,7 @@ class CultureAdapter(private val context: Context, private val data: ArrayList<C
         var txtTitle: TextView = view.findViewById(R.id.txtTitle)
         var txtDesc: TextView = view.findViewById(R.id.txtDesc)
         var txtDate: TextView = view.findViewById(R.id.txtDate)
+        var txtLink: TextView = view.findViewById(R.id.txtLink)
         var llMain: LinearLayout = view.findViewById(R.id.llMain)
         var img: ImageView = view.findViewById(R.id.img)
     }
@@ -44,7 +45,16 @@ class CultureAdapter(private val context: Context, private val data: ArrayList<C
         holder.txtDesc.text = data.description
         holder.txtDate.text = "Published: " + data.date
 
+        if (data.link != "") {
+            holder.txtLink.visibility = View.VISIBLE
+            holder.txtLink.text = data.link
 
+            holder.txtLink.setOnClickListener {
+                clickListener!!.onLinkClick(data.link)
+            }
+        } else {
+            holder.txtLink.visibility = View.GONE
+        }
         val file = File(Constant.culturePath(context), data.thumbnailFilename)
 
         if (file.exists()) {
@@ -66,5 +76,6 @@ class CultureAdapter(private val context: Context, private val data: ArrayList<C
 
     interface ClickListener {
         fun onItemClick(data: CultureVo)
+        fun onLinkClick(uri: String)
     }
 }
