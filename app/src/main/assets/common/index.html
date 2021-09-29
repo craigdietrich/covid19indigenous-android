@@ -54,6 +54,8 @@
             type="text/javascript"></script>
     <script src="js/jquery.check-selector.js?v=19"
             type="text/javascript"></script>
+    <script src="js/jquery.consent-selector.js?v=19"
+            type="text/javascript"></script>
     <script src="js/jquery.open-selector.js?v=19"
             type="text/javascript"></script>
     <script src="js/jquery.likert-selector.js?v=19"
@@ -70,6 +72,7 @@ function getJsonFromSystem(jsonString) {
     //$('article:first').empty().append('<div class="spinner-wrapper">'+jsonString+'</div>');
     //return;
     try {
+	jsonString = jsonString.replace(/\n/g, "\\n");
         var json = JSON.parse(jsonString);
     } catch(err) {
         $('article:first').empty().append('<div class="spinner-wrapper">'+err+'</div>');
