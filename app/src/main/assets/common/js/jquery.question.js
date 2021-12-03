@@ -328,6 +328,39 @@
             return doWrapper(data, html);
 
         }
+	
+        var doNoYes = function(data) {
+
+            if ('undefined' == typeof(window['radio_count'])) window['radio_count'] = 0;
+            window['radio_count']++;
+            var html = '';
+            html += '<div class="form-group">';
+            html += '<div class="container-fluid">';
+
+            html += '<div class="row">';
+
+            html += '<div class="col-6 form-check-wrapper">';
+            html += '<div class="form-check">';
+            html += '<label class="form-check-label">';
+            html += '<input class="form-check-input" type="radio" name="radio_'+window['radio_count']+'" value="0">';
+            html += data.no_title+'</label>';
+            html += '</div>';
+            html += '</div>';
+
+            html += '<div class="col-6 form-check-wrapper">';
+            html += '<div class="form-check">';
+            html += '<label class="form-check-label">';
+            html += '<input class="form-check-input" type="radio" name="radio_'+window['radio_count']+'" value="1">';
+            html += data.yes_title+'</label>';
+            html += '</div>';
+            html += '</div>';
+
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
+            return doWrapper(data, html);
+
+        }
     	
     	var doOpenEnded = function(data) {
     		
@@ -374,6 +407,9 @@
 	    			break;
 	    		case "consent":
                     		$el.append( doConsent(opts) ).consentSelector(opts);
+                    		break;
+	    		case "noyes":
+                    		$el.append( doNoYes(opts) ).noyesSelector(opts);
                     		break;
 	    		case "text":
 	    			$el.append( doText(opts) ).textSelector(opts);
