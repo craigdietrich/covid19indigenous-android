@@ -79,12 +79,16 @@ function getJsonFromSystem(jsonString) {
     } catch(err) {
         $('article:first').empty().append('<div class="spinner-wrapper">'+err+'</div>');
     }
-    if (parseInt(json.has_taken_baseline)) {
-        var questionnaire = json.interval;
-        $('#welcome_interval').modal();
+    if ('undefined' != typeof(json.standalone)) {
+        var questionnaire = json.standalone;
     } else {
-        var questionnaire = json.baseline;
-        $('#welcome_baseline').modal();
+        if (parseInt(json.has_taken_baseline)) {
+            var questionnaire = json.interval;
+            $('#welcome_interval').modal();
+        } else {
+            var questionnaire = json.baseline;
+            $('#welcome_baseline').modal();
+        }
     }
     showQuestionnaire(questionnaire, json.key);
 }
