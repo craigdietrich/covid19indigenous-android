@@ -36,7 +36,7 @@ import kotlin.collections.ArrayList
 class Constant {
     companion object {
 
-        const val BASE_URL = "http://ourdataindigenous.ca/"
+        const val BASE_URL = "https://ourdataindigenous.ca/"
         const val BASE_MEDIA_URL = "https://ourdataindigenous.ca/feeds/content/"
 
         private const val SHARE_PREF = "SHARE_PREF"
