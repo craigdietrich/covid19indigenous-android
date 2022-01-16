@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">covid19indigenous</string>
+    <string name="app_name">ourdataindigenous</string>
     <string name="title_home">Home</string>
     <string name="title_begin">Begin</string>
     <string name="title_dashboard">About</string>
@@ -9,8 +9,8 @@
     <string name="about_project">About our project</string>
     <string name="take_survey">Take the survey</string>
     <string name="culture_resilience">Culture/Resilience</string>
-    <string name="home_title">KITATIPITHITAMAK MITHWAYAWIN</string>
-    <string name="home_desc">Indigenous-Led Countermeasures to Coronavirus (COVID-19) and other Pandemics Then Now, and Into the Future</string>
+    <string name="home_title">OUR DATA INDIGENOUS</string>
+    <string name="home_desc">An Indigenous-led initiative to support communities and organizations as they create and have full ownership of surveys that can generate data about important topics such as health, language, and food sovereignty.</string>
     <string name="home_select">Begin by selecting an activity below</string>
     <string name="codeBelow">Please enter your participant code below</string>
     <string name="internet_connection">This step require an Internet connection</string>
