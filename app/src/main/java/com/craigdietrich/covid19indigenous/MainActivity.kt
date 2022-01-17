@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
                 Constant.uploadingAnswerDialog(this@MainActivity)
             }
 
-            override fun onLost(network: Network?) {
+            override fun onLost(network: Network) {
                 //take action when network connection is lost
                 Log.e("internet", "lost")
             }

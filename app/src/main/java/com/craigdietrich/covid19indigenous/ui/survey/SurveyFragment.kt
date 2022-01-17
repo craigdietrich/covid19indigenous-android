@@ -123,10 +123,12 @@ class NotificationsFragment : Fragment(), ClickListener {
 
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
 
-        root!!.webView.addJavascriptInterface(
-            this.context?.let { SurveyWebAppInterface(it) },
-            "Android"
-        )
+        this.context?.let { SurveyWebAppInterface(it) }?.let {
+            root!!.webView.addJavascriptInterface(
+                it,
+                "Android"
+            )
+        }
 
         root!!.webView.webChromeClient = object : WebChromeClient() {
             override fun onShowFileChooser(
@@ -421,10 +423,12 @@ class NotificationsFragment : Fragment(), ClickListener {
 
         root!!.webViewConsent.loadUrl(Constant.consentSurveyPath)
 
-        root!!.webViewConsent.addJavascriptInterface(
-            this.context?.let { SurveyWebAppInterface(it) },
-            "Android"
-        )
+        this.context?.let { SurveyWebAppInterface(it) }?.let {
+            root!!.webViewConsent.addJavascriptInterface(
+                it,
+                "Android"
+            )
+        }
     }
 }
 

@@ -36,7 +36,8 @@ class DashboardFragment : Fragment() {
         val webView = root.findViewById<WebView>(R.id.webView)
         webView.settings.javaScriptEnabled = true
         webView.loadUrl(Constant.aboutProjectPath)
-        webView.addJavascriptInterface(this.context?.let { WebAppInterface(it) }, "Android")
+        this.context?.let { WebAppInterface(it) }
+            ?.let { webView.addJavascriptInterface(it, "Android") }
 
         val titles = arrayOf(getString(R.string.about_project_tab), getString(R.string.about_us))
         val tabAbout = root.findViewById<SegmentTabLayout>(R.id.tabAbout)

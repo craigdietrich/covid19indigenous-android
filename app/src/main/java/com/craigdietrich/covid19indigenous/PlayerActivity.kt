@@ -10,10 +10,7 @@ import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import com.craigdietrich.covid19indigenous.common.Constant
 import com.craigdietrich.covid19indigenous.common.Constant.Companion.DoubleClickListener
-import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
@@ -187,7 +184,7 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
         mainHandler.removeCallbacks(updateTextTask)
     }
 
-    override fun onPlayerError(error: ExoPlaybackException) {
+    override fun onPlayerError(error: PlaybackException) {
         // handle error
     }
 
