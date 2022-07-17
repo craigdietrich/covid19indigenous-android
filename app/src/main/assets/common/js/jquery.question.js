@@ -165,6 +165,29 @@
     		return doWrapper(data, html);
     		
     	}
+	
+    	var doNumber = function(data) {
+    		
+    		var html = '';
+    		html += '<div class="form-group">';
+    		html += '  <input type="number" step="0.01" class="form-control" placeholder="Please enter a number" />';
+    		html += '</div>';
+    		return doWrapper(data, html);
+    		
+    	}
+    	
+    	var doLatlng = function(data) {
+    		
+    		var html = '';
+			html += '<div class="row">';
+	    	html += '  <div class="col"><input type="text" class="form-control" name="latitude" placeholder="Latitude" /></div><div class="col"><input type="text" class="form-control" name="longitude" placeholder="Longitude" /></div>';
+			html += '</div>';
+			html += '<div class="row">';
+	    	html += '  <div class="col text-center"><div class="latlngError mb-4 mt-4 text-danger"></div><button type="button" class="btn btn-secondary" name="locationButton">Click to set exact location</button></div>';
+			html += '</div>';
+    		return doWrapper(data, html);
+    		
+    	}
     	
     	var doIntermissionUserFields = function(data) {
     		
@@ -416,6 +439,12 @@
 	    			break;
 	    		case "sentence":
 	    			$el.append( doSentence(opts) ).sentenceSelector(opts);
+	    			break;
+	    		case "number":
+	    			$el.append( doNumber(opts) ).numberSelector(opts);
+	    			break;
+	    		case "latlng":
+	    			$el.append( doLatlng(opts) ).latlngSelector(opts);
 	    			break;
 	    		case "check":
 	    			$el.append( doCheck(opts) ).checkSelector(opts);
