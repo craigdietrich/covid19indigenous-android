@@ -2,8 +2,8 @@
           height:100%;
       }
       body {
-          background-color:#525a6e; text-align:left; margin:0px 0px 0px 0px;
-          font-family:'-apple-system','HelveticaNeue'; color:#e6f3fd; font-size:17px;
+          background-color:#000000; text-align:left; margin:0px 0px 0px 0px;
+          font-family:'-apple-system','HelveticaNeue'; color:#ffffff; font-size:17px;
       }
       body > div {
           margin:0px auto 0px auto; padding:6px 19px 0px 19px; max-width:400px;
@@ -18,7 +18,7 @@ h6 {
           font-weight:normal; line-height:1.25;
       }
       a {
-          text-decoration:none; text-shadow:none; color:#2da2d0;
+          text-decoration:none; text-shadow:none; color:#2FA3D1;
       }
       .spacer {
           margin:0px 0px 0px 0px; padding:0px 0px 0px 0px;
