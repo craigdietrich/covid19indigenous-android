@@ -18,7 +18,7 @@
     		}
     		html += '  <div class="row">';
     		html += '    <div class="col">';
-    		html += '      <form data-question-id="'+data.question_id+'">';
+    		html += '      <form data-question-id="'+data.question_id+'" onsubmit="return false;">';
    			if ('undefined' != typeof(data.title)) html += '      <p class="title">'+data.title+'</p>';
    			html += insertHtml;
    			html += '      </form>';
@@ -81,7 +81,7 @@
     	   		html += '<tr>';
         		html += '<td class="text-left">'+data.answers[j]+'</td>';
         		for (var k = 0; k < data.prompts.length; k++) {
-        			html += '<td><input type="radio" name="radio_'+window['likert_count']+'_'+j+'" value="'+j+'_'+k+'" /></td>';
+        			html += '<td><input type="radio" name="radio_'+window['likert_count']+'_'+j+'" value="'+(k+1)+'" /></td>';
         		}
         		html += '</tr>';
         	};
@@ -134,6 +134,7 @@
     		
     		var html = '';
     		html += '<p class="description">Drag and drop items to rank with the most <i>important item</i> at the <i>top</i> and the <i>least important</i> item at the <i>bottom</i></p>';
+    		html += '<p><label><input type="checkbox" name="no-answer" checked /> &nbsp; <b>No answer</b></label></p>';
     		html += '<p><b>Most important</b></p>';
     		html += '<ul class="list-group ranked-choice">';
     		if ('string' == typeof(data.answers)) data.answers = data.answers.split(';');
@@ -165,7 +166,7 @@
     		return doWrapper(data, html);
     		
     	}
-	
+    	
     	var doNumber = function(data) {
     		
     		var html = '';
@@ -305,90 +306,106 @@
     		return doWrapper(data, html);
     		
     	}
-	
-        var doConsent = function(data) {
+    	
+    	var doConsent = function(data) {
 
-            var nl2br = function (str, isXhtml) {
-                // https://locutus.io/php/nl2br/
-                if (typeof str === 'undefined' || str === null) {
-                    return ''
-                }
-                const breakTag = (isXhtml || typeof isXhtml === 'undefined') ? '<br ' + '/>' : '<br>'
-                return (str + '').replace(/(\r\n|\n\r|\r|\n)/g, breakTag + '$1')
-            }
-
-            if ('undefined' == typeof(window['radio_count'])) window['radio_count'] = 0;
-            window['radio_count']++;
-            var html = '';
-            html += '<div class="form-group">';
-            html += '<div class="container-fluid">';
-
-            html += '<div class="row text-left mb-4"><p>';
-            html += nl2br(data.text, true);
-            html += '</p></div>';
-
-            html += '<div class="row">';
-
-            html += '<div class="col-6 form-check-wrapper">';
-            html += '<div class="form-check">';
-            html += '<label class="form-check-label">';
-            html += '<input class="form-check-input" type="radio" name="radio_'+window['radio_count']+'" value="0">';
-            html += data.no_title+'</label>';
-            html += '</div>';
-            html += '</div>';
-
-            html += '<div class="col-6 form-check-wrapper">';
-            html += '<div class="form-check">';
-            html += '<label class="form-check-label">';
-            html += '<input class="form-check-input" type="radio" name="radio_'+window['radio_count']+'" value="1">';
-            html += data.yes_title+'</label>';
-            html += '</div>';
-            html += '</div>';
-
-            html += '</div>';
-            html += '</div>';
-            html += '</div>';
-            return doWrapper(data, html);
-
-        }
-	
-        var doNoYes = function(data) {
-
-            if ('undefined' == typeof(window['radio_count'])) window['radio_count'] = 0;
-            window['radio_count']++;
-            var html = '';
-            html += '<div class="form-group">';
-            html += '<div class="container-fluid">';
-
-            html += '<div class="row">';
-
-            html += '<div class="col-6 form-check-wrapper">';
-            html += '<div class="form-check">';
-            html += '<label class="form-check-label">';
-            html += '<input class="form-check-input" type="radio" name="radio_'+window['radio_count']+'" value="0">';
-            html += data.no_title+'</label>';
-            html += '</div>';
-            html += '</div>';
-
-            html += '<div class="col-6 form-check-wrapper">';
-            html += '<div class="form-check">';
-            html += '<label class="form-check-label">';
-            html += '<input class="form-check-input" type="radio" name="radio_'+window['radio_count']+'" value="1">';
-            html += data.yes_title+'</label>';
-            html += '</div>';
-            html += '</div>';
-
-            html += '</div>';
-            html += '</div>';
-            html += '</div>';
-            return doWrapper(data, html);
-
-        }
+	    	var nl2br = function (str, isXhtml) {
+	    		// https://locutus.io/php/nl2br/
+	    		if (typeof str === 'undefined' || str === null) {
+	    			return ''
+	    		}
+	    		const breakTag = (isXhtml || typeof isXhtml === 'undefined') ? '<br ' + '/>' : '<br>'
+	    		return (str + '').replace(/(\r\n|\n\r|\r|\n)/g, breakTag + '$1')
+	    	}
+    		
+    		if ('undefined' == typeof(window['radio_count'])) window['radio_count'] = 0;
+    		window['radio_count']++;
+    		var html = '';
+    		html += '<div class="form-group">';
+    		html += '<div class="container-fluid">';
+    		
+    		html += '<div class="row text-left mb-4"><p>';
+    		html += nl2br(data.text, true);
+    		html += '</p></div>';
+    		
+    		html += '<div class="row">';
+    		
+    		html += '<div class="col-6 form-check-wrapper">';
+    		html += '<div class="form-check">';
+    		html += '<label class="form-check-label">';
+    		html += '<input class="form-check-input" type="radio" name="radio_'+window['radio_count']+'" value="0">';
+    		html += data.no_title+'</label>';
+    		html += '</div>';
+    		html += '</div>';
+    		
+    		html += '<div class="col-6 form-check-wrapper">';
+    		html += '<div class="form-check">';
+    		html += '<label class="form-check-label">';
+    		html += '<input class="form-check-input" type="radio" name="radio_'+window['radio_count']+'" value="1">';
+    		html += data.yes_title+'</label>';
+    		html += '</div>';
+    		html += '</div>';
+    		
+    		html += '</div>';
+    		html += '</div>';
+    		html += '</div>';  		
+    		return doWrapper(data, html);
+    		
+    	}
+    	
+    	var doNoYes = function(data) {
+    		
+    		if ('undefined' == typeof(window['radio_count'])) window['radio_count'] = 0;
+    		window['radio_count']++;
+    		var html = '';
+    		html += '<div class="form-group">';
+    		html += '<div class="container-fluid">';
+    		
+    		html += '<div class="row">';
+    		
+    		html += '<div class="col-6 form-check-wrapper">';
+    		html += '<div class="form-check">';
+    		html += '<label class="form-check-label">';
+    		html += '<input class="form-check-input" type="radio" name="radio_'+window['radio_count']+'" value="0">';
+    		html += data.no_title+'</label>';
+    		html += '</div>';
+    		html += '</div>';
+    		
+    		html += '<div class="col-6 form-check-wrapper">';
+    		html += '<div class="form-check">';
+    		html += '<label class="form-check-label">';
+    		html += '<input class="form-check-input" type="radio" name="radio_'+window['radio_count']+'" value="1">';
+    		html += data.yes_title+'</label>';
+    		html += '</div>';
+    		html += '</div>';
+    		
+    		html += '</div>';
+    		html += '</div>';
+    		html += '</div>';  		
+    		return doWrapper(data, html);
+    		
+    	}
     	
     	var doOpenEnded = function(data) {
     		
     		var html = '';
     		html += '<div class="open-selector"></div>';
+    		return doWrapper(data, html);
+    		
+    	}
+    	
+    	var doPhoto = function(data) {
+    		
+    		var html = '';
+    		html += '<div class="photo-selector"></div>';
+    		return doWrapper(data, html);
+    		
+    	}
+    	
+    	var doAudio = function(data) {
+    		
+    		var html = '';
+    		html += '<div class="audio-selector"></div>';
     		return doWrapper(data, html);
     		
     	}
@@ -429,11 +446,11 @@
 	    			$el.append( doSlider(opts) ).rangeSelector(opts);
 	    			break;
 	    		case "consent":
-                    		$el.append( doConsent(opts) ).consentSelector(opts);
-                    		break;
+	    			$el.append( doConsent(opts) ).consentSelector(opts);
+	    			break;
 	    		case "noyes":
-                    		$el.append( doNoYes(opts) ).noyesSelector(opts);
-                    		break;
+	    			$el.append( doNoYes(opts) ).noyesSelector(opts);
+	    			break;
 	    		case "text":
 	    			$el.append( doText(opts) ).textSelector(opts);
 	    			break;
@@ -445,7 +462,7 @@
 	    			break;
 	    		case "latlng":
 	    			$el.append( doLatlng(opts) ).latlngSelector(opts);
-	    			break;
+	    			break;	    			
 	    		case "check":
 	    			$el.append( doCheck(opts) ).checkSelector(opts);
 	    			break;
@@ -460,6 +477,12 @@
 	    			break;
 	    		case "ranked":
 	    			$el.append( doRanked(opts) ).rankedSelector(opts);
+	    			break;
+	    		case "photo":
+	    			$el.append( doPhoto(opts) ).photoSelector(opts);
+	    			break;
+	    		case "audio":
+	    			$el.append( doAudio(opts) ).audioSelector(opts);
 	    			break;
 	    		case 'intermission-userfields':
 	    			$el.append( doIntermissionUserFields(opts) ).intermission(opts);

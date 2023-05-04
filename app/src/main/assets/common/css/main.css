@@ -22,6 +22,8 @@ aside {text-align:center; margin-bottom:80px; margin-left:25px; margin-right:25p
 aside .title {font-size:1.75rem; line-height:125%; font-weight:bold; }
 aside .title small {font-size:1.5rem; color:#555555;}
 
+.below_consent {opacity:0.25; pointer-events:none;}
+
 .intermission-border {border:solid 5px #dddddd; border-radius:15px; margin-top:12px; margin-left:auto; margin-right:auto;}
 .intermission-border.text {max-width:600px;}
 .intermission-wrapper {padding:20px; line-height:145%}
@@ -91,7 +93,8 @@ aside .title small {font-size:1.5rem; color:#555555;}
 #finishModal .row:not(.form-group) {padding-top:12px; padding-bottom:12px;}
 #saveForLaterModal .row:not(.form-group) {padding-top:12px; padding-bottom:12px;}
 #confirmSwitchMediaTypeModal .row:not(.form-group) {padding-top:12px; padding-bottom:12px;}
-#questionnairesModal tr td {cursor:pointer; text-align:center; border-bottom:solid 1px #dee2e6;}
+#questionnairesModal tr td {cursor:pointer; text-align:center; border:0;}
+#questionnairesModal hr {margin:0px 0px 12px 0px; padding:0px 0px 0px 0px;}
 #welcome_baseline .row:not(.form-group) {padding-top:12px; padding-bottom:12px;}
 #welcome_interval .row:not(.form-group) {padding-top:12px; padding-bottom:12px;}
 

@@ -59,7 +59,6 @@
 	    				$next_cell.find('textarea').focus();
 	    				break;
 	    			case 'photo':
-	    			    Android.setFileType('image');// Android => for set image type file picker
 	    				$next_cell.append('<input type="hidden" name="base64_string" value="" />');
 	    				$next_cell.append('<input type="file" style="display:none;" />');  // TODO: image-specific attribute
 	    				$next_cell.append('<div style="text-center msg"></div>');
@@ -86,7 +85,6 @@
 	    				}).trigger('click');
 	    				break;
 	    			case 'video':
-	    			    Android.setFileType('video'); // Android => for set video type file picker
 	    				if (jQuery.browser.mobile || is_safari) {
 		    				$next_cell.append('<input type="hidden" name="base64_string" value="" />');
 		    				$next_cell.append('<input type="file" style="display:none;" />');  // TODO: video-specific attribute

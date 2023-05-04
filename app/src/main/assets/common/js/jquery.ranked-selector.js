@@ -16,6 +16,7 @@
 	    		var value = $(this).data('index');
 	    		if ('undefined' == typeof(value)) return;
 	    		$this.trigger( "valueChange", [ value, this, opts ] );
+	    		$this.find('[name="no-answer"]').prop('checked', false);
 	    	}
 	    	
 	    	$this.find('li').on('click', broadcastValueChange);
@@ -25,6 +26,9 @@
 	    	$this.find('form')[0].getValues = function() {
 	    		var $form = $(this);
 	    		var values = [];
+	    		if ($this.find('[name="no-answer"]').is(':checked')) {  // Choices haven't been interacted with
+	    			return values;
+	    		}
 	    		$form.find('li').each(function() {
 	    			values.push($(this).text());
 	    		});

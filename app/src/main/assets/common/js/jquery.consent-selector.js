@@ -1,27 +1,31 @@
 (function( $ ) {
 
 	var defaults = {
-
+		
 	};
 
     $.fn.consentSelector = function(options) {
 
     	return this.each(function() {
-
+    	
 	    	var self = this;
 	    	var $this = $(this);
 	    	var opts = $.extend( {}, defaults, options );
-
+	
 	    	var broadcastValueChange = function() {
 	    		var name = $(this).attr('name');
-	    		var value = $('input[name="'+name+'"]:checked').val();
-	    		if ('undefined' == typeof(value)) return;
+	    		var value = parseInt($('input[name="'+name+'"]:checked').val());
 	    		$this.trigger( "valueChange", [ value, this, opts ] );
+	    		if (value) {
+	    			$('.below_consent').removeClass('below_consent');
+	    		} else {
+	    			$(this).closest('section').nextAll('section, header').addClass('below_consent');
+	    		}
 	    	}
-
+	    	
 	    	broadcastValueChange();
 	    	$this.find('input[type="radio"]').on('click', broadcastValueChange);
-
+	    	
 	    	$this.find('form')[0].getValues = function() {
 	    		var $form = $(this);
 	    		var values = [];
@@ -34,7 +38,7 @@
 	    		});
 	    		return values;
 	    	};
-
+	    	
 	    	$this.find('form')[0].setValues = function(values) {
 	    		var $form = $(this);
 	    		for (var j = 0; j < values.length; j++) {
@@ -46,9 +50,9 @@
 	    			}
 	    		}
 	    	}
-
-    	});
-
+	    	
+    	});	
+	    	
     };
 
 }( jQuery ));
