@@ -14,7 +14,7 @@
     <string name="home_select">Begin by selecting an activity below</string>
     <string name="codeBelow">Please enter your participant code below</string>
     <string name="internet_connection">This step require an Internet connection</string>
-    <string name="dont_have_code">If you don\'t have a participant code, contact your local health coordinator or member of Covid-19 Indigenous team</string>
+    <string name="dont_have_code">If you don\'t have a participant code, contact your local health coordinator or member of Our Data Indigenous team</string>
     <string name="participant_code">participant code</string>
     <string name="submit">Submit</string>
     <string name="media_content">The app needs to fetch media content from the server</string>
