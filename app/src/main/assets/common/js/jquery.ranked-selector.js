@@ -13,13 +13,13 @@
 	    	var opts = $.extend( {}, defaults, options );
 	
 	    	var broadcastValueChange = function() {
+			$this.find('[name="no-answer"]').prop('checked', false);
 	    		var value = $(this).data('index');
 	    		if ('undefined' == typeof(value)) return;
 	    		$this.trigger( "valueChange", [ value, this, opts ] );
-	    		$this.find('[name="no-answer"]').prop('checked', false);
 	    	}
 	    	
-	    	$this.find('li').on('click', broadcastValueChange);
+	    	$this.find('li').on('mousedown', broadcastValueChange);
 	    	
 	    	$this.find('.ranked-choice').sortable();
 	    	
