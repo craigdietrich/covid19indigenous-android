@@ -120,6 +120,7 @@ class NotificationsFragment : Fragment(), ClickListener {
         root!!.webView.settings.allowContentAccess = true
         root!!.webView.settings.allowFileAccess = true
         root!!.webView.settings.loadWithOverviewMode = true
+        root!!.webView.settings.setGeolocationEnabled(true)
 
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
 
