@@ -8,6 +8,7 @@ import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.os.Environment
 import android.os.Handler
 import android.util.Log
 import android.view.View
@@ -16,6 +17,7 @@ import android.view.WindowManager
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.craigdietrich.covid19indigenous.Covid19Indigenous
 import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.model.AnswerVo
 import com.craigdietrich.covid19indigenous.retrfit.GetApi
@@ -30,8 +32,6 @@ import java.io.File
 import java.io.FileReader
 import java.io.IOException
 import java.util.*
-import kotlin.collections.ArrayList
-
 
 class Constant {
     companion object {
@@ -98,6 +98,7 @@ class Constant {
                     activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
                             activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) ||
                             activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+
                     else -> false
                 }
             } else {
@@ -134,71 +135,53 @@ class Constant {
         }
 
         fun deleteCultureFiles(fileOrDirectory: File) {
-            if (fileOrDirectory.isDirectory) for (child in fileOrDirectory.listFiles()!!) deleteCultureFiles(
-                child
-            )
+            if (fileOrDirectory.isDirectory) {
+                val list = fileOrDirectory.listFiles()
+                list?.forEach(::deleteCultureFiles)
+            }
             fileOrDirectory.delete()
         }
 
         fun deleteSurveyFiles(fileOrDirectory: File) {
-            if (fileOrDirectory.isDirectory) for (child in fileOrDirectory.listFiles()!!) deleteSurveyFiles(
-                child
-            )
+            if (fileOrDirectory.isDirectory) {
+                val list = fileOrDirectory.listFiles()
+                list?.forEach(::deleteSurveyFiles)
+            }
             fileOrDirectory.delete()
         }
 
-        fun culturePath(c: Context): File {
-            var dir = File(
-                c.externalCacheDir!!.absolutePath,
-                "/Covid19Indigenous"
-            )
-            if (!dir.exists()) {
-                dir.mkdir()
-            }
-            dir = File(dir, "/Content")
-            if (!dir.exists()) {
-                dir.mkdir()
-            }
+        private fun directoryPath(): File {
+            val file = File(Covid19Indigenous.instance.filesDir.absolutePath, "/Covid19Indigenous")
+            if (!file.exists()) file.mkdir()
+            return file
+        }
 
+        fun culturePath(): File {
+            val dir = File(directoryPath(), "/Content")
+            if (!dir.exists()) dir.mkdirs()
             return dir
         }
 
-        fun surveyPath(c: Context): File {
-            var dir = File(
-                c.externalCacheDir!!.absolutePath,
-                "/Covid19Indigenous"
-            )
-            if (!dir.exists()) {
-                dir.mkdir()
-            }
-            dir = File(dir, "/Survey")
-            if (!dir.exists()) {
-                dir.mkdir()
-            }
-
+        fun surveyPath(): File {
+            val dir = File(directoryPath(), "/Survey")
+            if (!dir.exists()) dir.mkdirs()
             return dir
         }
 
-        fun surveyFile(c: Context): File {
-            return File(surveyPath(c), "questionnaires.json")
+        fun surveyFile(): File {
+            return File(surveyPath(), "questionnaires.json")
         }
 
-        fun stringFromFile(file: File): StringBuilder {
+        fun stringFromFile(file: File): String {
             val text = StringBuilder()
-
             try {
-                val br = BufferedReader(FileReader(file))
-                var line: String?
-                while (br.readLine().also { line = it } != null) {
-                    text.append(line)
-                    text.append('\n')
-                }
-                br.close()
+                val string = file.bufferedReader().use { it.readText() }
+                text.append(string)
             } catch (e: IOException) {
                 Log.e("error", e.toString())
             }
 
-            return text
+            return text.toString()
         }
 
         fun timeStamp(): String {
@@ -225,7 +208,7 @@ class Constant {
             val answerFile = ArrayList<File>()
             var pastTitle = ""
 
-            val files = surveyPath(c).listFiles()
+            val files = surveyPath().listFiles()
             if (files != null) {
                 for (i in files.indices) {
                     //Log.d("Files", "FileName:" + files[i].name)

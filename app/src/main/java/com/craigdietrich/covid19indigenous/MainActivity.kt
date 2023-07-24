@@ -12,15 +12,21 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.craigdietrich.covid19indigenous.common.Constant
+import com.craigdietrich.covid19indigenous.databinding.ActivityMainBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
-    @RequiresApi(Build.VERSION_CODES.N)
+
+     private lateinit var binding : ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         val actionBar: ActionBar? = supportActionBar
         actionBar?.hide()
-        setContentView(R.layout.activity_main)
+
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val navView: BottomNavigationView = findViewById(R.id.nav_view)
 
@@ -32,19 +38,21 @@ class MainActivity : AppCompatActivity() {
 
         val connectivityManager =
             getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        connectivityManager.registerDefaultNetworkCallback(@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-        object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) {
-                //take action when network connection is gained
-                Log.e("internet", "connect")
-                Constant.uploadingAnswerDialog(this@MainActivity)
-            }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            connectivityManager.registerDefaultNetworkCallback(@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+            object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: Network) {
+                    //take action when network connection is gained
+                    Log.e("internet", "connect")
+                    Constant.uploadingAnswerDialog(this@MainActivity)
+                }
 
-            override fun onLost(network: Network) {
-                //take action when network connection is lost
-                Log.e("internet", "lost")
-            }
-        })
+                override fun onLost(network: Network) {
+                    //take action when network connection is lost
+                    Log.e("internet", "lost")
+                }
+            })
+        }
     }
 
     fun switchTo(what: String) {

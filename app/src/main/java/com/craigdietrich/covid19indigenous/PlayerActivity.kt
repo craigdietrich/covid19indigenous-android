@@ -10,14 +10,13 @@ import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import com.craigdietrich.covid19indigenous.common.Constant
 import com.craigdietrich.covid19indigenous.common.Constant.Companion.DoubleClickListener
+import com.craigdietrich.covid19indigenous.databinding.ActivityPlayerBinding
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import kotlinx.android.synthetic.main.activity_player.*
-
 
 class PlayerActivity : AppCompatActivity(), Player.EventListener {
 
@@ -27,15 +26,17 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
     lateinit var mainHandler: Handler
     private var isFull = false
 
+    private lateinit var binding : ActivityPlayerBinding
+
     private val updateTextTask = object : Runnable {
         override fun run() {
-            txtMin.text = Constant.millsToHS(simpleExoplayer.currentPosition)
-            txtMinRem.text =
+            binding.txtMin.text = Constant.millsToHS(simpleExoplayer.currentPosition)
+            binding.txtMinRem.text =
                 Constant.millsToRemainingHS(simpleExoplayer.duration - simpleExoplayer.currentPosition)
             mainHandler.postDelayed(this, 1)
 
-            seekBar.progress =
-                ((seekBar.max * simpleExoplayer.currentPosition) / simpleExoplayer.duration).toInt()
+            binding.seekBar.progress =
+                ((binding.seekBar.max * simpleExoplayer.currentPosition) / simpleExoplayer.duration).toInt()
         }
     }
 
@@ -46,7 +47,9 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_player)
+
+        binding = ActivityPlayerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         Constant.changeStatusBar(isDark = true, context = this, color = R.color.black)
 
@@ -56,7 +59,7 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
 
         initializePlayer()
 
-        seekBar?.setOnSeekBarChangeListener(object :
+        binding.seekBar.setOnSeekBarChangeListener(object :
             SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seek: SeekBar, progress: Int, fromUser: Boolean) {
                 // write custom code for progress is changed
@@ -73,7 +76,7 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
             }
         })
 
-        llPlayer.setOnClickListener(object : DoubleClickListener() {
+        binding.llPlayer.setOnClickListener(object : DoubleClickListener() {
             override fun onSingleClick(v: View?) {}
             override fun onDoubleClick(v: View?) {
                 setFullScreen()
@@ -99,7 +102,7 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
     private fun initializePlayer() {
         simpleExoplayer = SimpleExoPlayer.Builder(this).build()
         preparePlayer(vidUrl)
-        exoplayerView.player = simpleExoplayer
+        binding.exoplayerView.player = simpleExoplayer
         val firstItem: MediaItem = MediaItem.fromUri(vidUrl)
         simpleExoplayer.seekTo(playbackPosition)
         simpleExoplayer.addMediaItem(firstItem)
@@ -113,57 +116,56 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
 
     @SuppressLint("UseCompatLoadingForDrawables")
     private fun setCustomControl() {
+        binding.imgPlay.setBackgroundResource(R.drawable.pause)
+        binding.imgVolume.setBackgroundResource(R.drawable.volume)
+        binding.imgFull.setBackgroundResource(R.drawable.full)
 
-        imgPlay.setBackgroundResource(R.drawable.pause)
-        imgVolume.setBackgroundResource(R.drawable.volume)
-        imgFull.setBackgroundResource(R.drawable.full)
-
-        imgPlay.setOnClickListener {
+        binding.imgPlay.setOnClickListener {
             if (simpleExoplayer.isPlaying) {
                 simpleExoplayer.pause()
-                imgPlay.setBackgroundResource(R.drawable.play)
+                binding.imgPlay.setBackgroundResource(R.drawable.play)
             } else {
                 simpleExoplayer.play()
-                imgPlay.setBackgroundResource(R.drawable.pause)
+                binding.imgPlay.setBackgroundResource(R.drawable.pause)
             }
         }
 
-        imgBackward.setOnClickListener {
+        binding.imgBackward.setOnClickListener {
             simpleExoplayer.seekTo(simpleExoplayer.currentPosition - 15000)
         }
-        imgForward.setOnClickListener {
+        binding.imgForward.setOnClickListener {
             simpleExoplayer.seekTo(simpleExoplayer.currentPosition + 15000)
         }
 
         var currentVolume = simpleExoplayer.volume
 
-        llVolume.setOnClickListener {
+        binding.llVolume.setOnClickListener {
             if (simpleExoplayer.volume == 0f) {
                 simpleExoplayer.volume = currentVolume
-                imgVolume.setBackgroundResource(R.drawable.volume)
+                binding.imgVolume.setBackgroundResource(R.drawable.volume)
             } else {
                 currentVolume = simpleExoplayer.volume
                 simpleExoplayer.volume = 0f
-                imgVolume.setBackgroundResource(R.drawable.mute)
+                binding.imgVolume.setBackgroundResource(R.drawable.mute)
             }
         }
 
-        imgClose.setOnClickListener {
+        binding.imgClose.setOnClickListener {
             onBackPressed()
         }
 
-        imgFull.setOnClickListener {
+        binding.imgFull.setOnClickListener {
             setFullScreen()
         }
     }
 
     private fun setFullScreen() {
         if (isFull) {
-            imgFull.setBackgroundResource(R.drawable.full)
-            exoplayerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+            binding.imgFull.setBackgroundResource(R.drawable.full)
+            binding.exoplayerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
         } else {
-            imgFull.setBackgroundResource(R.drawable.exit)
-            exoplayerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
+            binding.imgFull.setBackgroundResource(R.drawable.exit)
+            binding.exoplayerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
         }
         isFull = !isFull
     }
@@ -191,10 +193,10 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
     override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
         when (playbackState) {
             Player.STATE_BUFFERING -> {
-                progressBar.visibility = View.VISIBLE
+                binding.progressBar.visibility = View.VISIBLE
             }
             Player.STATE_READY -> {
-                progressBar.visibility = View.INVISIBLE
+                binding.progressBar.visibility = View.INVISIBLE
             }
             Player.STATE_ENDED -> {
                 initializePlayer()

@@ -10,14 +10,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
-import android.webkit.WebView
 import androidx.fragment.app.Fragment
 import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.common.Constant
-import com.dueeeke.tablayout.SegmentTabLayout
+import com.craigdietrich.covid19indigenous.databinding.FragmentProjectBinding
 import com.dueeeke.tablayout.listener.OnTabSelectListener
 
 class DashboardFragment : Fragment() {
+
+    private lateinit var binding: FragmentProjectBinding
 
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled", "AddJavascriptInterface")
     override fun onCreateView(
@@ -31,31 +32,36 @@ class DashboardFragment : Fragment() {
             color = R.color.whiteText
         )
 
-        val root = inflater.inflate(R.layout.fragment_project, container, false)
+        binding = FragmentProjectBinding.inflate(inflater, container, false)
 
-        val webView = root.findViewById<WebView>(R.id.webView)
-        webView.settings.javaScriptEnabled = true
-        webView.loadUrl(Constant.aboutProjectPath)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        binding.webView.settings.javaScriptEnabled = true
+
+        binding.webView.settings.setGeolocationEnabled(true)
+        binding.webView.loadUrl(Constant.aboutProjectPath)
+
         this.context?.let { WebAppInterface(it) }
-            ?.let { webView.addJavascriptInterface(it, "Android") }
+            ?.let { binding.webView.addJavascriptInterface(it, "Android") }
 
         val titles = arrayOf(getString(R.string.about_project_tab), getString(R.string.about_us))
-        val tabAbout = root.findViewById<SegmentTabLayout>(R.id.tabAbout)
-        tabAbout.setTabData(titles)
+        binding.tabAbout.setTabData(titles)
 
-        tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
+        binding.tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
             override fun onTabSelect(position: Int) {
                 if (position == 0) {
-                    webView.loadUrl(Constant.aboutProjectPath)
+                    binding.webView.loadUrl(Constant.aboutProjectPath)
                 } else {
-                    webView.loadUrl(Constant.aboutUsPath)
+                    binding.webView.loadUrl(Constant.aboutUsPath)
                 }
             }
 
             override fun onTabReselect(position: Int) {}
         })
-
-        return root
     }
 }
 

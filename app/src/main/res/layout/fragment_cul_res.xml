@@ -59,7 +59,7 @@
         android:id="@+id/llDownload"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/grayBg"
+        android:background="@color/colorPrimary"
         android:gravity="center"
         android:orientation="vertical"
         android:paddingLeft="@dimen/_60sdp"
@@ -76,7 +76,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="@string/media_content"
-            android:textColor="@color/whiteTextLight"
+            android:textColor="@color/black"
             android:textSize="@dimen/_18ssp" />
 
         <Space

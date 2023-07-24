@@ -41,6 +41,7 @@
 	    	
 	    	$this.find('[name="locationButton"]').click(function() {
 	    		var loc = getLocation(function(position) {
+					$this.find('.latlngError').text('');
 	    			var lat = position.coords.latitude;
 	    			var lng = position.coords.longitude;
 	    			$this.find('[name="latitude"]').val(lat);

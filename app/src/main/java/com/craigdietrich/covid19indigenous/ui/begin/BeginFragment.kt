@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import com.craigdietrich.covid19indigenous.MainActivity
 import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.common.Constant
+import com.craigdietrich.covid19indigenous.databinding.FragmentBeginBinding
 
 class BeginFragment : Fragment() {
 
@@ -17,35 +18,35 @@ class BeginFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-
+    ): View {
+        val binding = FragmentBeginBinding.inflate(inflater, container, false)
         Constant.changeStatusBar(
             isDark = false,
             context = context as Activity,
             color = R.color.whiteText
         )
+        return binding.root
+    }
 
-        val root = inflater.inflate(R.layout.fragment_begin, container, false)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-
-        val aboutButton = root.findViewById<LinearLayout>(R.id.llAboutProject)
+        val aboutButton = view.findViewById<LinearLayout>(R.id.llAboutProject)
         aboutButton.setOnClickListener {
             val mainActivity: MainActivity = activity as MainActivity
             mainActivity.switchTo("about")
         }
 
-        val surveyButton = root.findViewById<LinearLayout>(R.id.llTakeSurvey)
+        val surveyButton = view.findViewById<LinearLayout>(R.id.llTakeSurvey)
         surveyButton.setOnClickListener {
             val mainActivity: MainActivity = activity as MainActivity
             mainActivity.switchTo("survey")
         }
 
-        val cultureButton = root.findViewById<LinearLayout>(R.id.llCulture)
+        val cultureButton = view.findViewById<LinearLayout>(R.id.llCulture)
         cultureButton.setOnClickListener {
             val mainActivity: MainActivity = activity as MainActivity
             mainActivity.switchTo("culture")
         }
-
-        return root
     }
 }

@@ -19,13 +19,12 @@ import com.craigdietrich.covid19indigenous.PlayerActivity
 import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.adapter.CultureAdapter
 import com.craigdietrich.covid19indigenous.common.Constant
+import com.craigdietrich.covid19indigenous.databinding.FragmentCulResBinding
 import com.craigdietrich.covid19indigenous.model.CultureVo
 import com.craigdietrich.covid19indigenous.retrfit.GetApi
 import com.craigdietrich.covid19indigenous.retrfit.RetrofitInstance
 import com.dueeeke.tablayout.listener.OnTabSelectListener
 import com.google.gson.GsonBuilder
-import kotlinx.android.synthetic.main.fragment_cul_res.*
-import kotlinx.android.synthetic.main.fragment_cul_res.view.*
 import kotlinx.coroutines.runBlocking
 import retrofit2.Call
 import retrofit2.Callback
@@ -33,10 +32,11 @@ import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class CulResFragment : Fragment(), CultureAdapter.ClickListener {
+
+    private lateinit var binding : FragmentCulResBinding
 
     private val writeRequestCode = 10111
 
@@ -44,31 +44,35 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     var culData = ArrayList<CultureVo>()
     var resData = ArrayList<CultureVo>()
-    private var root: View? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        root = inflater.inflate(R.layout.fragment_cul_res, container, false)
+    ): View {
+        binding = FragmentCulResBinding.inflate(inflater, container, false)
         Constant.changeStatusBar(
             isDark = true,
             context = context as Activity,
             color = R.color.grayBg
         )
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         val titles = arrayOf(getString(R.string.culture), getString(R.string.resilience))
-        root!!.tabAbout.setTabData(titles)
-        root!!.tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
+        binding.tabAbout.setTabData(titles)
+        binding.tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
             override fun onTabSelect(position: Int) {
                 if (position == 0) {
                     val adapter = CultureAdapter(context as Activity, culData)
                     adapter.setOnItemClickListener(this@CulResFragment)
-                    root!!.recyclerView.adapter = adapter
+                    binding.recyclerView.adapter = adapter
                 } else {
                     val adapter = CultureAdapter(context as Activity, resData)
                     adapter.setOnItemClickListener(this@CulResFragment)
-                    root!!.recyclerView.adapter = adapter
+                    binding.recyclerView.adapter = adapter
                 }
             }
 
@@ -77,12 +81,12 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
         checkData()
 
-        root!!.txtDownload.setOnClickListener {
+        binding.txtDownload.setOnClickListener {
             if (Constant.isOnline(context as AppCompatActivity)) {
 
                 try {
-                    txtProgress.visibility = View.VISIBLE
-                    txtProgress.text = getString(R.string.download_manifest)
+                    binding.txtProgress.visibility = View.VISIBLE
+                    binding.txtProgress.text = getString(R.string.download_manifest)
 
                     val service: GetApi =
                         RetrofitInstance.getRetrofitInstance().create(
@@ -106,12 +110,12 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                         }
 
                         override fun onFailure(call: Call<List<CultureVo>>, t: Throwable) {
-                            txtProgress.visibility = View.GONE
+                            binding.txtProgress.visibility = View.GONE
                             Log.e("res", t.toString())
                         }
                     })
                 } catch (e: Exception) {
-                    txtProgress.visibility = View.GONE
+                    binding.txtProgress.visibility = View.GONE
                     Log.e("error", e.toString())
                 }
             } else {
@@ -123,12 +127,11 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
             }
         }
 
-        root!!.txtFetch.setOnClickListener {
+        binding.txtFetch.setOnClickListener {
             resetData()
         }
 
-        root!!.txtCancel.setOnClickListener {
-
+        binding.txtCancel.setOnClickListener {
             try {
                 Constant.myTask!!.cancel(true)
                 checkData()
@@ -136,13 +139,11 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                 Log.e("error", e.toString())
             }
         }
-        return root
     }
 
     private fun checkData() {
-
         try {
-            val file = File(Constant.culturePath(context as AppCompatActivity), "manifest.json")
+            val file = File(Constant.culturePath(), "manifest.json")
 
             if (file.exists()) {
 
@@ -166,11 +167,11 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                 for (i in listData.indices) {
 
                     val image = File(
-                        Constant.culturePath(context as AppCompatActivity),
+                        Constant.culturePath(),
                         listData[i].thumbnailFilename
                     )
                     val video = File(
-                        Constant.culturePath(context as AppCompatActivity),
+                        Constant.culturePath(),
                         listData[i].mp4Filename
                     )
 
@@ -183,17 +184,17 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                     }
                 }
 
-                root!!.tabAbout.currentTab = 0
-                root!!.recyclerView.layoutManager = LinearLayoutManager(context)
+                binding.tabAbout.currentTab = 0
+                binding.recyclerView.layoutManager = LinearLayoutManager(context)
                 val adapter = CultureAdapter(context as Activity, culData)
                 adapter.setOnItemClickListener(this@CulResFragment)
-                root!!.recyclerView.adapter = adapter
+                binding.recyclerView.adapter = adapter
 
-                root!!.llList.visibility = View.VISIBLE
-                root!!.llDownload.visibility = View.GONE
+                binding.llList.visibility = View.VISIBLE
+                binding.llDownload.visibility = View.GONE
             } else {
-                root!!.llList.visibility = View.GONE
-                root!!.llDownload.visibility = View.VISIBLE
+                binding.llList.visibility = View.GONE
+                binding.llDownload.visibility = View.VISIBLE
             }
         } catch (e: Exception) {
             Log.e("exception", e.toString())
@@ -213,11 +214,9 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                 writeFiles()
             }
         }
-
     }
 
     private fun writeFiles() {
-
         try {
             Log.e("data", listData.toString())
 
@@ -225,7 +224,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
             val responseJson = gson.toJsonTree(listData).asJsonArray
 
             try {
-                val file = File(Constant.culturePath(context as AppCompatActivity), "manifest.json")
+                val file = File(Constant.culturePath(), "manifest.json")
                 val writer = FileWriter(file)
                 writer.append(responseJson.toString())
                 writer.flush()
@@ -237,7 +236,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
             Constant.myTask = DownloadFileFromURL(
                 data = listData,
                 pos = 0,
-                dir = Constant.culturePath(context as AppCompatActivity),
+                dir = Constant.culturePath(),
                 cContext = this,
                 type = "image"
             ).execute() as DownloadFileFromURL?
@@ -261,16 +260,16 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                 return
             } else {
                 try {
-                    cContext.txtProgress.visibility = View.VISIBLE
+                    cContext.binding.txtProgress.visibility = View.VISIBLE
                     if (type == "image") {
-                        cContext.root!!.txtProgress.text =
+                        cContext.binding.txtProgress.text =
                             "Downloading thumb " + (pos + 1) + "/" + data.size
                     } else {
-                        cContext.root!!.txtProgress.text =
+                        cContext.binding.txtProgress.text =
                             "Downloading video " + (pos + 1) + "/" + data.size
                     }
 
-                    cContext.root!!.seekBar.progress = (pos + 1) * 100 / data.size
+                    cContext.binding.seekBar.progress = (pos + 1) * 100 / data.size
                 } catch (e: Exception) {
                     Log.e("errorDownloading", e.toString())
                 }
@@ -370,8 +369,8 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
                 } else {
                     cContext.checkData()
-                    cContext.root!!.llList.visibility = View.VISIBLE
-                    cContext.root!!.llDownload.visibility = View.GONE
+                    cContext.binding.llList.visibility = View.VISIBLE
+                    cContext.binding.llDownload.visibility = View.GONE
                 }
             }
         }
@@ -379,11 +378,11 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     private fun resetData() {
         runBlocking {
-            Constant.deleteCultureFiles(Constant.culturePath(context as AppCompatActivity))
+            Constant.deleteCultureFiles(Constant.culturePath())
         }
 
-        txtProgress.visibility = View.GONE
-        seekBar.progress = 0
+        binding.txtProgress.visibility = View.GONE
+        binding.seekBar.progress = 0
 
         culData = ArrayList()
         resData = ArrayList()
@@ -393,7 +392,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     override fun onItemClick(data: CultureVo) {
 
-        val file = File(Constant.culturePath(context as AppCompatActivity), data.mp4Filename)
+        val file = File(Constant.culturePath(), data.mp4Filename)
 
         if (file.exists()) {
             activity?.let {

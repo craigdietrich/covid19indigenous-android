@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tl="http://schemas.android.com/apk/res-auto"
-    android:background="@color/whiteText"
+    android:background="@color/colorPrimary"
     android:orientation="vertical"
     tools:context=".ui.survey.NotificationsFragment">
 
@@ -14,7 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:visibility="visible">
+        android:visibility="visible"
+        tools:visibility="gone">
 
         <com.dueeeke.tablayout.SegmentTabLayout
             android:id="@+id/tabAbout"
@@ -49,12 +50,13 @@
         android:id="@+id/llSurveyDownload"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/grayBg"
+        android:background="@color/colorPrimary"
         android:gravity="center"
         android:orientation="vertical"
         android:paddingLeft="@dimen/_60sdp"
         android:paddingRight="@dimen/_60sdp"
-        android:visibility="gone">
+        android:visibility="gone"
+        tools:visibility="gone">
 
         <Space
             android:layout_width="wrap_content"
@@ -66,7 +68,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="@string/codeBelow"
-            android:textColor="@color/whiteText"
+            android:textColor="@color/black"
             android:textSize="@dimen/_20ssp" />
 
         <EditText
@@ -117,7 +119,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="@string/dont_have_code"
-            android:textColor="@color/whiteText"
+            android:textColor="@color/black"
             android:textSize="@dimen/_16ssp" />
 
         <Space
@@ -144,11 +146,12 @@
         android:id="@+id/llSurveyContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/grayBg"
+        android:background="@color/colorPrimary"
         android:orientation="vertical"
         android:paddingTop="@dimen/_10sdp"
         android:paddingBottom="@dimen/_10sdp"
-        android:visibility="gone">
+        android:visibility="gone"
+        tools:visibility="gone">
 
         <TextView
             android:layout_width="match_parent"
@@ -157,7 +160,7 @@
             android:layout_marginRight="@dimen/_30sdp"
             android:gravity="center"
             android:text="@string/before_continuing"
-            android:textColor="@color/whiteText"
+            android:textColor="@color/black"
             android:textSize="@dimen/_18ssp" />
 
         <Space

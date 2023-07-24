@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <title>Loading...</title>
-    <meta content="" name="description"/>
-    <meta content="initial-scale=1, maximum-scale=1" name="viewport"/>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
-    <meta content="COVID-19 Indigenous Questionnaire" property="og:title"/>
-    <meta content="website" property="og:type"/>
-    <meta content="https://craigdietrich.com/tmp/questionnaire/" property="og:url"/>
+    <meta content="" name="description" />
+    <meta content="initial-scale=1, maximum-scale=1" name="viewport" />
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta content="COVID-19 Indigenous Questionnaire" property="og:title" />
+    <meta content="website" property="og:type" />
+    <meta content="https://craigdietrich.com/tmp/questionnaire/" property="og:url" />
     <meta content="https://craigdietrich.com/tmp/questionnaire/common/images/Kitatipithitamak-Logo-250x250.jpg"
-          property="og:image"/>
-    <meta content="250" property="og:image:width"/>
-    <meta content="250" property="og:image:height"/>
+        property="og:image" />
+    <meta content="250" property="og:image:width" />
+    <meta content="250" property="og:image:height" />
     <meta content="What is your day-to-day reality living with COVID-19 in an Indigenous community?"
-          property="og:description"/>
-    <meta content="the" property="og:determiner"/>
-    <meta content="en_US" property="og:locale"/>
-    <meta content="fr_CA" property="og:locale:alternate"/>
-    <meta content="COVID-19 Indigenous Questionnaire" property="og:site_name"/>
+        property="og:description" />
+    <meta content="the" property="og:determiner" />
+    <meta content="en_US" property="og:locale" />
+    <meta content="fr_CA" property="og:locale:alternate" />
+    <meta content="COVID-19 Indigenous Questionnaire" property="og:site_name" />
     <link type="text/css" rel="stylesheet" href="css/bootstrap.min.css" />
     <link type="text/css" rel="stylesheet" href="css/main.css?v=31" />
     <!-- <link type="text/css" rel="stylesheet" href="css/aboriginalserif.css" /> -->
@@ -50,437 +51,418 @@
     <script type="text/javascript" src="js/jquery.ranked-selector.js?v=31"></script>
     <script type="text/javascript" src="js/jquery.latlng-selector.js?v=31"></script>
     <script>
-$(document).ready(function() {
-	$('article:first').empty().append('<div class="spinner-wrapper"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>');
-});
-function getJsonFromSystem(jsonString) {
-    //$('article:first').empty().append('<div class="spinner-wrapper">'+jsonString+'</div>');
-    //return;
-    try {
-	jsonString = jsonString.replace(/\n/g, "\\n");
-        var json = JSON.parse(jsonString);
-    } catch(err) {
-        $('article:first').empty().append('<div class="spinner-wrapper">'+err+'</div>');
-    }
-    if ('undefined' != typeof(json.standalone)) {
-        var questionnaire = json.standalone;
-    } else {
-        if (parseInt(json.has_taken_baseline)) {
-            var questionnaire = json.interval;
-            $('#welcome_interval').modal();
-        } else {
-            var questionnaire = json.baseline;
-            $('#welcome_baseline').modal();
+        $(document).ready(function () {
+            $('article:first').empty().append('<div class="spinner-wrapper"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>');
+        });
+        function getJsonFromSystem(jsonString) {
+            //$('article:first').empty().append('<div class="spinner-wrapper">'+jsonString+'</div>');
+            //return;
+
+            try {
+            jsonString = jsonString.replace(/\n/g, "\\n");
+               var json = JSON.parse(jsonString);
+            } catch(err) {
+                $('article:first').empty().append('<div class="spinner-wrapper">'+err+'</div>');
+            }
+
+            if ('undefined' != typeof (json.standalone)) {
+                var questionnaire = json.standalone;
+            } else {
+                if (parseInt(json.has_taken_baseline)) {
+                    var questionnaire = json.interval;
+                    $('#welcome_interval').modal();
+                } else {
+                    var questionnaire = json.baseline;
+                    $('#welcome_baseline').modal();
+                }
+            }
+            showQuestionnaire(questionnaire, json.key);
         }
-    }
-    showQuestionnaire(questionnaire, json.key);
-}
-function showQuestionnaire(data, key) {
-	var $wrapper = $('article:first');
-	$wrapper.questionnaire({
-		data: data,
-		key: key
-	}, function() {
-		var info = $wrapper.data('info');
-		var title = info.title + ((info.subtitle && info.subtitle.length)?', '+info.subtitle:'');
-		window.document.title = title;
-		$('.navbar').find('.title').remove();
-		$('<div class="title col-8" title="'+title+'">'+title+'</div>').prependTo('.navbar');
-		$('.spinner-wrapper').remove();
-		$wrapper.action('check_save_for_later', {info:info});
-		$('#finishedButton').click(function() {
-			$wrapper.action('finish', {info:info, key:key});
-		});
-	});
-}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        function showQuestionnaire(data, key) {
+            var $wrapper = $('article:first');
+            $wrapper.questionnaire({
+                data: data,
+                key: key
+            }, function () {
+                var info = $wrapper.data('info');
+                var title = info.title + ((info.subtitle && info.subtitle.length) ? ', ' + info.subtitle : '');
+                window.document.title = title;
+                $('.navbar').find('.title').remove();
+                $('<div class="title col-8" title="' + title + '">' + title + '</div>').prependTo('.navbar');
+                $('.spinner-wrapper').remove();
+                $wrapper.action('check_save_for_later', { info: info });
+                $('#finishedButton').click(function () {
+                    $wrapper.action('finish', { info: info, key: key });
+                });
+            });
+        }
     </script>
 </head>
+
 <body>
 
-<div class="header">
-    <nav class="navbar">
-        <div>&nbsp;</div>
-        <div class="dropdown float-right language">
-            <button aria-expanded="false" aria-haspopup="true" class="btn dropdown-toggle"
-                    data-toggle="dropdown" id="dropdownMenuButton" type="button">
-                English
-            </button>
-            <div aria-labelledby="dropdownMenuButton" class="dropdown-menu">
-                <a class="dropdown-item" href="javascript:void(null);">English</a>
+    <div class="header">
+        <nav class="navbar">
+            <div>&nbsp;</div>
+            <div class="dropdown float-right language">
+                <button aria-expanded="false" aria-haspopup="true" class="btn dropdown-toggle" data-toggle="dropdown"
+                    id="dropdownMenuButton" type="button">
+                    English
+                </button>
+                <div aria-labelledby="dropdownMenuButton" class="dropdown-menu">
+                    <a class="dropdown-item" href="javascript:void(null);">English</a>
+                </div>
+            </div>
+        </nav>
+        <section class="percent-finished">
+            <div class="percent-finished-amount" style="width:1%;"></div>
+            <span class="percent-finished-finish">finish</span>
+            <span class="percent-finished-start">start</span>
+        </section>
+    </div>
+
+    <aside class="saved" style="display:none;">
+        <div class="container intermission">
+            <div class="row">
+                <div class="col">
+                    <p class="title">Saved answers<br><small>You have answers saved from before</small>
+                    </p>
+                    <div class="container-fluid intermission-border">
+                        <div class="row">
+                            <div class="col-12 intermission-wrapper">
+                                <form class="container-fluid">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            How would you like to continue?
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6 text-center">
+                                            <button class="btn text-primary" type="button">Start over
+                                                from scratch
+                                            </button>
+                                        </div>
+                                        <div class="col-6 text-center">
+                                            <button class="btn btn-primary" type="button">Continue where
+                                                I left off
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </nav>
-    <section class="percent-finished">
-        <div class="percent-finished-amount" style="width:1%;"></div>
-        <span class="percent-finished-finish">finish</span>
-        <span class="percent-finished-start">start</span>
-    </section>
-</div>
+    </aside>
 
-<aside class="saved" style="display:none;">
-    <div class="container intermission">
-        <div class="row">
-            <div class="col">
-                <p class="title">Saved answers<br><small>You have answers saved from before</small>
-                </p>
-                <div class="container-fluid intermission-border">
-                    <div class="row">
-                        <div class="col-12 intermission-wrapper">
-                            <form class="container-fluid">
-                                <div class="row">
-                                    <div class="col-12">
-                                        How would you like to continue?
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-6 text-center">
-                                        <button class="btn text-primary" type="button">Start over
-                                            from scratch
-                                        </button>
-                                    </div>
-                                    <div class="col-6 text-center">
-                                        <button class="btn btn-primary" type="button">Continue where
-                                            I left off
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
+    <article></article>
+
+    <div class="buttons">
+        <section class="container">
+            <div class="row">
+                <div class="d-none d-lg-block col-lg-3"></div>
+                <div class="col-4 col-lg-2">
+                    <!--<button class="btn text-primary text-nowrap" id="startOverButton">start over</button>-->
+                </div>
+                <div class="col-4 col-lg-2">
+                    <button class="btn btn-primary" id="finishedButton">Finished</button>
+                </div>
+                <div class="col-4 col-lg-2">
+                    <!--<button class="btn text-primary text-nowrap" id="saveForLaterButton">save for later</button>-->
+                </div>
+                <div class="d-none d-lg-block col-lg-3"></div>
+            </div>
+        </section>
+    </div>
+
+    <div aria-hidden="true" aria-labelledby="questionnairesLabel" class="modal fade" data-backdrop="static"
+        data-keyboard="false" id="questionnairesModal" role="dialog" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <p><b class="code-text">If you have a code, please enter it below</b>
+                                </p>
+                                <form class="form-inline justify-content-center" id="submitCodeForm">
+                                    <input class="form-control mb-3" name="code" type="text" /> &nbsp;
+                                    &nbsp;
+                                    <button class="btn btn-primary mb-3" type="submit">Submit</button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="row has_questionnaires">
+                            <div class="col-12 text-center">
+                                <p><b class="header-text"></b></p>
+                            </div>
+                        </div>
+                        <div class="row has_questionnaires">
+                            <div class="col-12">
+                                <table class="table table-sm table-hover">
+                                    <tbody></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</aside>
 
-<article></article>
-
-<div class="buttons">
-    <section class="container">
-        <div class="row">
-            <div class="d-none d-lg-block col-lg-3"></div>
-            <div class="col-4 col-lg-2">
-                <!--<button class="btn text-primary text-nowrap" id="startOverButton">start over</button>-->
-            </div>
-            <div class="col-4 col-lg-2">
-                <button class="btn btn-primary" id="finishedButton">Finished</button>
-            </div>
-            <div class="col-4 col-lg-2">
-                <!--<button class="btn text-primary text-nowrap" id="saveForLaterButton">save for later</button>-->
-            </div>
-            <div class="d-none d-lg-block col-lg-3"></div>
-        </div>
-    </section>
-</div>
-
-<div aria-hidden="true" aria-labelledby="questionnairesLabel" class="modal fade"
-     data-backdrop="static" data-keyboard="false" id="questionnairesModal" role="dialog"
-     tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-body">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-12 text-center">
-                            <p><b class="code-text">If you have a code, please enter it below</b>
-                            </p>
-                            <form class="form-inline justify-content-center" id="submitCodeForm">
-                                <input class="form-control mb-3" name="code" type="text"/> &nbsp;
-                                &nbsp;
-                                <button class="btn btn-primary mb-3" type="submit">Submit</button>
-                            </form>
+    <div aria-hidden="true" aria-labelledby="loginModalLabel" class="modal fade" data-backdrop="static"
+        data-keyboard="false" id="feedbackModal" role="dialog" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <form id="feedbackForm">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-12 text-center">
+                                    <b>Please tell us your feedback about this question.</b>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-center" id="feedback-question"></div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-center">
+                                    <textarea class="form-control" name="feedback" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <button class="btn btn-light" id="takeAnonymouslyButton" type="button">Cancel
+                                    </button> &nbsp;
+                                    <button class="btn btn-primary float-right" id="takeAnonymouslyButton"
+                                        type="submit">Submit
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row has_questionnaires">
-                        <div class="col-12 text-center">
-                            <p><b class="header-text"></b></p>
-                        </div>
-                    </div>
-                    <div class="row has_questionnaires">
-                        <div class="col-12">
-                            <table class="table table-sm table-hover">
-                                <tbody></tbody>
-                            </table>
-                        </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div aria-hidden="true" aria-labelledby="loginModalLabel" class="modal fade" data-backdrop="static"
-     data-keyboard="false" id="feedbackModal" role="dialog" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body">
-                <form id="feedbackForm">
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-12 text-center">
-                                <b>Please tell us your feedback about this question.</b>
+    <div aria-hidden="true" aria-labelledby="startOverLabel" class="modal fade" data-backdrop="static"
+        data-keyboard="false" id="startOverModal" role="dialog" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <form>
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-12 text-center">
+                                    <b>Are you sure you wish to start over?</b>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-center">Starting over will remove any answers
+                                    you have entered into the Questionnaire.
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <button class="btn btn-light" type="button">Cancel</button> &nbsp;
+                                    <button class="btn btn-warning float-right" type="button">Start
+                                        over
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-12 text-center" id="feedback-question"></div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 text-center">
-                                <textarea class="form-control" name="feedback" rows="3"></textarea>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <button class="btn btn-light" id="takeAnonymouslyButton"
-                                        type="button">Cancel
-                                </button> &nbsp;
-                                <button class="btn btn-primary float-right"
-                                        id="takeAnonymouslyButton" type="submit">Submit
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div aria-hidden="true" aria-labelledby="startOverLabel" class="modal fade" data-backdrop="static"
-     data-keyboard="false" id="startOverModal" role="dialog" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body">
-                <form>
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-12 text-center">
-                                <b>Are you sure you wish to start over?</b>
+    <div aria-hidden="true" aria-labelledby="finishLabel" class="modal fade" data-backdrop="static"
+        data-keyboard="false" id="finishModal" role="dialog" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <form>
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-12 text-center header-text">
+                                    <b>Ready to save your survey answers!</b>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-center main-text">Your answers will provide
+                                    important insights. We hope you'll come back and take the
+                                    questionnaire again.
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-center main-text">Saving might take a moment or
+                                    two depending on the type of media included in your answers.
+                                </div>
+                            </div>
+                            <div class="row" id="finishModalSpinnerWrapper"></div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <button class="btn btn-light" type="button">Cancel</button> &nbsp;
+                                    <button class="btn btn-success float-right" type="button">Finish
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-12 text-center">Starting over will remove any answers
-                                you have entered into the Questionnaire.
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <button class="btn btn-light" type="button">Cancel</button> &nbsp;
-                                <button class="btn btn-warning float-right" type="button">Start
-                                    over
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div aria-hidden="true" aria-labelledby="finishLabel" class="modal fade" data-backdrop="static"
-     data-keyboard="false" id="finishModal" role="dialog" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body">
-                <form>
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-12 text-center header-text">
-                                <b>Ready to save your survey answers!</b>
+    <div aria-hidden="true" aria-labelledby="saveForLaterLabel" class="modal fade" data-backdrop="static"
+        data-keyboard="false" id="saveForLaterModal" role="dialog" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <form>
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-12 text-center header-text">
+                                    <b>Are you sure you wish to save for later?</b>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-center main-text">All of your answers will be
+                                    saved by your web browser and can be reloaded at a later time.
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <button class="btn btn-light" type="button">Cancel</button> &nbsp;
+                                    <button class="btn btn-primary float-right" type="button">Save for
+                                        later
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-12 text-center main-text">Your answers will provide
-                                important insights. We hope you'll come back and take the
-                                questionnaire again.
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 text-center main-text">Saving might take a moment or
-                                two depending on the type of media included in your answers.
-                            </div>
-                        </div>
-                        <div class="row" id="finishModalSpinnerWrapper"></div>
-                        <div class="row">
-                            <div class="col-12">
-                                <button class="btn btn-light" type="button">Cancel</button> &nbsp;
-                                <button class="btn btn-success float-right" type="button">Finish
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div aria-hidden="true" aria-labelledby="saveForLaterLabel" class="modal fade"
-     data-backdrop="static" data-keyboard="false" id="saveForLaterModal" role="dialog"
-     tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body">
-                <form>
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-12 text-center header-text">
-                                <b>Are you sure you wish to save for later?</b>
+    <div aria-hidden="true" aria-labelledby="finishLabel" class="modal fade" data-backdrop="static"
+        data-keyboard="false" id="welcome_baseline" role="dialog" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <form>
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-12 text-center header-text">
+                                    <b>Ready to take the questionnaire!</b>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-center main-text">Because this is the first time
+                                    you are taking the questionnaire, it will be longer and ask more
+                                    in-depth questions. Later, when you take the questionnaire again, it
+                                    will be shorter.
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-center main-text">We hope you'll come back and
+                                    take the questionnaire every one to two weeks!
+                                </div>
+                            </div>
+                            <div class="row" id="finishModalSpinnerWrapper"></div>
+                            <div class="row">
+                                <div class="col-12" style="text-align:center;">
+                                    <button class="btn btn-primary" data-dismiss="modal" type="button">
+                                        Continue
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-12 text-center main-text">All of your answers will be
-                                saved by your web browser and can be reloaded at a later time.
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <button class="btn btn-light" type="button">Cancel</button> &nbsp;
-                                <button class="btn btn-primary float-right" type="button">Save for
-                                    later
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div aria-hidden="true" aria-labelledby="finishLabel" class="modal fade" data-backdrop="static"
-     data-keyboard="false" id="welcome_baseline" role="dialog" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body">
-                <form>
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-12 text-center header-text">
-                                <b>Ready to take the questionnaire!</b>
+    <div aria-hidden="true" aria-labelledby="finishLabel" class="modal fade" data-backdrop="static"
+        data-keyboard="false" id="welcome_interval" role="dialog" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <form>
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-12 text-center header-text">
+                                    <b>Ready to take the questionnaire!</b>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-center main-text">You have taken the
+                                    questionnaire before, so it is shorter than the first time you took
+                                    it.
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-center main-text">We hope you'll come back and
+                                    take the questionnaire every one to two weeks!
+                                </div>
+                            </div>
+                            <div class="row" id="finishModalSpinnerWrapper"></div>
+                            <div class="row">
+                                <div class="col-12" style="text-align:center;">
+                                    <button class="btn btn-primary" data-dismiss="modal" type="button">
+                                        Continue
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-12 text-center main-text">Because this is the first time
-                                you are taking the questionnaire, it will be longer and ask more
-                                in-depth questions. Later, when you take the questionnaire again, it
-                                will be shorter.
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 text-center main-text">We hope you'll come back and
-                                take the questionnaire every one to two weeks!
-                            </div>
-                        </div>
-                        <div class="row" id="finishModalSpinnerWrapper"></div>
-                        <div class="row">
-                            <div class="col-12" style="text-align:center;">
-                                <button class="btn btn-primary" data-dismiss="modal" type="button">
-                                    Continue
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div aria-hidden="true" aria-labelledby="finishLabel" class="modal fade" data-backdrop="static"
-     data-keyboard="false" id="welcome_interval" role="dialog" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body">
-                <form>
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-12 text-center header-text">
-                                <b>Ready to take the questionnaire!</b>
+    <div aria-hidden="true" aria-labelledby="confirmSwitchMediaTypeLabel" class="modal fade" data-backdrop="static"
+        data-keyboard="false" id="confirmSwitchMediaTypeModal" role="dialog" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <form>
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-12 text-center header-text">
+                                    <b>Switching media types</b>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 text-center main-text">Selecting a different media
+                                    type will erase anything that you have already typed, recorded, or
+                                    uploaded. Are you sure you wish to continue?
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <button class="btn btn-light" type="button">Cancel</button> &nbsp;
+                                    <button class="btn btn-primary float-right" type="button">Switch
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-12 text-center main-text">You have taken the
-                                questionnaire before, so it is shorter than the first time you took
-                                it.
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 text-center main-text">We hope you'll come back and
-                                take the questionnaire every one to two weeks!
-                            </div>
-                        </div>
-                        <div class="row" id="finishModalSpinnerWrapper"></div>
-                        <div class="row">
-                            <div class="col-12" style="text-align:center;">
-                                <button class="btn btn-primary" data-dismiss="modal" type="button">
-                                    Continue
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<div aria-hidden="true" aria-labelledby="confirmSwitchMediaTypeLabel" class="modal fade"
-     data-backdrop="static" data-keyboard="false" id="confirmSwitchMediaTypeModal" role="dialog"
-     tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body">
-                <form>
-                    <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-12 text-center header-text">
-                                <b>Switching media types</b>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 text-center main-text">Selecting a different media
-                                type will erase anything that you have already typed, recorded, or
-                                uploaded. Are you sure you wish to continue?
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <button class="btn btn-light" type="button">Cancel</button> &nbsp;
-                                <button class="btn btn-primary float-right" type="button">Switch
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<p>&nbsp;</p>
-<p>&nbsp;</p>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
 
 </body>
+
 </html>

@@ -55,7 +55,7 @@ class CultureAdapter(private val context: Context, private val data: ArrayList<C
         } else {
             holder.txtLink.visibility = View.GONE
         }
-        val file = File(Constant.culturePath(context), data.thumbnailFilename)
+        val file = File(Constant.culturePath(), data.thumbnailFilename)
 
         if (file.exists()) {
             Glide.with(context)
