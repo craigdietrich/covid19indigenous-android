@@ -15,7 +15,8 @@
         android:layout_height="match_parent"
         android:background="@color/colorPrimary"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:visibility="gone"
+        tools:visibility="gone">
 
         <com.dueeeke.tablayout.SegmentTabLayout
             android:id="@+id/tabAbout"
@@ -64,7 +65,8 @@
         android:orientation="vertical"
         android:paddingLeft="@dimen/_60sdp"
         android:paddingRight="@dimen/_60sdp"
-        android:visibility="visible">
+        android:visibility="visible"
+        tools:visibility="visible">
 
         <Space
             android:layout_width="wrap_content"

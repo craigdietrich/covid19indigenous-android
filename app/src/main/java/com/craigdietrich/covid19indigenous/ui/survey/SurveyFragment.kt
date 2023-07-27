@@ -37,8 +37,8 @@ import java.io.FileWriter
 
 class NotificationsFragment : Fragment(), ClickListener {
 
+    private var isFirstTimeConsentAccept = false
     var jsonResponse = ""
-    var isFirstTimeConsentAccept = false
 
     private lateinit var binding: FragmentSurveyBinding
 

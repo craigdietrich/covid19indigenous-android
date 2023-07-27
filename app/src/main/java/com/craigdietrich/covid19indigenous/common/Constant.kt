@@ -55,9 +55,8 @@ class Constant {
         const val aboutUsPath = "file:///android_asset/aboutUs.html"
 
         var isfetch = false
-        var fileType = "image"// for file picker in survey form
 
-        var myTask: CulResFragment.DownloadFileFromURL? = null
+        var fileType = "image"// for file picker in survey form
 
         fun changeStatusBar(isDark: Boolean, context: Context, color: Int) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -170,6 +169,10 @@ class Constant {
 
         fun surveyFile(): File {
             return File(surveyPath(), "questionnaires.json")
+        }
+
+        fun manifestFile() : File {
+            return File(culturePath(), "manifest.json")
         }
 
         fun stringFromFile(file: File): String {
