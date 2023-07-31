@@ -8,12 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/transparent" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/grayBg"
+        android:background="@color/colorPrimary"
         android:orientation="vertical"
         android:padding="@dimen/_30sdp">
 
@@ -23,19 +18,19 @@
             android:layout_gravity="center"
             android:gravity="center"
             android:text="@string/past_completed_surveys"
-            android:textColor="@color/whiteText"
+            android:textColor="@color/black"
             android:textSize="@dimen/_18ssp" />
 
         <TextView
             android:id="@+id/txtUploading"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="20dp"
             android:layout_gravity="center"
+            android:layout_marginTop="20dp"
             android:layout_marginBottom="20dp"
-            android:textColor="@color/whiteText"
             android:layout_weight="1"
             android:gravity="center"
+            android:textColor="@color/whiteText"
             android:textSize="@dimen/_16ssp" />
 
         <TextView
@@ -44,7 +39,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/uploading_answers"
-            android:textColor="@color/whiteText"
+            android:textColor="@color/black"
             android:textSize="@dimen/_16ssp" />
     </LinearLayout>
 </RelativeLayout>

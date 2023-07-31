@@ -10,6 +10,7 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.os.Environment
 import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.Window
@@ -83,7 +84,7 @@ class Constant {
             }
         }
 
-        fun isOnline(activity: AppCompatActivity): Boolean {
+        fun isOnline(activity: Context): Boolean {
             val connectivityManager =
                 activity.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
@@ -214,7 +215,6 @@ class Constant {
             val files = surveyPath().listFiles()
             if (files != null) {
                 for (i in files.indices) {
-                    //Log.d("Files", "FileName:" + files[i].name)
                     if (files[i].name.startsWith("answer")) {
                         answerFile.add(files[i])
 
@@ -227,83 +227,68 @@ class Constant {
                         } else {
                             "\n\n" + name
                         }
-
                     }
                 }
 
                 if (answerFile.size > 0) {
-                    Handler().postDelayed({
+                    dialog.show()
 
-                        isfetch = false
+                    isfetch = false
 
-                        if (isOnline(c as AppCompatActivity)) {
+                    if (isOnline(c as AppCompatActivity)) {
+                        c.runOnUiThread {
                             txtInfo.text = c.getString(R.string.uploading_answers)
                             txtUploading.text = pastTitle
+                        }
 
-                            for (i in answerFile.indices) {
+                        for (i in answerFile.indices) {
+                            runBlocking {
+                                val text = stringFromFile(answerFile[i])
 
-                                runBlocking {
-                                    val text = StringBuilder()
+                                val answer = Gson().fromJson(text, AnswerVo::class.java)
 
-                                    try {
-                                        val br = BufferedReader(FileReader(answerFile[i]))
-                                        var line: String?
-                                        while (br.readLine().also { line = it } != null) {
-                                            text.append(line)
-                                            text.append('\n')
-                                        }
-                                        br.close()
-                                    } catch (e: IOException) {
+                                val service = RetrofitInstance.getRetrofitInstance().create(GetApi::class.java)
+                                val call = service.uploadAnswer(answer)
+                                call.enqueue(object : Callback<AnswerVo> {
+                                    override fun onResponse(
+                                        call: Call<AnswerVo>,
+                                        response: retrofit2.Response<AnswerVo>
+                                    ) {
+                                        Log.d("res", response.body().toString())
 
-                                    }
+                                        try {
+                                            response.body() as AnswerVo
+                                            //if success than it converts
 
-                                    val answer =
-                                        Gson().fromJson(text.toString(), AnswerVo::class.java)
-
-                                    val service: GetApi = RetrofitInstance.getRetrofitInstance()
-                                        .create(GetApi::class.java)
-                                    val call = service.uploadAnswer(answer)
-                                    call.enqueue(object : Callback<AnswerVo> {
-                                        override fun onResponse(
-                                            call: Call<AnswerVo>,
-                                            response: retrofit2.Response<AnswerVo>
-                                        ) {
-                                            Log.d("res", response.body().toString())
-
-                                            try {
-                                                response.body() as AnswerVo//if success than it converts
-
-                                                answerFile[i].delete()
-                                                Log.e("success", "success")
-                                            } catch (e: java.lang.Exception) {
-                                                Log.e("errorUploading", e.toString())
-                                                answerFile[i].delete()
-                                            }
-
-                                            if (i == answerFile.size - 1) {
-                                                dialog.dismiss()
-                                            }
-                                        }
-
-                                        override fun onFailure(call: Call<AnswerVo>, t: Throwable) {
-                                            Log.e("failUploading", t.toString())
                                             answerFile[i].delete()
 
-                                            if (i == answerFile.size - 1) {
-                                                dialog.dismiss()
-                                            }
+                                            Log.e("success", "success")
+                                        } catch (e: java.lang.Exception) {
+                                            Log.e("errorUploading", e.toString())
+                                            answerFile[i].delete()
                                         }
-                                    })
-                                }
+
+                                        if (i == answerFile.size - 1) {
+                                            dialog.dismiss()
+                                        }
+                                    }
+
+                                    override fun onFailure(call: Call<AnswerVo>, t: Throwable) {
+                                        Log.e("failUploading", t.toString())
+                                        answerFile[i].delete()
+
+                                        if (i == answerFile.size - 1) {
+                                            dialog.dismiss()
+                                        }
+                                    }
+                                })
                             }
-                        } else {
-                            dialog.dismiss()
                         }
-                    }, 3000)
-                    dialog.show()
+                    } else {
+                        dialog.dismiss()
+                    }
                 }
             }
-
         }
 
         fun writeSP(context: Context, key: String?, values: String?) {
@@ -331,7 +316,8 @@ class Constant {
 
             private val doubleClickTime: Long = 300 //milliseconds
 
-            var lastClickTime: Long = 0
+            private var lastClickTime: Long = 0
+
             override fun onClick(v: View?) {
                 val clickTime = System.currentTimeMillis()
                 if (clickTime - lastClickTime < doubleClickTime) {

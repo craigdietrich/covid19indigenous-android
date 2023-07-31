@@ -8,23 +8,17 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/transparent" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/grayBg"
+        android:background="@color/colorPrimary"
         android:gravity="center"
         android:orientation="vertical"
         android:padding="@dimen/_30sdp">
-
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="@string/updating_questionnaires"
-            android:textColor="@color/whiteText"
+            android:textColor="@color/black"
             android:textSize="@dimen/_16ssp" />
 
     </LinearLayout>

@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
                 override fun onAvailable(network: Network) {
                     //take action when network connection is gained
                     Log.e("internet", "connect")
+
                     Constant.uploadingAnswerDialog(this@MainActivity)
                 }
 

@@ -82,8 +82,11 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
         checkData()
 
         binding.txtDownload.setOnClickListener {
-            if (Constant.isOnline(context as AppCompatActivity)) {
+            if (Constant.isOnline(requireContext())) {
                 try {
+                    binding.txtProgress.visibility = View.VISIBLE
+                    binding.txtProgress.text = getString(R.string.download_manifest)
+
                     val service = RetrofitInstance.getRetrofitInstance().create(GetApi::class.java)
                     val call = service.getCultureManifest(Constant.timeStamp())
                     call.enqueue(object : Callback<ResponseBody> {
@@ -94,12 +97,8 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
                                 jsonResponse = response.body()!!.string()
 
                                 if (response.isSuccessful) {
-                                    binding.txtProgress.visibility = View.VISIBLE
-                                    binding.txtProgress.text = getString(R.string.download_manifest)
-
                                     job = lifecycleScope.launch(Dispatchers.IO) {
                                         delay(1500L)
-
                                         writeFiles()
                                     }
                                 } else {

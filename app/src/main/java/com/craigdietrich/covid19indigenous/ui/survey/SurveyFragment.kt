@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -82,22 +81,31 @@ class NotificationsFragment : Fragment(), ClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.webView.loadUrl(Constant.aboutSurveyPath)
-
         val titles = arrayOf(getString(R.string.about_survey), getString(R.string.take_survey_tab))
         binding.tabAbout.setTabData(titles)
 
         binding.tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
             override fun onTabSelect(position: Int) {
                 if (position == 0) {
+                    binding.llSurvey.visibility = View.VISIBLE
+                    binding.llSurveyDownload.visibility = View.GONE
+                    binding.llSurveyContent.visibility = View.GONE
+
                     binding.webView.loadUrl(Constant.aboutSurveyPath)
-                } else {
-                    setSurveyForm()
                 }
             }
 
-            override fun onTabReselect(position: Int) {}
+            override fun onTabReselect(position: Int) {
+                if (position == 0) {
+                    binding.llSurvey.visibility = View.VISIBLE
+                    binding.llSurveyDownload.visibility = View.GONE
+                    binding.llSurveyContent.visibility = View.GONE
+
+                    binding.webView.loadUrl(Constant.aboutSurveyPath)
+                }
+            }
         })
+
         binding.txtSubmit.setOnClickListener {
             if (binding.edtCode.text.isNotEmpty()) {
                 downloadFile()
@@ -105,8 +113,9 @@ class NotificationsFragment : Fragment(), ClickListener {
         }
 
         binding.txtConsent.setOnClickListener {
-            context?.let { Constant.writeSP(it, Constant.isAcceptSurvey, "true") }
+            Constant.writeSP(requireContext(), Constant.isAcceptSurvey, "true")
             isFirstTimeConsentAccept = true
+
             setSurveyForm()
         }
 
@@ -117,13 +126,24 @@ class NotificationsFragment : Fragment(), ClickListener {
         binding.txtCancelDownload.setOnClickListener {
             cancelClicked()
         }
+
+        isFirstTimeConsentAccept =
+            Constant.readSP(requireContext(), Constant.isAcceptSurvey) == "true"
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        binding.tabAbout.currentTab = 0
+        binding.webView.loadUrl(Constant.aboutSurveyPath)
     }
 
     private fun cancelClicked() {
         binding.llSurvey.visibility = View.VISIBLE
         binding.llSurveyDownload.visibility = View.GONE
+
         binding.tabAbout.currentTab = 0
-        binding.webViewConsent.loadUrl(Constant.aboutSurveyPath)
+        binding.webView.loadUrl(Constant.aboutSurveyPath)
     }
 
     private var mCM: String? = null
@@ -144,14 +164,10 @@ class NotificationsFragment : Fragment(), ClickListener {
 
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
 
-        this.context?.let { SurveyWebAppInterface(it) }?.let {
-            binding.webView.addJavascriptInterface(
-                it,
-                "Android"
-            )
-        }
+        val survey = SurveyWebAppInterface(this@NotificationsFragment)
+        binding.webView.addJavascriptInterface(survey, "Android")
 
-        binding.webView.webChromeClient = MyWeChromeClient() { origin, callback ->
+        binding.webView.webChromeClient = MyWeChromeClient { origin, callback ->
             origin?.let { this.origin = it }
             callback?.let { this.callback = it }
         }
@@ -236,14 +252,8 @@ class NotificationsFragment : Fragment(), ClickListener {
         }
     }
 
-    private fun Fragment?.runOnUiThread(action: () -> Unit) {
-        this ?: return
-        if (!isAdded) return // Fragment not attached to an Activity
-        activity?.runOnUiThread(action)
-    }
-
     override fun changeTab(pos: Int) {
-        runOnUiThread {
+        requireActivity().runOnUiThread {
             if (pos == 0) {
                 binding.tabAbout.currentTab = 0
                 binding.webView.loadUrl(Constant.aboutSurveyPath)
@@ -257,10 +267,9 @@ class NotificationsFragment : Fragment(), ClickListener {
         binding.tabAbout.currentTab = 1
 
         if (Constant.surveyFile().exists()) {
-            if (context?.let { Constant.readSP(it, Constant.isAcceptSurvey) } == "true") {
-                if (Constant.isOnline(context as AppCompatActivity) && !Constant.isfetch && !isFirstTimeConsentAccept) {
+            if (isFirstTimeConsentAccept) {
+                if (Constant.isOnline(requireContext()) && !Constant.isfetch) {
                     try {
-
                         val dialog = Dialog(context as AppCompatActivity, R.style.NewDialog)
                         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
                         dialog.setCancelable(false)
@@ -268,7 +277,7 @@ class NotificationsFragment : Fragment(), ClickListener {
                         dialog.window!!.setBackgroundDrawableResource(R.color.transparent)
                         dialog.show()
 
-                        val service: GetApi =
+                        val service =
                             RetrofitInstance.getRetrofitInstance().create(GetApi::class.java)
                         val call = service.getQuestions(
                             Constant.readSP(
@@ -298,24 +307,23 @@ class NotificationsFragment : Fragment(), ClickListener {
 
                                     dialog.dismiss()
                                 } catch (e: Exception) {
-                                    dialog.dismiss()
                                     Log.e("error", e.toString())
+                                    dialog.dismiss()
                                 }
-
                             }
 
                             override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                                dialog.dismiss()
                                 Log.e("res", t.toString())
+                                dialog.dismiss()
                             }
                         })
                     } catch (e: Exception) {
                         Log.e("error", e.toString())
                     }
                 } else {
+                    binding.webView.loadUrl(Constant.indexSurveyPath)
                     binding.llSurvey.visibility = View.VISIBLE
 
-                    binding.webView.loadUrl(Constant.indexSurveyPath)
                     binding.webView.webViewClient = object : WebViewClient() {
                         override fun onPageFinished(view: WebView, url: String) {
                             if (binding.tabAbout.currentTab == 1) {
@@ -338,11 +346,14 @@ class NotificationsFragment : Fragment(), ClickListener {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun downloadFile() {
-        if (Constant.isOnline(context as AppCompatActivity)) {
+        if (Constant.isOnline(requireContext())) {
             try {
-                val service: GetApi =
-                    RetrofitInstance.getRetrofitInstance().create(GetApi::class.java)
+                binding.txtProgress.visibility = View.VISIBLE
+                binding.txtProgress.text = "Downloading content"
+
+                val service = RetrofitInstance.getRetrofitInstance().create(GetApi::class.java)
                 val call =
                     service.getQuestions(binding.edtCode.text.toString(), Constant.timeStamp())
                 call.enqueue(object : Callback<ResponseBody> {
@@ -362,13 +373,13 @@ class NotificationsFragment : Fragment(), ClickListener {
                                     )
                                 )
                             } else {
-                                Constant.isfetch = true
-
                                 Constant.writeSP(
                                     context as AppCompatActivity,
                                     Constant.surveyCode,
                                     binding.edtCode.text.toString()
                                 )
+
+                                Constant.isfetch = true
 
                                 writeFiles()
                             }
@@ -380,7 +391,6 @@ class NotificationsFragment : Fragment(), ClickListener {
                             )
                             Log.e("error", e.toString())
                         }
-
                     }
 
                     override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
@@ -406,7 +416,6 @@ class NotificationsFragment : Fragment(), ClickListener {
 
     private fun writeFiles() {
         try {
-
             jsonResponse = jsonResponse.replace("'", "\\'")
             jsonResponse = jsonResponse.replace("(", "\\(")
             jsonResponse = jsonResponse.replace(")", "\\)")
@@ -446,16 +455,12 @@ class NotificationsFragment : Fragment(), ClickListener {
 
         binding.webViewConsent.loadUrl(Constant.consentSurveyPath)
 
-        this.context?.let { SurveyWebAppInterface(it) }?.let {
-            binding.webViewConsent.addJavascriptInterface(
-                it,
-                "Android"
-            )
-        }
+        val survey = SurveyWebAppInterface(this@NotificationsFragment)
+        binding.webViewConsent.addJavascriptInterface(survey, "Android")
     }
 }
 
-class SurveyWebAppInterface(private val mContext: Context) {
+class SurveyWebAppInterface(private val mContext: NotificationsFragment) {
     /** Show a toast from the web page  */
     @JavascriptInterface
     fun showToast(toast: String) {
@@ -465,16 +470,19 @@ class SurveyWebAppInterface(private val mContext: Context) {
             }
 
             "deleteUserData" -> {
-                AlertDialog.Builder(mContext)
+                AlertDialog.Builder(mContext.requireContext())
                     .setTitle(mContext.getString(R.string.reset_data))
                     .setMessage(mContext.getString(R.string.reset_desc))
                     .setPositiveButton("Ok") { dialog, _ ->
                         dialog.cancel()
                         runBlocking {
                             Constant.deleteSurveyFiles(Constant.surveyPath())
-                            Constant.deleteCultureFiles(Constant.culturePath())
-                            Constant.writeSP(mContext, Constant.isAcceptSurvey, "false")
-                            Constant.writeSP(mContext as AppCompatActivity, Constant.surveyCode, "")
+                            Constant.writeSP(
+                                mContext.requireContext(),
+                                Constant.isAcceptSurvey,
+                                "false"
+                            )
+                            Constant.writeSP(mContext.requireContext(), Constant.surveyCode, "")
                         }
                     }
                     .setNegativeButton("Cancel") { dialog, _ ->
@@ -493,14 +501,14 @@ class SurveyWebAppInterface(private val mContext: Context) {
     @JavascriptInterface
     fun showAns(msg: String) {
         try {
-            val file =
-                File(Constant.surveyPath(), "answers_" + Constant.timeStamp() + ".json")
+            val file = File(Constant.surveyPath(), "answers_" + Constant.timeStamp() + ".json")
             val writer = FileWriter(file)
             writer.append(msg)
             writer.flush()
             writer.close()
 
-            Constant.uploadingAnswerDialog(mContext)
+            Constant.uploadingAnswerDialog(mContext.requireContext())
+
             clickListener!!.changeTab(0)
         } catch (e: java.lang.Exception) {
             e.printStackTrace()

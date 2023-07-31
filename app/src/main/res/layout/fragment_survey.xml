@@ -1,13 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tl="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tl="http://schemas.android.com/apk/res-auto"
     android:background="@color/colorPrimary"
     android:orientation="vertical"
     tools:context=".ui.survey.NotificationsFragment">
+
+    <com.dueeeke.tablayout.SegmentTabLayout
+        android:id="@+id/tabAbout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_35sdp"
+        android:layout_gravity="center_horizontal"
+        app:tl_bar_color="@color/tabBg"
+        app:tl_indicator_color="@color/whiteText"
+        app:tl_indicator_corner_radius="@dimen/_5sdp"
+        app:tl_textSelectColor="@color/blueText"
+        app:tl_textSize="@dimen/_13ssp"
+        app:tl_textUnselectedColor="@color/blackText"
+        tl:tl_indicator_anim_enable="true"
+        tl:tl_indicator_bounce_enable="false"
+        tl:tl_indicator_margin_bottom="@dimen/_3sdp"
+        tl:tl_indicator_margin_left="@dimen/_3sdp"
+        tl:tl_indicator_margin_right="@dimen/_3sdp"
+        tl:tl_indicator_margin_top="@dimen/_3sdp"
+        tl:tl_tab_space_equal="true" />
 
     <LinearLayout
         android:id="@+id/llSurvey"
@@ -16,25 +35,6 @@
         android:orientation="vertical"
         android:visibility="visible"
         tools:visibility="gone">
-
-        <com.dueeeke.tablayout.SegmentTabLayout
-            android:id="@+id/tabAbout"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/_35sdp"
-            android:layout_gravity="center_horizontal"
-            app:tl_bar_color="@color/tabBg"
-            app:tl_indicator_color="@color/whiteText"
-            app:tl_indicator_corner_radius="@dimen/_5sdp"
-            app:tl_textSelectColor="@color/blueText"
-            app:tl_textSize="@dimen/_13ssp"
-            app:tl_textUnselectedColor="@color/blackText"
-            tl:tl_indicator_anim_enable="true"
-            tl:tl_indicator_bounce_enable="false"
-            tl:tl_indicator_margin_bottom="@dimen/_3sdp"
-            tl:tl_indicator_margin_left="@dimen/_3sdp"
-            tl:tl_indicator_margin_right="@dimen/_3sdp"
-            tl:tl_indicator_margin_top="@dimen/_3sdp"
-            tl:tl_tab_space_equal="true" />
 
         <WebView
             android:id="@+id/webView"
@@ -78,10 +78,10 @@
             android:layout_marginTop="@dimen/_20sdp"
             android:background="@drawable/bg_white_rounded"
             android:gravity="center"
-            android:importantForAutofill="no"
             android:hint="@string/participant_code"
-            android:padding="@dimen/_5sdp"
+            android:importantForAutofill="no"
             android:inputType="text"
+            android:padding="@dimen/_5sdp"
             android:textSize="@dimen/_18ssp" />
 
         <TextView
@@ -108,6 +108,20 @@
             android:text="@string/internet_connection"
             android:textColor="@color/greenText"
             android:textSize="@dimen/_16ssp" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/txtProgress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/whiteText"
+            android:textSize="@dimen/_12ssp"
+            android:visibility="gone" />
 
         <Space
             android:layout_width="wrap_content"
