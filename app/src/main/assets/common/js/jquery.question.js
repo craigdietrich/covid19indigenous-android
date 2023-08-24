@@ -410,6 +410,14 @@
     		
     	}
     	
+    	var doVideo = function(data) {
+    		
+    		var html = '';
+    		html += '<div class="video-selector"></div>';
+    		return doWrapper(data, html);
+    		
+    	}
+    	
     	return this.each(function() {
     	
 	    	var self = this;
@@ -483,6 +491,9 @@
 	    			break;
 	    		case "audio":
 	    			$el.append( doAudio(opts) ).audioSelector(opts);
+	    			break;
+	    		case "video":
+	    			$el.append( doVideo(opts) ).videoSelector(opts);
 	    			break;
 	    		case 'intermission-userfields':
 	    			$el.append( doIntermissionUserFields(opts) ).intermission(opts);
