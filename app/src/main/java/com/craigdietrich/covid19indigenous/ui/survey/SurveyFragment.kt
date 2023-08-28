@@ -9,7 +9,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -41,20 +40,57 @@ class NotificationsFragment : Fragment(), ClickListener {
 
     private lateinit var binding: FragmentSurveyBinding
 
-    lateinit var callback: GeolocationPermissions.Callback
-    lateinit var origin: String
-
-    private val locationPermissionLauncher = registerForActivityResult(
+    private lateinit var origin: String
+    private lateinit var callback: GeolocationPermissions.Callback
+    private val geoLocationRequest: (String?, GeolocationPermissions.Callback?) -> Unit =
+        { origin, callback ->
+            origin?.let { this.origin = it }
+            callback?.let { this.callback = it }
+        }
+    private val geoLocationPermission = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { results ->
-        if (results.values.any { it }) {
+    ) {
+        if (it.values.all { result -> result }) {
             callback.invoke(origin, true, false)
-            Log.d("locationPermission", "result: Granted")
         } else {
             callback.invoke(origin, false, false)
-            Log.d("locationPermission", "result: Not Granted")
         }
     }
+
+    private lateinit var imageCallback: ValueCallback<Array<Uri>>
+    private val imageRequest: (ValueCallback<Array<Uri>>) -> Unit = { callback ->
+        imageCallback = callback
+    }
+    private val imagePermission = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { result ->
+        result?.let { imageCallback.onReceiveValue(arrayOf(it)) }
+    }
+
+
+    private lateinit var webRequest: PermissionRequest
+    private val audioVideoRequest: (PermissionRequest) -> Unit = { request ->
+        webRequest = request
+    }
+    private val audioVideoPermission = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        if (results.values.all { it }) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                requireActivity().runOnUiThread {
+                    webRequest.grant(webRequest.resources)
+                }
+            }
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                requireActivity().runOnUiThread {
+                    webRequest.deny()
+                }
+            }
+        }
+    }
+
+    private var selectedTab = 0
 
     @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("JavascriptInterface", "we", "AddJavascriptInterface")
@@ -86,22 +122,32 @@ class NotificationsFragment : Fragment(), ClickListener {
 
         binding.tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
             override fun onTabSelect(position: Int) {
+                selectedTab = position
                 if (position == 0) {
                     binding.llSurvey.visibility = View.VISIBLE
                     binding.llSurveyDownload.visibility = View.GONE
                     binding.llSurveyContent.visibility = View.GONE
 
-                    binding.webView.loadUrl(Constant.aboutSurveyPath)
+                    if (binding.webView.url != Constant.aboutSurveyPath) {
+                        binding.webView.loadUrl(Constant.aboutSurveyPath)
+                    }
+                } else {
+                    setSurveyForm()
                 }
             }
 
             override fun onTabReselect(position: Int) {
+                selectedTab = position
                 if (position == 0) {
                     binding.llSurvey.visibility = View.VISIBLE
                     binding.llSurveyDownload.visibility = View.GONE
                     binding.llSurveyContent.visibility = View.GONE
 
-                    binding.webView.loadUrl(Constant.aboutSurveyPath)
+                    if (binding.webView.url != Constant.aboutSurveyPath) {
+                        binding.webView.loadUrl(Constant.aboutSurveyPath)
+                    }
+                } else {
+                    setSurveyForm()
                 }
             }
         })
@@ -129,13 +175,13 @@ class NotificationsFragment : Fragment(), ClickListener {
 
         isFirstTimeConsentAccept =
             Constant.readSP(requireContext(), Constant.isAcceptSurvey) == "true"
+
+        changeTab(0)
     }
 
     override fun onResume() {
         super.onResume()
-
-        binding.tabAbout.currentTab = 0
-        binding.webView.loadUrl(Constant.aboutSurveyPath)
+        changeTab(selectedTab)
     }
 
     private fun cancelClicked() {
@@ -143,13 +189,10 @@ class NotificationsFragment : Fragment(), ClickListener {
         binding.llSurveyDownload.visibility = View.GONE
 
         binding.tabAbout.currentTab = 0
-        binding.webView.loadUrl(Constant.aboutSurveyPath)
+        if (binding.webView.url != Constant.aboutSurveyPath) {
+            binding.webView.loadUrl(Constant.aboutSurveyPath)
+        }
     }
-
-    private var mCM: String? = null
-    private var mUM: ValueCallback<Uri>? = null
-    private var mUMA: ValueCallback<Array<Uri>>? = null
-    private val fileRequestCode = 1
 
     @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled", "AddJavascriptInterface")
@@ -157,8 +200,10 @@ class NotificationsFragment : Fragment(), ClickListener {
 
         binding.webView.settings.javaScriptEnabled = true
         binding.webView.settings.domStorageEnabled = true
+
         binding.webView.settings.allowContentAccess = true
         binding.webView.settings.allowFileAccess = true
+
         binding.webView.settings.loadWithOverviewMode = true
         binding.webView.settings.setGeolocationEnabled(true)
 
@@ -167,87 +212,54 @@ class NotificationsFragment : Fragment(), ClickListener {
         val survey = SurveyWebAppInterface(this@NotificationsFragment)
         binding.webView.addJavascriptInterface(survey, "Android")
 
-        binding.webView.webChromeClient = MyWeChromeClient { origin, callback ->
-            origin?.let { this.origin = it }
-            callback?.let { this.callback = it }
-        }
-    }
+        binding.webView.webChromeClient = object : WebChromeClient() {
+            override fun onPermissionRequest(request: PermissionRequest?) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    val res = request?.resources
+                    if (res != null) {
+                        audioVideoRequest.invoke(request)
 
-    inner class MyWeChromeClient(
-        private val request: (String?, GeolocationPermissions.Callback?) -> Unit,
-    ) : WebChromeClient() {
-
-        override fun onShowFileChooser(
-            webView: WebView,
-            filePathCallback: ValueCallback<Array<Uri>>,
-            fileChooserParams: FileChooserParams
-        ): Boolean {
-            if (mUMA != null) {
-                mUMA!!.onReceiveValue(null)
-            }
-            mUMA = filePathCallback
-
-            if (Constant.fileType == "image") {
-                val i = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                startActivityForResult(i, fileRequestCode)
-            } else {
-                val i = Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-                startActivityForResult(i, fileRequestCode)
-            }
-
-            return true
-        }
-
-        override fun onGeolocationPermissionsShowPrompt(
-            origin: String?,
-            callback: GeolocationPermissions.Callback?
-        ) {
-            request.invoke(origin, callback)
-            locationPermissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
-            )
-            super.onGeolocationPermissionsShowPrompt(origin, callback)
-        }
-    }
-
-    override fun onActivityResult(
-        requestCode: Int,
-        resultCode: Int,
-        intent: Intent?
-    ) {
-        super.onActivityResult(requestCode, resultCode, intent)
-        if (Build.VERSION.SDK_INT >= 21) {
-            var results: Array<Uri>? = null
-            //Check if response is positive
-            if (resultCode == Activity.RESULT_OK) {
-                if (requestCode == fileRequestCode) {
-                    if (null == mUMA) {
-                        return
-                    }
-                    if (intent == null) { // Capture Photo if no image available
-                        if (mCM != null) {
-                            results = arrayOf(Uri.parse(mCM))
+                        val permissions = mutableListOf<String>()
+                        for (i in res.indices) {
+                            when (res[i]) {
+                                "android.webkit.resource.VIDEO_CAPTURE" -> permissions.add(Manifest.permission.CAMERA)
+                                "android.webkit.resource.AUDIO_CAPTURE" -> {
+                                    permissions.addAll(
+                                        listOf(
+                                            Manifest.permission.RECORD_AUDIO,
+                                            Manifest.permission.MODIFY_AUDIO_SETTINGS
+                                        )
+                                    )
+                                }
+                            }
                         }
-                    } else {
-                        val dataString = intent.dataString
-                        if (dataString != null) {
-                            results = arrayOf(Uri.parse(dataString))
-                        }
+
+                        audioVideoPermission.launch(permissions.toTypedArray())
                     }
                 }
             }
-            mUMA!!.onReceiveValue(results)
-            mUMA = null
-        } else {
-            if (requestCode == fileRequestCode) {
-                if (null == mUM) return
-                val result =
-                    if (intent == null || resultCode != Activity.RESULT_OK) null else intent.data
-                mUM!!.onReceiveValue(result)
-                mUM = null
+
+            override fun onShowFileChooser(
+                webView: WebView,
+                filePathCallback: ValueCallback<Array<Uri>>,
+                fileChooserParams: FileChooserParams
+            ): Boolean {
+                imageRequest.invoke(filePathCallback)
+                imagePermission.launch("image/*")
+                return true
+            }
+
+            override fun onGeolocationPermissionsShowPrompt(
+                origin: String?,
+                callback: GeolocationPermissions.Callback?
+            ) {
+                geoLocationRequest.invoke(origin, callback)
+                geoLocationPermission.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
             }
         }
     }
@@ -256,7 +268,14 @@ class NotificationsFragment : Fragment(), ClickListener {
         requireActivity().runOnUiThread {
             if (pos == 0) {
                 binding.tabAbout.currentTab = 0
-                binding.webView.loadUrl(Constant.aboutSurveyPath)
+
+                binding.llSurvey.visibility = View.VISIBLE
+                binding.llSurveyDownload.visibility = View.GONE
+                binding.llSurveyContent.visibility = View.GONE
+
+                if (binding.webView.url != Constant.aboutSurveyPath) {
+                    binding.webView.loadUrl(Constant.aboutSurveyPath)
+                }
             } else {
                 setSurveyForm()
             }
@@ -321,9 +340,10 @@ class NotificationsFragment : Fragment(), ClickListener {
                         Log.e("error", e.toString())
                     }
                 } else {
-                    binding.webView.loadUrl(Constant.indexSurveyPath)
+                    if (binding.webView.url != Constant.indexSurveyPath) {
+                        binding.webView.loadUrl(Constant.indexSurveyPath)
+                    }
                     binding.llSurvey.visibility = View.VISIBLE
-
                     binding.webView.webViewClient = object : WebViewClient() {
                         override fun onPageFinished(view: WebView, url: String) {
                             if (binding.tabAbout.currentTab == 1) {
@@ -453,7 +473,9 @@ class NotificationsFragment : Fragment(), ClickListener {
         binding.webViewConsent.settings.allowFileAccess = true
         binding.webViewConsent.settings.loadWithOverviewMode = true
 
-        binding.webViewConsent.loadUrl(Constant.consentSurveyPath)
+        if (binding.webViewConsent.url != Constant.consentSurveyPath) {
+            binding.webViewConsent.loadUrl(Constant.consentSurveyPath)
+        }
 
         val survey = SurveyWebAppInterface(this@NotificationsFragment)
         binding.webViewConsent.addJavascriptInterface(survey, "Android")
