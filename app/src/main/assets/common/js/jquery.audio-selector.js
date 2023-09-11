@@ -68,7 +68,7 @@
 	    		 			$next_cell.empty();
 		    				$next_cell.append('<input type="hidden" name="base64_string" value="" />');
 		    				$next_cell.append('<div style="margin-bottom:10px;"><button class="btn btn-success">Start recording</button><button class="btn btn-danger" style="display:none;">Stop recording</button></div>');
-		    				$next_cell.append('<audio class="open-audio" controls="" style="width:400px;display:none;"></audio>');
+		    				$next_cell.append('<audio class="open-audio" controls="" style="width:100%;display:none;"></audio>');
 		    	            $next_cell.append('<div class="progress" style="max-width:400px;margin:0px auto 0px auto;"><div class="progress-bar" style="width:0%;" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
 		    				$next_cell.append('<div class="progress-text"><span>0:00</span> / 1:00</div>')
 		    	            navigator.mediaDevices.getUserMedia({ video: false, audio: true }).then(function(camera) {
