@@ -5,12 +5,10 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.XmlResourceParser
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
-import android.os.Environment
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.Window
@@ -23,14 +21,11 @@ import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.model.AnswerVo
 import com.craigdietrich.covid19indigenous.retrfit.GetApi
 import com.craigdietrich.covid19indigenous.retrfit.RetrofitInstance
-import com.craigdietrich.covid19indigenous.ui.culture.CulResFragment
 import com.google.gson.Gson
 import kotlinx.coroutines.runBlocking
 import retrofit2.Call
 import retrofit2.Callback
-import java.io.BufferedReader
 import java.io.File
-import java.io.FileReader
 import java.io.IOException
 import java.util.*
 
@@ -49,15 +44,53 @@ class Constant {
         const val isAcceptSurvey = "isAcceptSurvey"
         const val surveyCode = "surveyCode"
 
-        const val aboutSurveyPath = "file:///android_asset/aboutSurvey.html"
-        const val indexSurveyPath = "file:///android_asset/common/index.html"
-        const val consentSurveyPath = "file:///android_asset/consent.html"
-        const val aboutProjectPath = "file:///android_asset/aboutProject.html"
-        const val aboutUsPath = "file:///android_asset/aboutUs.html"
+        const val aboutSurveyPath = "aboutSurvey"
+        const val indexSurveyPath = "common/index"
+        const val consentSurveyPath = "consent"
+        const val aboutProjectPath = "aboutProject"
+        const val aboutUsPath = "aboutUs"
 
         var isfetch = false
 
         var fileType = "image"// for file picker in survey form
+
+        fun String.getFile(): String {
+            val origin = "file:///android_asset/$this"
+            val locale = Covid19Indigenous.language
+
+            val languages = HashMap<String, String>()
+            val xml = Covid19Indigenous.instance.resources.getXml(R.xml.locales_config)
+            while (xml.next() != XmlResourceParser.END_TAG) {
+                if (xml.eventType != XmlResourceParser.START_TAG) {
+                    continue
+                }
+                if (xml.name == "locale") {
+                    if (xml.attributeCount > 0) {
+                        val l = xml.getAttributeValue(0)
+                        if (l.contains("-")) {
+                            val li = l.split("-")
+                            val local = Locale(li.first(), li.last())
+                            languages["${local.displayLanguage} (${local.displayCountry})"] =
+                                local.language
+                        } else {
+                            val local = Locale(l)
+                            languages[local.displayLanguage] = local.language
+                        }
+                        xml.nextTag()
+                    }
+                }
+            }
+
+            val supportedLocales = languages.values.toMutableList()
+            supportedLocales.sortBy { it }
+
+            val path = when {
+                supportedLocales.contains(locale) -> "${origin}_${locale}"
+                else -> "${origin}_${supportedLocales.first()}"
+            }
+
+            return "${path}.html"
+        }
 
         fun changeStatusBar(isDark: Boolean, context: Context, color: Int) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -95,26 +128,22 @@ class Constant {
 
                 return when {
 
-                    activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
-                            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) ||
-                            activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                    activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || activeNetwork.hasTransport(
+                        NetworkCapabilities.TRANSPORT_ETHERNET
+                    ) || activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
 
                     else -> false
                 }
             } else {
-                return connectivityManager.activeNetworkInfo != null &&
-                        connectivityManager.activeNetworkInfo!!.isConnectedOrConnecting
+                return connectivityManager.activeNetworkInfo != null && connectivityManager.activeNetworkInfo!!.isConnectedOrConnecting
             }
         }
 
         fun showAlert(context: Context, title: String, msg: String) {
-            AlertDialog.Builder(context)
-                .setTitle(title)
-                .setMessage(msg)
+            AlertDialog.Builder(context).setTitle(title).setMessage(msg)
                 .setPositiveButton("Ok") { dialog, _ ->
                     dialog.cancel()
-                }
-                .show()
+                }.show()
         }
 
         fun millsToRemainingHS(millis: Long): String {
@@ -172,7 +201,7 @@ class Constant {
             return File(surveyPath(), "questionnaires.json")
         }
 
-        fun manifestFile() : File {
+        fun manifestFile(): File {
             return File(culturePath(), "manifest.json")
         }
 
@@ -192,8 +221,7 @@ class Constant {
             val rnd = Random()
             val number: Int = rnd.nextInt(888889) + 111111
             return (System.currentTimeMillis() / 1000).toString() + "." + String.format(
-                "%06d",
-                number
+                "%06d", number
             )
         }
 
@@ -247,12 +275,12 @@ class Constant {
 
                                 val answer = Gson().fromJson(text, AnswerVo::class.java)
 
-                                val service = RetrofitInstance.getRetrofitInstance().create(GetApi::class.java)
+                                val service = RetrofitInstance.getRetrofitInstance()
+                                    .create(GetApi::class.java)
                                 val call = service.uploadAnswer(answer)
                                 call.enqueue(object : Callback<AnswerVo> {
                                     override fun onResponse(
-                                        call: Call<AnswerVo>,
-                                        response: retrofit2.Response<AnswerVo>
+                                        call: Call<AnswerVo>, response: retrofit2.Response<AnswerVo>
                                     ) {
                                         Log.d("res", response.body().toString())
 

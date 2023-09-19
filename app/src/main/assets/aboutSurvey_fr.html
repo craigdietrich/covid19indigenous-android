@@ -1,0 +1,36 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About Survey</title>
+  <link rel="stylesheet" href="about.css">
+  <script>
+  function doButtonClick(btn) {
+      webkit.messageHandlers.buttonAction.postMessage(btn);
+  }
+  </script>
+</head>
+<body>
+  <div>
+    <div style="text-align:center;">
+        <img src="OurDataIndigenous Logo w1000.png" class="logo" />
+    </div>
+    <p>Cette application mobile (Nos Données Autochtones) peut être utilisée afin d’administrer un questionnaire d’intérêt à une communauté ou une organisation en particulier. Elle peut être utilisée avec ou sans support technique. L’application a été conçue pour convenir à tous les sujets ou objectifs. 
+Les questionnaires sont créés en utilisant un tableau de bord en ligne sur un ordinateur. Une fois que le questionnaire a été créé avec le tableau de bord, il peut être téléchargé sur l’application mobile en utilisant des mots de passe uniques qui sont spécifiques à votre questionnaire ou même à des personnes individuelles que vous voulez inviter à répondre au questionnaire. Une fois que les participants ont complété leurs questionnaires, les responsables locaux peuvent immédiatement observer les données. Ceci ce fait à l’aide du tableau de bord en ligne en utilisant les outils de  “visualisation de données” qui démontrent les tendances dans les données. Si les communautés ou organisations sont intéressées à recevoir notre aide, elles peuvent nous contacter. Nous pouvons aider à preparer les données en toute confidentialité. </p>
+       <p> L’application est disponible pour tous en téléchargement. Des mots de passe uniques sont nécessaires pour accéder aux questionnaires. Les données recueillies par une communauté en utilisant ces mots de passes uniques appartiennent à cette même communauté. Nul autre n’a accès à ces données. </p>
+       <p class="spacer">&nbsp;</p>
+       <a class="button" href="javascript:doButtonClick('takeSurvey');">Répondre au questionnaire</a>
+       <p class="spacer">&nbsp;</p>
+       <p>Quiconque veut plus informations à propos de cette initiative, veut répondre aux questionnaires ou participer d’autre façon est le bienvenu. Vous pouvez nous contacter au ourdataindigenous@gmail.com.</p>
+      <p class="spacer">&nbsp;</p>
+       <hr />
+       <p class="spacer">&nbsp;</p>
+       <a class="button" href="javascript:doButtonClick('deleteUserData');">Supprimer le code de participant</a>
+       <p class="spacer">&nbsp;</p>
+
+    <p>&nbsp;</p>
+  </div>
+</body>
+</html>

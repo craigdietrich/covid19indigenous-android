@@ -22,6 +22,7 @@ import androidx.fragment.app.Fragment
 import com.craigdietrich.covid19indigenous.BuildConfig
 import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.common.Constant
+import com.craigdietrich.covid19indigenous.common.Constant.Companion.getFile
 import com.craigdietrich.covid19indigenous.databinding.FragmentSurveyBinding
 import com.craigdietrich.covid19indigenous.retrfit.GetApi
 import com.craigdietrich.covid19indigenous.retrfit.RetrofitInstance
@@ -128,8 +129,8 @@ class NotificationsFragment : Fragment(), ClickListener {
                     binding.llSurveyDownload.visibility = View.GONE
                     binding.llSurveyContent.visibility = View.GONE
 
-                    if (binding.webView.url != Constant.aboutSurveyPath) {
-                        binding.webView.loadUrl(Constant.aboutSurveyPath)
+                    if (binding.webView.url != Constant.aboutSurveyPath.getFile()) {
+                        binding.webView.loadUrl(Constant.aboutSurveyPath.getFile())
                     }
                 } else {
                     setSurveyForm()
@@ -143,8 +144,8 @@ class NotificationsFragment : Fragment(), ClickListener {
                     binding.llSurveyDownload.visibility = View.GONE
                     binding.llSurveyContent.visibility = View.GONE
 
-                    if (binding.webView.url != Constant.aboutSurveyPath) {
-                        binding.webView.loadUrl(Constant.aboutSurveyPath)
+                    if (binding.webView.url != Constant.aboutSurveyPath.getFile()) {
+                        binding.webView.loadUrl(Constant.aboutSurveyPath.getFile())
                     }
                 } else {
                     setSurveyForm()
@@ -189,8 +190,8 @@ class NotificationsFragment : Fragment(), ClickListener {
         binding.llSurveyDownload.visibility = View.GONE
 
         binding.tabAbout.currentTab = 0
-        if (binding.webView.url != Constant.aboutSurveyPath) {
-            binding.webView.loadUrl(Constant.aboutSurveyPath)
+        if (binding.webView.url != Constant.aboutSurveyPath.getFile()) {
+            binding.webView.loadUrl(Constant.aboutSurveyPath.getFile())
         }
     }
 
@@ -273,8 +274,8 @@ class NotificationsFragment : Fragment(), ClickListener {
                 binding.llSurveyDownload.visibility = View.GONE
                 binding.llSurveyContent.visibility = View.GONE
 
-                if (binding.webView.url != Constant.aboutSurveyPath) {
-                    binding.webView.loadUrl(Constant.aboutSurveyPath)
+                if (binding.webView.url != Constant.aboutSurveyPath.getFile()) {
+                    binding.webView.loadUrl(Constant.aboutSurveyPath.getFile())
                 }
             } else {
                 setSurveyForm()
@@ -340,8 +341,8 @@ class NotificationsFragment : Fragment(), ClickListener {
                         Log.e("error", e.toString())
                     }
                 } else {
-                    if (binding.webView.url != Constant.indexSurveyPath) {
-                        binding.webView.loadUrl(Constant.indexSurveyPath)
+                    if (binding.webView.url != Constant.indexSurveyPath.getFile()) {
+                        binding.webView.loadUrl(Constant.indexSurveyPath.getFile())
                     }
                     binding.llSurvey.visibility = View.VISIBLE
                     binding.webView.webViewClient = object : WebViewClient() {
@@ -473,8 +474,8 @@ class NotificationsFragment : Fragment(), ClickListener {
         binding.webViewConsent.settings.allowFileAccess = true
         binding.webViewConsent.settings.loadWithOverviewMode = true
 
-        if (binding.webViewConsent.url != Constant.consentSurveyPath) {
-            binding.webViewConsent.loadUrl(Constant.consentSurveyPath)
+        if (binding.webViewConsent.url != Constant.consentSurveyPath.getFile()) {
+            binding.webViewConsent.loadUrl(Constant.consentSurveyPath.getFile())
         }
 
         val survey = SurveyWebAppInterface(this@NotificationsFragment)
