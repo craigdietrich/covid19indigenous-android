@@ -13,6 +13,7 @@ import android.webkit.JavascriptInterface
 import androidx.fragment.app.Fragment
 import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.common.Constant
+import com.craigdietrich.covid19indigenous.common.Constant.Companion.getFile
 import com.craigdietrich.covid19indigenous.databinding.FragmentProjectBinding
 import com.dueeeke.tablayout.listener.OnTabSelectListener
 
@@ -43,7 +44,7 @@ class DashboardFragment : Fragment() {
         binding.webView.settings.javaScriptEnabled = true
 
         binding.webView.settings.setGeolocationEnabled(true)
-        binding.webView.loadUrl(Constant.aboutProjectPath)
+        binding.webView.loadUrl(Constant.aboutProjectPath.getFile())
 
         this.context?.let { WebAppInterface(it) }
             ?.let { binding.webView.addJavascriptInterface(it, "Android") }
@@ -54,9 +55,9 @@ class DashboardFragment : Fragment() {
         binding.tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
             override fun onTabSelect(position: Int) {
                 if (position == 0) {
-                    binding.webView.loadUrl(Constant.aboutProjectPath)
+                    binding.webView.loadUrl(Constant.aboutProjectPath.getFile())
                 } else {
-                    binding.webView.loadUrl(Constant.aboutUsPath)
+                    binding.webView.loadUrl(Constant.aboutUsPath.getFile())
                 }
             }
 

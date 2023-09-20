@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ourdataindigenous</string>
+    <string name="title_home">Accueil</string>
+    <string name="title_begin">Commencer</string>
+    <string name="title_dashboard">À propos</string>
+    <string name="title_project">Projet</string>
+    <string name="title_notifications">Questionnaire</string>
+    <string name="title_culture">Cul/Rés</string>
+    <string name="about_project">À propos du projet</string>
+    <string name="take_survey">Répondre à un questionnaire</string>
+    <string name="culture_resilience">Culture/Résilience</string>
+    <string name="home_title">NOS DONNÉES AUTOCHTONES</string>
+    <string name="home_desc">Une initiative menée par des peuples autochtones pour aider les communautés et organisations à créer et posséder des questionnaires et à générer des données à propos de sujets d’importance tels que la santé, la langue et la souveraineté alimentaire.</string>
+    <string name="home_select">Commencer en sélectionnant une activité ci-dessous</string>
+    <string name="codeBelow">S’il vous plaît entrez votre code de participant ci-dessous</string>
+    <string name="internet_connection">Cette étape requiert une connexion internet</string>
+    <string name="dont_have_code">Si vous n’avez pas de code de participant, contactez votre coordinateur de santé local ou un membre de l’équipe de Nos Données Autochtones</string>
+    <string name="participant_code">Code de participant</string>
+    <string name="submit">Soumettre</string>
+    <string name="media_content">L’application a besoin de récupérer le contenu media du serveur</string>
+    <string name="download_content">Télécharger le contenu</string>
+    <string name="about_project_tab">À propos du projet</string>
+    <string name="about_us">À propos de nous</string>
+    <string name="culture">Culture</string>
+    <string name="resilience">Résilience</string>
+    <string name="about_survey">À propos du questionnaire</string>
+    <string name="take_survey_tab">Répondre au questionnaire</string>
+    <string name="cancel">Annuler</string>
+    <string name="consent_and_continue">Consentir et continuer</string>
+    <string name="before_continuing">Avant de continuer, s’il vous plaît lire et consentir à ce qui suit</string>
+    <string name="fetch_new_content">Récupérer le nouveau contenu du serveur</string>
+    <string name="download_manifest">Télécharger le manifeste</string>
+    <string name="past_completed_surveys">Les questionnaires complétés sont prêts à être téléchargés</string>
+    <string name="uploading_answers">Chargement des réponses…</string>
+    <string name="checking_internet">Vérification de la connexion internet…</string>
+    <string name="reset_data">Réinitialiser les données</string>
+    <string name="reset_desc">Ceci supprimera votre code de participant, les questionnaires et réponses sauvegardés ainsi que les médias téléchargés. Êtes-vous sûr de vouloir réinitialiser les données?</string>
+    <string name="file_not_found">Fichier non trouvé</string>
+    <string name="not_found_desc">Ce contenu n’a pu être téléchargé. S’il vous plaît rafraîchir le contenu et réessayer.</string>
+    <string name="no_connection">Aucune connexion</string>
+    <string name="no_connection_desc">Votre appareil ne semble pas avoir de connexion internet. S’il vous plaît établir une connexion et réessayer.</string>
+    <string name="error">Erreur</string>
+    <string name="code_not_valid">Le code n’est pas associé à un utilisateur. S’il vous plaît essayez à nouveau.</string>
+    <string name="updating_questionnaires">Mise-à-jour des questionnaires sur le serveur…</string>
+</resources>
