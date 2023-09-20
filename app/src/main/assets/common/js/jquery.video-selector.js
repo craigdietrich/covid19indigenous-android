@@ -39,20 +39,19 @@
 	 			$next_cell.empty();
 				$next_cell.append('<input type="hidden" name="base64_string" value="" />');
 				$next_cell.append('<div style="margin-bottom:10px;"><button class="btn btn-success">Start recording</button><button class="btn btn-danger" style="display:none;">Stop recording</button></div>');
-				$next_cell.append('<video class="open-video" controls="" style="width:100%;display:none;"></video>');
+				$next_cell.append('<video class="open-video" controls="false" style="width:100%;display:none;"></video>');
 	            $next_cell.append('<div class="progress" style="max-width:400px;margin:0px auto 0px auto;"><div class="progress-bar" style="width:0%;" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
-				$next_cell.append('<div class="progress-text"><span>0:00</span> / 1:00</div>')
+				$next_cell.append('<div class="progress-text"><span>0:00</span> / 1:00</div>');
 	            navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(function(camera) {
-	                var recordingHints = {
-	                    type: 'video',
-	                    /* mimeType: 'video/webm;codecs=h264', */
-	                    /* recorderType: MediaStreamRecorder */
-	                };
-	                recorder = RecordRTC(camera, recordingHints);  // Global
+	                $next_cell.find('video')[0].srcObject = camera;
+	                $next_cell.find('video')[0].autoplay = true;
+	                $next_cell.find('video')[0].controls = false;
+	                $next_cell.find('video')[0].muted = true;
+	                $next_cell.find('video').show();
+	                recorder = RecordRTC(camera, {
+	                    type: 'video'
+	                });
 	                var is_recording = false;
-                    $next_cell.find('video')[0].muted = false;
-                    $next_cell.find('video')[0].srcObject = null;
-                	$next_cell.find('video').show();
 	                $next_cell.find('button:first').on('click', function() {
 	                	is_recording = true;
 	                	var $this = $(this);
@@ -68,14 +67,14 @@
 	    	                	$(this).hide();
 	    	                    recorder.stopRecording(function() {
 	    	                        var blob = recorder.getBlob();
-	    	                        $next_cell.find('video')[0].muted = false;
-	    	                        $next_cell.find('video')[0].srcObject = null;
-	    	                        $next_cell.find('video')[0].pause();
 	    	                        camera.getTracks().forEach(function(track) {
-	    	                            track.stop();
+	    	                        	track.stop();
 	    	                        });
+	    	    	                $next_cell.find('video')[0].srcObject = null;
+	    	    	                $next_cell.find('video')[0].autoplay = false;
+	    	    	                $next_cell.find('video')[0].controls = true;
+	    	    	                $next_cell.find('video')[0].muted = false;
 	    	                        $next_cell.find('video')[0].src = URL.createObjectURL(blob);
-	    	                        $next_cell.find('video').show();
 	    	                        $next_cell.find('.progress, .progress-text').hide();
 	    	                        var reader = new FileReader();
 	    	                        reader.onloadend = function() {
@@ -87,10 +86,6 @@
 	                			return;
 	                		}
 	                		timer++;
-	                		if (timer == max_time) {
-	                			$next_cell.find('button:last').trigger('click');
-	                			return;
-	                		}
 	                		var str = calculateTimeDuration(timer);
 	                		$this.closest('.row').find('.progress-text').find('span').text(str);
 	                		var width = (timer / max_time) * 100;
@@ -106,14 +101,14 @@
 	                	$(this).hide();
 	                    recorder.stopRecording(function() {
 	                        var blob = recorder.getBlob();
-	                        $next_cell.find('video')[0].muted = false;
-	                        $next_cell.find('video')[0].srcObject = null;
-	                        $next_cell.find('video')[0].pause();
 	                        camera.getTracks().forEach(function(track) {
-	                            track.stop();
+	                        	track.stop();
 	                        });
+	    	                $next_cell.find('video')[0].srcObject = null;
+	    	                $next_cell.find('video')[0].autoplay = false;
+	    	                $next_cell.find('video')[0].controls = true;
+	    	                $next_cell.find('video')[0].muted = false;
 	                        $next_cell.find('video')[0].src = URL.createObjectURL(blob);
-	                        $next_cell.find('video').show();
 	                        $next_cell.find('.progress, .progress-text').hide();
 	                        var reader = new FileReader();
 	                        reader.onloadend = function() {
@@ -124,7 +119,7 @@
 	                    });
 	                });
 	            });
-	    				// };
+
 	    	});
 	    	
 	    	$this.find('form')[0].getValues = function() {
