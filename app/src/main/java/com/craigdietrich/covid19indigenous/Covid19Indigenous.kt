@@ -14,17 +14,11 @@ class Covid19Indigenous : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-
-        language = Locale.getDefault().language
+        language = Locale.getDefault().toLanguageTag()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-
-        language = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            newConfig.locales.get(0).language
-        } else {
-            newConfig.locale.language
-        }
+        language = newConfig.locales.get(0).toLanguageTag()
     }
 }

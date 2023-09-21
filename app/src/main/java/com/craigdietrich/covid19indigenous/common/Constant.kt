@@ -8,7 +8,6 @@ import android.content.SharedPreferences
 import android.content.res.XmlResourceParser
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Build
 import android.util.Log
 import android.view.View
 import android.view.Window
@@ -56,7 +55,12 @@ class Constant {
 
         fun String.getFile(): String {
             val origin = "file:///android_asset/$this"
-            val locale = Covid19Indigenous.language
+            val lan = Covid19Indigenous.language
+            val locale = when {
+                lan.contains("_") -> lan.split("_").first()
+                lan.contains("-") -> lan.split("-").first()
+                else -> lan
+            }
 
             val languages = HashMap<String, String>()
             val xml = Covid19Indigenous.instance.resources.getXml(R.xml.locales_config)
@@ -92,28 +96,23 @@ class Constant {
             return "${path}.html"
         }
 
+        @Suppress("DEPRECATION")
         fun changeStatusBar(isDark: Boolean, context: Context, color: Int) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                val window: Window = (context as Activity?)!!.window
-                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-                window.statusBarColor = ContextCompat.getColor(context, color)
-                if (isDark) {
+            val window: Window = (context as Activity?)!!.window
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.statusBarColor = ContextCompat.getColor(context, color)
+            if (isDark) {
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                        val decorView: View = window.decorView
-                        var systemUiVisibilityFlags = decorView.systemUiVisibility
-                        systemUiVisibilityFlags =
-                            systemUiVisibilityFlags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                        decorView.systemUiVisibility = systemUiVisibilityFlags
-                    }
+                window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                val decorView: View = window.decorView
+                var systemUiVisibilityFlags = decorView.systemUiVisibility
+                systemUiVisibilityFlags =
+                    systemUiVisibilityFlags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                decorView.systemUiVisibility = systemUiVisibilityFlags
 
 
-                } else {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                    }
-                }
+            } else {
+                window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
         }
 
@@ -121,21 +120,16 @@ class Constant {
             val connectivityManager =
                 activity.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val networkCapabilities = connectivityManager.activeNetwork ?: return false
-                val activeNetwork =
-                    connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
+            val networkCapabilities = connectivityManager.activeNetwork ?: return false
+            val activeNetwork =
+                connectivityManager.getNetworkCapabilities(networkCapabilities) ?: return false
 
-                return when {
+            return when {
+                activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || activeNetwork.hasTransport(
+                    NetworkCapabilities.TRANSPORT_ETHERNET
+                ) || activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
 
-                    activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || activeNetwork.hasTransport(
-                        NetworkCapabilities.TRANSPORT_ETHERNET
-                    ) || activeNetwork.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
-
-                    else -> false
-                }
-            } else {
-                return connectivityManager.activeNetworkInfo != null && connectivityManager.activeNetworkInfo!!.isConnectedOrConnecting
+                else -> false
             }
         }
 
