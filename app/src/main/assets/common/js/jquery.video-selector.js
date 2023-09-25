@@ -43,9 +43,10 @@
 	            $next_cell.append('<div class="progress" style="max-width:400px;margin:0px auto 0px auto;"><div class="progress-bar" style="width:0%;" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>');
 				$next_cell.append('<div class="progress-text"><span>0:00</span> / 1:00</div>');
 	            navigator.mediaDevices.getUserMedia({
-                    	video: true,
-                    	audio: true,
-                    	facingMode: { exact: "environment" }
+	                video: {
+	                    facingMode: {exact : 'environment'}
+	                },
+	            	audio: true 
                     }).then(function(camera) {
 	                $next_cell.find('video')[0].srcObject = camera;
 	                $next_cell.find('video')[0].autoplay = true;
@@ -122,6 +123,36 @@
 	                        reader.readAsDataURL(blob); 
 	                    });
 	                });
+	            }).catch(function(error) {
+	            	$next_cell.empty();
+    			$next_cell.append('<input type="hidden" name="base64_string" value="" />');
+    			$next_cell.append('<input type="file" style="display:none;" />');  // TODO: image-specific attribute
+    			$next_cell.append('<div style="text-center msg"></div>');
+    			$next_cell.append('<video src="" style="width:400px;" />');
+    			$next_cell.find('input[type="file"]').on('change', function() {
+    				 var reader = new FileReader();
+    				 var f = this.files;
+    				 $next_cell.find('.msg').text('Reading file from your device...');
+	    			 reader.onloadend = function () {
+	    				$next_cell.find('.msg').text('');
+	    				var encoded = reader.result;
+	    				var mime = encoded.substring("data:".length, encoded.indexOf(";base64"));
+	    				var mime_arr = mime.split('/');
+	    				if (mime_arr[0].toLowerCase() != 'video' || 'undefined' == typeof(mime_arr[1])) {
+	    					alert('Uploaded file was not a video. Please try again.');
+	    					return;
+	    				}
+	    	           $next_cell.find('video')[0].srcObject = null;
+	    	          $next_cell.find('video')[0].autoplay = false;
+	    	          $next_cell.find('video')[0].controls = true;
+	    	          $next_cell.find('video')[0].muted = false;
+	    				$next_cell.find('video').attr('src', encoded);
+	    				$next_cell.find('input[type="hidden"]').val(encoded);
+	    			 };
+	    			 setTimeout(function() {
+	    				reader.readAsDataURL(f[0]);
+    				 }, 500);
+    			}).trigger('click');
 	            });
 
 	    	});
