@@ -5,19 +5,27 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.ContentValues.TAG
+import android.content.Context
 import android.content.Intent
+import android.content.IntentSender
+import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.webkit.*
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.craigdietrich.covid19indigenous.BuildConfig
 import com.craigdietrich.covid19indigenous.R
@@ -26,7 +34,14 @@ import com.craigdietrich.covid19indigenous.common.Constant.Companion.getFile
 import com.craigdietrich.covid19indigenous.databinding.FragmentSurveyBinding
 import com.craigdietrich.covid19indigenous.retrfit.GetApi
 import com.craigdietrich.covid19indigenous.retrfit.RetrofitInstance
+import com.craigdietrich.covid19indigenous.ui.dialogPermission.PermissionDeniedDialogFragment
 import com.dueeeke.tablayout.listener.OnTabSelectListener
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationSettingsStatusCodes
 import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -34,7 +49,7 @@ import retrofit2.Callback
 import java.io.File
 import java.io.FileWriter
 
-class NotificationsFragment : Fragment(), ClickListener {
+class NotificationsFragment : Fragment() {
 
     private var isFirstTimeConsentAccept = false
     var jsonResponse = ""
@@ -43,32 +58,45 @@ class NotificationsFragment : Fragment(), ClickListener {
 
     private lateinit var origin: String
     private lateinit var callback: GeolocationPermissions.Callback
+    var clickCount=0
+
+
     private val geoLocationRequest: (String?, GeolocationPermissions.Callback?) -> Unit =
         { origin, callback ->
             origin?.let { this.origin = it }
             callback?.let { this.callback = it }
         }
+
+    private fun checkPermission(permission: String): Boolean {
+        return ActivityCompat.checkSelfPermission(
+            requireContext(),
+            permission
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun checkGPSEnable(): Boolean {
+        val manager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return manager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.S)
     private val geoLocationPermission = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) {
         if (it.values.all { result -> result }) {
-            callback.invoke(origin, true, false)
+            if (checkGPSEnable()) {
+                callback.invoke(origin, true, false)
+            } else {
+                checkLocationSetting()
+            }
+        } else if (!shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) ||
+            !shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
+        ) {
+            callback.invoke(origin, false, false)
         } else {
             callback.invoke(origin, false, false)
         }
     }
-
-    private lateinit var imageCallback: ValueCallback<Array<Uri>>
-    private val imageRequest: (ValueCallback<Array<Uri>>) -> Unit = { callback ->
-        imageCallback = callback
-    }
-    private val imagePermission = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { result ->
-        result?.let { imageCallback.onReceiveValue(arrayOf(it)) }
-    }
-
-
     private lateinit var webRequest: PermissionRequest
     private val audioVideoRequest: (PermissionRequest) -> Unit = { request ->
         webRequest = request
@@ -77,23 +105,49 @@ class NotificationsFragment : Fragment(), ClickListener {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { results ->
         if (results.values.all { it }) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                requireActivity().runOnUiThread {
-                    webRequest.grant(webRequest.resources)
-                }
+            requireActivity().runOnUiThread {
+                webRequest.grant(webRequest.resources)
             }
+        } else if (!shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
+            || !shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO)
+            || !shouldShowRequestPermissionRationale(Manifest.permission.MODIFY_AUDIO_SETTINGS)
+        ) {
+            webRequest.grant(emptyArray())
+            showPermissionRationale()
+
         } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                requireActivity().runOnUiThread {
-                    webRequest.deny()
-                }
-            }
+           /* filePathCallback.onReceiveValue(null)*/
+            webRequest.deny()
         }
     }
 
+
+    private lateinit var imageCallback: ValueCallback<Array<Uri>>
+    private val imageRequest: (ValueCallback<Array<Uri>>) -> Unit = { callback ->
+        imageCallback = callback
+    }
+    private val imagePermission = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { result ->
+
+        result?.let { imageCallback.onReceiveValue(arrayOf(it)) }
+            ?: imageCallback.onReceiveValue(emptyArray())
+    }
+
+
+    private val locationSettingsLauncher = registerForActivityResult(
+        ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // User enabled location settings
+            callback.invoke(origin, true, false)
+        } else {
+            // User did not enable location settings
+            callback.invoke(origin, false, false)
+        }
+    }
     private var selectedTab = 0
 
-    @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("JavascriptInterface", "we", "AddJavascriptInterface")
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -105,8 +159,6 @@ class NotificationsFragment : Fragment(), ClickListener {
             context = context as Activity,
             color = R.color.grayBg
         )
-
-        onWebButtonClick(this)
 
         binding = FragmentSurveyBinding.inflate(inflater, container, false)
 
@@ -195,7 +247,6 @@ class NotificationsFragment : Fragment(), ClickListener {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled", "AddJavascriptInterface")
     private fun initWebView() {
 
@@ -210,62 +261,141 @@ class NotificationsFragment : Fragment(), ClickListener {
 
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
 
-        val survey = SurveyWebAppInterface(this@NotificationsFragment)
-        binding.webView.addJavascriptInterface(survey, "Android")
+        binding.webView.addJavascriptInterface(SurveyWebAppInterface(), "Android")
 
         binding.webView.webChromeClient = object : WebChromeClient() {
-            override fun onPermissionRequest(request: PermissionRequest?) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    val res = request?.resources
-                    if (res != null) {
-                        audioVideoRequest.invoke(request)
+            override fun onPermissionRequest(request: PermissionRequest) {
+                val res = request?.resources
+                if (res != null) {
+                    audioVideoRequest.invoke(request)
 
-                        val permissions = mutableListOf<String>()
-                        for (i in res.indices) {
-                            when (res[i]) {
-                                "android.webkit.resource.VIDEO_CAPTURE" -> permissions.add(Manifest.permission.CAMERA)
-                                "android.webkit.resource.AUDIO_CAPTURE" -> {
-                                    permissions.addAll(
-                                        listOf(
-                                            Manifest.permission.RECORD_AUDIO,
-                                            Manifest.permission.MODIFY_AUDIO_SETTINGS
-                                        )
+                    val permissions = mutableListOf<String>()
+                    for (i in res.indices) {
+                        when (res[i]) {
+                            "android.webkit.resource.VIDEO_CAPTURE" -> permissions.add(Manifest.permission.CAMERA)
+                            "android.webkit.resource.AUDIO_CAPTURE" -> {
+                                permissions.addAll(
+                                    listOf(
+                                        Manifest.permission.RECORD_AUDIO,
+                                        Manifest.permission.MODIFY_AUDIO_SETTINGS
                                     )
-                                }
+                                )
                             }
                         }
-
-                        audioVideoPermission.launch(permissions.toTypedArray())
                     }
+
+                    audioVideoPermission.launch(permissions.toTypedArray())
                 }
+
             }
+
 
             override fun onShowFileChooser(
                 webView: WebView,
                 filePathCallback: ValueCallback<Array<Uri>>,
                 fileChooserParams: FileChooserParams
             ): Boolean {
-                imageRequest.invoke(filePathCallback)
-                imagePermission.launch("image/*")
-                return true
+                if(Constant.fileType=="photo"){
+                    imageRequest.invoke(filePathCallback)
+                    imagePermission.launch("image/*")
+                    return true
+                }
+                return false
             }
 
+            @RequiresApi(Build.VERSION_CODES.S)
             override fun onGeolocationPermissionsShowPrompt(
                 origin: String?,
                 callback: GeolocationPermissions.Callback?
             ) {
-                geoLocationRequest.invoke(origin, callback)
-                geoLocationPermission.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
-                )
+                val gpsEnabled = checkGPSEnable()
+                val fineLocationGrated = checkPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                val coarseLocationGranted =
+                    checkPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                if (gpsEnabled && (fineLocationGrated || coarseLocationGranted)) {
+                    callback!!.invoke(origin, true, false)
+                } else {
+                    if (gpsEnabled) {
+                        if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) ||
+                            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
+                        ) {
+                            val dialogFragment =
+                                PermissionDeniedDialogFragment(positiveButtonClick = {
+                                    callback!!.invoke(origin, false, false)
+                                    openAppSettings()
+                                }, negativeButtonClick = {
+                                    callback!!.invoke(origin, false, false)
+                                })
+                            dialogFragment.isCancelable = false
+                            dialogFragment.show(
+                                childFragmentManager,
+                                "PermissionDeniedDialogFragment"
+                            )
+                        } else {
+                            geoLocationRequest.invoke(origin, callback)
+                            geoLocationPermission.launch(
+                                arrayOf(
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION
+                                )
+                            )
+
+                        }
+                    } else {
+                        geoLocationRequest.invoke(origin, callback)
+                        checkLocationSetting()
+                    }
+                }
             }
         }
     }
 
-    override fun changeTab(pos: Int) {
+    private fun checkLocationSetting() {
+        val builder = LocationSettingsRequest.Builder().apply {
+            addLocationRequest(LocationRequest.Builder(1000).build())
+            setAlwaysShow(true)
+        }.build()
+
+        val result =
+            LocationServices.getSettingsClient(requireContext()).checkLocationSettings(builder)
+
+        result.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                if (checkGPSEnable()) {
+                    callback.invoke(origin, true, false)
+                }
+            } else {
+                val exception = task.exception
+                if (exception is ApiException) {
+                    when (exception.statusCode) {
+                        LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> {
+                            val resolvable = exception as ResolvableApiException
+                            try {
+                                val intentSenderRequest =
+                                    IntentSenderRequest.Builder(resolvable.resolution.intentSender)
+                                        .build()
+                                locationSettingsLauncher.launch(intentSenderRequest)
+                            } catch (sendEx: IntentSender.SendIntentException) {
+                                // Handle the exception appropriately
+                            }
+                            /* LocationSettingsLauncher.launch(resolvable.resolution)*/
+                            /*callback.invoke(origin, true, false)*/
+                            Log.d(TAG, "checkSetting: RESOLUTION_REQUIRED")
+                        }
+
+                        LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
+                            /*  callback.invoke(origin, false, false)*/
+                        }
+                    }
+                } else {
+                    // Handle other exceptions if needed
+                        }
+            }
+        }
+    }
+
+
+    fun changeTab(pos: Int) {
         requireActivity().runOnUiThread {
             if (pos == 0) {
                 binding.tabAbout.currentTab = 0
@@ -478,84 +608,104 @@ class NotificationsFragment : Fragment(), ClickListener {
             binding.webViewConsent.loadUrl(Constant.consentSurveyPath.getFile())
         }
 
-        val survey = SurveyWebAppInterface(this@NotificationsFragment)
-        binding.webViewConsent.addJavascriptInterface(survey, "Android")
+        binding.webViewConsent.addJavascriptInterface(SurveyWebAppInterface(), "Android")
     }
-}
 
-class SurveyWebAppInterface(private val mContext: NotificationsFragment) {
-    /** Show a toast from the web page  */
-    @JavascriptInterface
-    fun showToast(toast: String) {
-        when (toast) {
-            "takeSurvey" -> {
-                clickListener!!.changeTab(1)
+    private fun openAppSettings() {
+        val intent = Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.fromParts("package", requireContext().packageName, null)
+        )
+        startActivity(intent)
+    }
+
+    private fun showPermissionRationale() {
+        val rationaleDialog = AlertDialog.Builder(requireContext())
+            .setTitle("Permission Required")
+            .setMessage("We need these permissions to capture audio and video.")
+            .setPositiveButton("OK") { _, _ ->
+                openAppSettings()
             }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+                /*webRequest.grant(emptyArray())*/
 
-            "deleteUserData" -> {
-                AlertDialog.Builder(mContext.requireContext())
-                    .setTitle(mContext.getString(R.string.reset_data))
-                    .setMessage(mContext.getString(R.string.reset_desc))
-                    .setPositiveButton("Ok") { dialog, _ ->
-                        dialog.cancel()
-                        runBlocking {
-                            Constant.deleteSurveyFiles(Constant.surveyPath())
-                            Constant.writeSP(
-                                mContext.requireContext(),
-                                Constant.isAcceptSurvey,
-                                "false"
-                            )
-                            Constant.writeSP(mContext.requireContext(), Constant.surveyCode, "")
+            }
+            .setCancelable(true) // Prevent user from dismissing the dialog by tapping outside
+            .create()
+
+        rationaleDialog.show()
+    }
+
+    inner class SurveyWebAppInterface {
+        /** Show a toast from the web page  */
+        @JavascriptInterface
+        fun showToast(toast: String) {
+            when (toast) {
+                "takeSurvey" -> {
+                    selectedTab = 1
+                    changeTab(1)
+                }
+
+                "deleteUserData" -> {
+                    AlertDialog.Builder(requireContext())
+                        .setTitle(getString(R.string.reset_data))
+                        .setMessage(getString(R.string.reset_desc))
+                        .setPositiveButton("Ok") { dialog, _ ->
+                            dialog.cancel()
+                            runBlocking {
+                                Constant.deleteSurveyFiles(Constant.surveyPath())
+                                Constant.writeSP(
+                                    requireContext(),
+                                    Constant.isAcceptSurvey,
+                                    "false"
+                                )
+                                Constant.writeSP(requireContext(), Constant.surveyCode, "")
+                            }
                         }
-                    }
-                    .setNegativeButton("Cancel") { dialog, _ ->
-                        dialog.cancel()
-                    }
-                    .show()
+                        .setNegativeButton("Cancel") { dialog, _ ->
+                            dialog.cancel()
+                        }
+                        .show()
+                }
             }
         }
-    }
 
-    @JavascriptInterface
-    fun setFileType(type: String) {
-        Constant.fileType = type
-    }
+        @JavascriptInterface
+        fun setFileType(type: String) {
+            Constant.fileType = type
+        }
 
-    @JavascriptInterface
-    fun showAns(msg: String) {
-        try {
-            val file = File(Constant.surveyPath(), "answers_" + Constant.timeStamp() + ".json")
-            val writer = FileWriter(file)
-            writer.append(msg)
-            writer.flush()
-            writer.close()
+        @JavascriptInterface
+        fun showAns(msg: String) {
+            try {
+                val file = File(Constant.surveyPath(), "answers_" + Constant.timeStamp() + ".json")
+                val writer = FileWriter(file)
+                writer.append(msg)
+                writer.flush()
+                writer.close()
 
-            Constant.uploadingAnswerDialog(mContext.requireContext())
+                Constant.uploadingAnswerDialog(requireContext())
 
-            clickListener!!.changeTab(0)
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
+                selectedTab = 0
+                changeTab(0)
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        @JavascriptInterface
+        fun showConsent(msg: String) {
+            var url = msg
+
+            if (!url.startsWith("http://") && !url.startsWith("https://"))
+                url = "http://$url"
+
+            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(browserIntent)
         }
     }
-
-    @JavascriptInterface
-    fun showConsent(msg: String) {
-        var url = msg
-
-        if (!url.startsWith("http://") && !url.startsWith("https://"))
-            url = "http://$url"
-
-        val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-        mContext.startActivity(browserIntent)
-    }
 }
 
-private var clickListener: ClickListener? = null
 
-fun onWebButtonClick(clickListener1: ClickListener?) {
-    clickListener = clickListener1
-}
 
-interface ClickListener {
-    fun changeTab(pos: Int)
-}

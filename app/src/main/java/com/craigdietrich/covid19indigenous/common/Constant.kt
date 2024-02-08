@@ -51,7 +51,7 @@ class Constant {
 
         var isfetch = false
 
-        var fileType = "image"// for file picker in survey form
+        var fileType = "photo"// for file picker in survey form
 
         fun String.getFile(): String {
             val origin = "file:///android_asset/$this"

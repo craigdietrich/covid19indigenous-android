@@ -35,7 +35,7 @@
     		}
     		
 	    	$row.find('.open-selector-element').on('click', function() {
-
+                        Android.setFileType('audio')
 	    				/*
 	    				if (jQuery.browser.mobile) {
 		    				$next_cell.append('<input type="hidden" name="base64_string" value="" />');
