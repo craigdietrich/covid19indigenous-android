@@ -49,6 +49,7 @@
 	    				$modal.modal('hide');
 	    			});
 	    			$modal.find('button:last').off('click').on('click', function() {
+
 	    				var $el = $('#confirmSwitchMediaTypeModal').data('$element');
 	    				$el.click();
 	    				$modal.modal('hide');
@@ -75,6 +76,7 @@
 	    				$next_cell.find('textarea').focus();
 	    				break;
 	    			case 'photo':
+	    			Android.setFileType('photo')
 	    				$next_cell.append('<input type="hidden" name="base64_string" value="" />');
 	    				$next_cell.append('<input type="file" style="display:none;" />');  // TODO: image-specific attribute
 	    				$next_cell.append('<div style="text-center msg"></div>');
@@ -101,7 +103,7 @@
 	    				}).trigger('click');
 	    				break;
 	    			case 'video':
-
+                        Android.setFileType('video')
 	    	 			$next_cell.empty();
 	    				$next_cell.append('<input type="hidden" name="base64_string" value="" />');
 	    				$next_cell.append('<div style="margin-bottom:10px;"><button class="btn btn-success">Start recording</button><button class="btn btn-danger" style="display:none;">Stop recording</button></div>');

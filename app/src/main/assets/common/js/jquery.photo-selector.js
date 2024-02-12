@@ -19,7 +19,7 @@
     		var $next_cell = $('<div class="col-12"></div>').appendTo($next_row);
     		
     		$row.find('.photo').on('click', function() {
-    			
+    			Android.setFileType('photo')
     			$next_cell.empty();
     	    	$next_cell.append('<input type="hidden" name="base64_string" value="" />');
     	    	$next_cell.append('<input type="file" style="display:none;" />');  // TODO: image-specific attribute
