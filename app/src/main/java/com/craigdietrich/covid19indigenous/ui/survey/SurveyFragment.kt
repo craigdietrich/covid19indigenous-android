@@ -42,6 +42,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.LocationSettingsStatusCodes
+import gun0912.tedimagepicker.builder.TedImagePicker
 import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -58,7 +59,7 @@ class NotificationsFragment : Fragment() {
 
     private lateinit var origin: String
     private lateinit var callback: GeolocationPermissions.Callback
-    var clickCount=0
+    var clickCount = 0
 
 
     private val geoLocationRequest: (String?, GeolocationPermissions.Callback?) -> Unit =
@@ -116,7 +117,7 @@ class NotificationsFragment : Fragment() {
             showPermissionRationale()
 
         } else {
-           /* filePathCallback.onReceiveValue(null)*/
+            /* filePathCallback.onReceiveValue(null)*/
             webRequest.deny()
         }
     }
@@ -126,13 +127,10 @@ class NotificationsFragment : Fragment() {
     private val imageRequest: (ValueCallback<Array<Uri>>) -> Unit = { callback ->
         imageCallback = callback
     }
-    private val imagePermission = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { result ->
 
-        result?.let { imageCallback.onReceiveValue(arrayOf(it)) }
-            ?: imageCallback.onReceiveValue(emptyArray())
-    }
+    private val cameraPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { result -> result }
 
 
     private val locationSettingsLauncher = registerForActivityResult(
@@ -295,9 +293,31 @@ class NotificationsFragment : Fragment() {
                 filePathCallback: ValueCallback<Array<Uri>>,
                 fileChooserParams: FileChooserParams
             ): Boolean {
-                if(Constant.fileType=="photo"){
+                if (Constant.fileType == "photo") {
                     imageRequest.invoke(filePathCallback)
-                    imagePermission.launch("image/*")
+                    if (checkPermission(Manifest.permission.CAMERA)) {
+                        TedImagePicker.with(requireContext())
+                            .start { uri ->
+                                imageCallback.onReceiveValue(arrayOf(uri))
+                            }
+                    } else {
+                        if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
+                        ) {
+                            val dialogFragment =
+                                PermissionDeniedDialogFragment(content = "Camera permission is required. Please grant it in app settings.",positiveButtonClick = {
+                                    openAppSettings()
+                                }, negativeButtonClick = {
+                                })
+                            dialogFragment.isCancelable = false
+                            dialogFragment.show(
+                                childFragmentManager,
+                                "PermissionDeniedDialogFragment"
+                            )
+                        } else {
+                            cameraPermission.launch(Manifest.permission.CAMERA)
+                        }
+                        return false
+                    }
                     return true
                 }
                 return false
@@ -320,7 +340,7 @@ class NotificationsFragment : Fragment() {
                             shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
                         ) {
                             val dialogFragment =
-                                PermissionDeniedDialogFragment(positiveButtonClick = {
+                                PermissionDeniedDialogFragment(content = "Location permission is required. Please grant it in app settings.",positiveButtonClick = {
                                     callback!!.invoke(origin, false, false)
                                     openAppSettings()
                                 }, negativeButtonClick = {
@@ -389,7 +409,7 @@ class NotificationsFragment : Fragment() {
                     }
                 } else {
                     // Handle other exceptions if needed
-                        }
+                }
             }
         }
     }
@@ -706,6 +726,5 @@ class NotificationsFragment : Fragment() {
         }
     }
 }
-
 
 

@@ -8,11 +8,11 @@ import android.os.Bundle
 import android.provider.Settings
 import androidx.fragment.app.DialogFragment
 
-class PermissionDeniedDialogFragment(val positiveButtonClick: () -> Unit, val negativeButtonClick: () -> Unit) : DialogFragment() {
+class PermissionDeniedDialogFragment(val content:String,val positiveButtonClick: () -> Unit, val negativeButtonClick: () -> Unit) : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return AlertDialog.Builder(requireContext())
             .setTitle("Permission Denied")
-            .setMessage("Location permission is required. Please grant it in app settings.")
+            .setMessage(content)
             .setPositiveButton("OK") { dialog, _ ->
                 dialog.dismiss()
                 positiveButtonClick.invoke()
