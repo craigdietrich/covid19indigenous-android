@@ -1,5 +1,7 @@
 package com.craigdietrich.covid19indigenous
 
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.os.StrictMode
 import java.io.BufferedInputStream
 import java.io.File
@@ -25,6 +27,12 @@ fun String.loadFile(): InputStream? {
 
     return null
 }
+
+val Resources.isLandscape
+    get(): Boolean {
+        val orientation: Int = this.configuration.orientation
+        return orientation == Configuration.ORIENTATION_LANDSCAPE
+    }
 
 fun InputStream.writeToFile(file: File) {
     file.outputStream().use { output ->

@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimary"
+    android:background="@color/whiteText"
     android:orientation="vertical"
     tools:context=".ui.survey.NotificationsFragment">
 
@@ -29,194 +29,197 @@
         tl:tl_tab_space_equal="true" />
 
     <LinearLayout
-        android:id="@+id/llSurvey"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:visibility="visible"
-        tools:visibility="gone">
+        android:background="@color/colorPrimary"
+        android:orientation="vertical">
 
-        <WebView
-            android:id="@+id/webView"
+        <LinearLayout
+            android:id="@+id/llSurvey"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-    </LinearLayout>
+            android:orientation="vertical"
+            android:visibility="visible"
+            tools:visibility="gone">
 
-    <LinearLayout
-        android:id="@+id/llSurveyDownload"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/colorPrimary"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:paddingLeft="@dimen/_60sdp"
-        android:paddingRight="@dimen/_60sdp"
-        android:visibility="gone"
-        tools:visibility="gone">
+            <WebView
+                android:id="@+id/webView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </LinearLayout>
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <TextView
+        <LinearLayout
+            android:id="@+id/llSurveyDownload"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@color/colorPrimary"
             android:gravity="center"
-            android:text="@string/codeBelow"
-            android:textColor="@color/black"
-            android:textSize="@dimen/_20ssp" />
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/_60sdp"
+            android:paddingRight="@dimen/_60sdp"
+            android:visibility="gone"
+            tools:visibility="gone">
 
-        <EditText
-            android:id="@+id/edtCode"
+            <androidx.legacy.widget.Space
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/codeBelow"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_20ssp" />
+
+            <EditText
+                android:id="@+id/edtCode"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_40sdp"
+                android:layout_marginTop="@dimen/_20sdp"
+                android:background="@drawable/bg_white_rounded"
+                android:gravity="center"
+                android:hint="@string/participant_code"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:padding="@dimen/_5sdp"
+                android:textSize="@dimen/_18ssp" />
+
+            <TextView
+                android:id="@+id/txtSubmit"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/_40sdp"
+                android:layout_marginTop="@dimen/_20sdp"
+                android:background="@color/blueTextLight"
+                android:gravity="center"
+                android:text="@string/submit"
+                android:textAllCaps="false"
+                android:textColor="@color/blueText"
+                android:textSize="@dimen/_14ssp" />
+
+            <androidx.legacy.widget.Space
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/internet_connection"
+                android:textColor="@color/greenText"
+                android:textSize="@dimen/_16ssp" />
+
+            <androidx.legacy.widget.Space
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/txtProgress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textColor="@color/whiteText"
+                android:textSize="@dimen/_12ssp"
+                android:visibility="gone" />
+
+            <androidx.legacy.widget.Space
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/dont_have_code"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_16ssp" />
+
+            <androidx.legacy.widget.Space
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/txtCancelDownload"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/cancel"
+                android:textColor="@color/blueText"
+                android:textSize="@dimen/_16ssp" />
+
+            <androidx.legacy.widget.Space
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llSurveyContent"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/_40sdp"
-            android:layout_marginTop="@dimen/_20sdp"
-            android:background="@drawable/bg_white_rounded"
-            android:gravity="center"
-            android:hint="@string/participant_code"
-            android:importantForAutofill="no"
-            android:inputType="text"
-            android:padding="@dimen/_5sdp"
-            android:textSize="@dimen/_18ssp" />
+            android:layout_height="match_parent"
+            android:background="@color/colorPrimary"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/_10sdp"
+            android:paddingBottom="@dimen/_10sdp"
+            android:visibility="gone"
+            tools:visibility="gone">
 
-        <TextView
-            android:id="@+id/txtSubmit"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/_40sdp"
-            android:layout_marginTop="@dimen/_20sdp"
-            android:background="@color/blueTextLight"
-            android:gravity="center"
-            android:text="@string/submit"
-            android:textAllCaps="false"
-            android:textColor="@color/blueText"
-            android:textSize="@dimen/_14ssp" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/_30sdp"
+                android:layout_marginRight="@dimen/_30sdp"
+                android:gravity="center"
+                android:text="@string/before_continuing"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_18ssp" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            <androidx.legacy.widget.Space
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/_20sdp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/internet_connection"
-            android:textColor="@color/greenText"
-            android:textSize="@dimen/_16ssp" />
+            <WebView
+                android:id="@+id/webViewConsent"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@color/colorPrimary" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            <androidx.legacy.widget.Space
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/_20sdp" />
 
-        <TextView
-            android:id="@+id/txtProgress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:textColor="@color/whiteText"
-            android:textSize="@dimen/_12ssp"
-            android:visibility="gone" />
+            <TextView
+                android:id="@+id/txtConsent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/_30sdp"
+                android:layout_marginRight="@dimen/_30sdp"
+                android:gravity="center"
+                android:text="@string/consent_and_continue"
+                android:textColor="@color/blueText"
+                android:textSize="@dimen/_14ssp" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            <androidx.legacy.widget.Space
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/_20sdp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/dont_have_code"
-            android:textColor="@color/black"
-            android:textSize="@dimen/_16ssp" />
+            <TextView
+                android:id="@+id/txtCancel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="@dimen/_30sdp"
+                android:layout_marginRight="@dimen/_30sdp"
+                android:gravity="center"
+                android:text="@string/cancel"
+                android:textColor="@color/blueText"
+                android:textSize="@dimen/_12ssp" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <TextView
-            android:id="@+id/txtCancelDownload"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/cancel"
-            android:textColor="@color/blueText"
-            android:textSize="@dimen/_16ssp" />
-
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/llSurveyContent"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/colorPrimary"
-        android:orientation="vertical"
-        android:paddingTop="@dimen/_10sdp"
-        android:paddingBottom="@dimen/_10sdp"
-        android:visibility="gone"
-        tools:visibility="gone">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/_30sdp"
-            android:layout_marginRight="@dimen/_30sdp"
-            android:gravity="center"
-            android:text="@string/before_continuing"
-            android:textColor="@color/black"
-            android:textSize="@dimen/_18ssp" />
-
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/_20sdp" />
-
-        <WebView
-            android:id="@+id/webViewConsent"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:background="@color/colorPrimary" />
-
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/_20sdp" />
-
-        <TextView
-            android:id="@+id/txtConsent"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/_30sdp"
-            android:layout_marginRight="@dimen/_30sdp"
-            android:gravity="center"
-            android:text="@string/consent_and_continue"
-            android:textColor="@color/blueText"
-            android:textSize="@dimen/_14ssp" />
-
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/_20sdp" />
-
-        <TextView
-            android:id="@+id/txtCancel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="@dimen/_30sdp"
-            android:layout_marginRight="@dimen/_30sdp"
-            android:gravity="center"
-            android:text="@string/cancel"
-            android:textColor="@color/blueText"
-            android:textSize="@dimen/_12ssp" />
-
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

@@ -2,23 +2,27 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/navigation_home"
+        android:id="@id/navigation_begin"
+        android:enabled="true"
         android:icon="@drawable/ic_person"
         android:title="@string/title_begin" />
 
     <item
-        android:id="@+id/navigation_dashboard"
+        android:id="@id/navigation_project"
+        android:enabled="true"
         android:icon="@drawable/ic_help_24px"
         android:title="@string/title_project" />
 
     <item
-        android:id="@+id/navigation_notifications"
+        android:id="@id/navigation_survey"
+        android:enabled="true"
         android:icon="@drawable/hand"
-        android:title="@string/title_notifications" />
+        android:title="@string/title_survey" />
 
     <item
-        android:id="@+id/navigation_culture"
-        android:icon="@drawable/bubble"
-        android:title="@string/title_culture" />
+        android:id="@id/navigation_more"
+        android:enabled="true"
+        android:icon="@drawable/more"
+        android:title="@string/title_more" />
 
 </menu>

@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.craigdietrich.covid19indigenous.R
 import com.craigdietrich.covid19indigenous.common.Constant
@@ -21,30 +22,32 @@ class DashboardFragment : Fragment() {
 
     private lateinit var binding: FragmentProjectBinding
 
-    @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled", "AddJavascriptInterface")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
+        binding = FragmentProjectBinding.inflate(inflater, container, false)
         Constant.changeStatusBar(
             isDark = false,
             context = context as Activity,
             color = R.color.whiteText
         )
-
-        binding = FragmentProjectBinding.inflate(inflater, container, false)
-
+        Constant.changeSystemNavBarColor(
+            context = context as Activity,
+            color = ContextCompat.getColor(requireContext(), R.color.whiteText)
+        )
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        @SuppressLint("SetJavaScriptEnabled")
         binding.webView.settings.javaScriptEnabled = true
 
         binding.webView.settings.setGeolocationEnabled(true)
-        binding.webView.loadUrl(Constant.aboutProjectPath.getFile())
+        binding.webView.loadUrl(Constant.ABOUT_PROJECT_PATH.getFile())
 
         this.context?.let { WebAppInterface(it) }
             ?.let { binding.webView.addJavascriptInterface(it, "Android") }
@@ -55,9 +58,9 @@ class DashboardFragment : Fragment() {
         binding.tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
             override fun onTabSelect(position: Int) {
                 if (position == 0) {
-                    binding.webView.loadUrl(Constant.aboutProjectPath.getFile())
+                    binding.webView.loadUrl(Constant.ABOUT_PROJECT_PATH.getFile())
                 } else {
-                    binding.webView.loadUrl(Constant.aboutUsPath.getFile())
+                    binding.webView.loadUrl(Constant.ABOUT_US_PATH.getFile())
                 }
             }
 
@@ -68,7 +71,7 @@ class DashboardFragment : Fragment() {
 
 class WebAppInterface(private val mContext: Context) {
 
-    /** Show a toast from the web page  */
+    /** Show a toast from the web page */
     @JavascriptInterface
     fun showToast(toast: String) {
         var url = toast

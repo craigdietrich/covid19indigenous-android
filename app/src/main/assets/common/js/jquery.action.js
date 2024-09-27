@@ -73,8 +73,14 @@
     			$this.find('form:visible').each(function() {
     				var $form = $(this);
     				var id = $form.data('question-id');
-    				var answers = $form[0].getValues(); 
-    				questions.push({id:id,answers:answers,created:created});
+					var question = JSON.parse(decodeURI($form.data('question')));
+    				var answers = $form[0].getValues();
+    				questions.push({
+						id:id,
+						question:question,
+						answers:answers,
+						created:created,
+					});
     			});
     			// Save to handler
 	    		var json = {
@@ -84,7 +90,7 @@
 		    		created:created,
 		    		answers:questions
 		    	};
-	    		console.log(json);
+	    		console.log("onFinish", JSON.stringify(json));
 
                 Android.showAns(JSON.stringify(json));
                 /*javascript:doButtonClick('takeSurvey');
