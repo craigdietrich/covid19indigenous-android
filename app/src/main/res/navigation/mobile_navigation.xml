@@ -3,29 +3,66 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_begin">
+
+    <deepLink
+        android:autoVerify="true"
+        app:action="ACTION_VIEW"
+        app:uri="https://craigdietrich.com" />
 
     <fragment
-        android:id="@+id/navigation_home"
+        android:id="@+id/navigation_begin"
         android:name="com.craigdietrich.covid19indigenous.ui.begin.BeginFragment"
-        android:label="@string/title_home"
-        tools:layout="@layout/fragment_begin" />
+        android:label="@string/title_begin"
+        tools:layout="@layout/fragment_begin">
+        <deepLink
+            android:autoVerify="true"
+            app:action="ACTION_VIEW"
+            app:uri="https://craigdietrich.com/begin" />
+    </fragment>
 
     <fragment
-        android:id="@+id/navigation_dashboard"
+        android:id="@+id/navigation_project"
         android:name="com.craigdietrich.covid19indigenous.ui.project.DashboardFragment"
         android:label="@string/title_project"
-        tools:layout="@layout/fragment_project" />
+        tools:layout="@layout/fragment_project">
+        <deepLink
+            android:autoVerify="true"
+            app:action="ACTION_VIEW"
+            app:uri="https://craigdietrich.com/project" />
+    </fragment>
 
     <fragment
-        android:id="@+id/navigation_notifications"
+        android:id="@+id/navigation_survey"
         android:name="com.craigdietrich.covid19indigenous.ui.survey.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_survey" />
+        android:label="@string/title_survey"
+        tools:layout="@layout/fragment_survey">
+        <deepLink
+            android:autoVerify="true"
+            app:action="ACTION_VIEW"
+            app:uri="https://craigdietrich.com/survey" />
+    </fragment>
 
     <fragment
+        android:id="@+id/navigation_more"
+        android:name="com.craigdietrich.covid19indigenous.ui.more.MoreFragment"
+        android:label="@string/title_more"
+        tools:layout="@layout/fragment_more">
+        <deepLink
+            android:autoVerify="true"
+            app:action="ACTION_VIEW"
+            app:uri="https://craigdietrich.com/more" />
+    </fragment>
+
+    <activity
         android:id="@+id/navigation_culture"
-        android:name="com.craigdietrich.covid19indigenous.ui.culture.CulResFragment"
-        android:label="@string/title_culture"
-        tools:layout="@layout/fragment_cul_res" />
+        android:name="com.craigdietrich.covid19indigenous.ui.culture.CulResActivity"
+        android:label="@string/culture_resilience"
+        tools:layout="@layout/activity_cul_res" />
+
+    <activity
+        android:id="@+id/navigation_past"
+        android:name="com.craigdietrich.covid19indigenous.ui.pastSubmissions.PastSubmissionActivity"
+        android:label="@string/past_submissions"
+        tools:layout="@layout/activity_past_submission" />
 </navigation>

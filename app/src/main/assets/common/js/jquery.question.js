@@ -18,7 +18,7 @@
     		}
     		html += '  <div class="row">';
     		html += '    <div class="col">';
-    		html += '      <form data-question-id="'+data.question_id+'" onsubmit="return false;">';
+    		html += '      <form data-question-id="'+data.question_id+'" data-question="'+encodeURI(JSON.stringify(data))+'" onsubmit="return false;">';
    			if ('undefined' != typeof(data.title)) html += '      <p class="title">'+data.title+'</p>';
    			html += insertHtml;
    			html += '      </form>';

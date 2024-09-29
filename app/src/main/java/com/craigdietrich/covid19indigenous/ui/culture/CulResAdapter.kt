@@ -1,4 +1,4 @@
-package com.craigdietrich.covid19indigenous.adapter
+package com.craigdietrich.covid19indigenous.ui.culture
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -16,8 +16,8 @@ import com.craigdietrich.covid19indigenous.model.CultureVo
 import java.io.File
 
 
-class CultureAdapter(private val context: Context, private val data: ArrayList<CultureVo>) :
-    RecyclerView.Adapter<CultureAdapter.MyViewHolder>() {
+class CulResAdapter(private val context: Context, private val data: ArrayList<CultureVo>) :
+    RecyclerView.Adapter<CulResAdapter.MyViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val itemView: View = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_culture, parent, false)

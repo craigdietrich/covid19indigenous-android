@@ -13,6 +13,7 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.widget.TextView
+import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.craigdietrich.covid19indigenous.Covid19Indigenous
@@ -26,10 +27,13 @@ import retrofit2.Call
 import retrofit2.Callback
 import java.io.File
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.util.*
 
 class Constant {
     companion object {
+
+        private const val FORMAT = "yyyy-MM-dd HH:mm:ss"
 
         const val BASE_URL = "https://ourdataindigenous.ca/"
         const val BASE_MEDIA_URL = "https://ourdataindigenous.ca/feeds/content/"
@@ -40,18 +44,38 @@ class Constant {
         const val QUESTIONS = "dashboard/pages/app?"
         const val ANSWERS = "dashboard/pages/handler"
 
-        const val isAcceptSurvey = "isAcceptSurvey"
-        const val surveyCode = "surveyCode"
+        const val SEND_RESULTS_TO_SERVER = "sendResultsToServer"
+        const val IS_ACCEPT_SURVEY = "isAcceptSurvey"
+        const val SURVEY_CODE = "surveyCode"
 
-        const val aboutSurveyPath = "aboutSurvey"
-        const val indexSurveyPath = "common/index"
-        const val consentSurveyPath = "consent"
-        const val aboutProjectPath = "aboutProject"
-        const val aboutUsPath = "aboutUs"
+        const val ABOUT_SURVEY_PATH = "aboutSurvey"
+        const val INDEX_SURVEY_PATH = "common/index"
+        const val CONSENT_SURVEY_PATH = "consent"
+        const val ABOUT_PROJECT_PATH = "aboutProject"
+        const val ABOUT_US_PATH = "aboutUs"
+        private const val PREVIEW_PAST_SUBMISSION = "common/preview_past_submission.html"
 
         var isfetch = false
 
         var fileType = "photo"// for file picker in survey form
+
+        fun String.convertToLocal(): String? {
+            val formatter = SimpleDateFormat(FORMAT, Locale.getDefault())
+            formatter.timeZone = TimeZone.getTimeZone("UTC")
+            val date = formatter.parse(this)
+            formatter.timeZone = TimeZone.getDefault()
+            return date?.let(formatter::format)
+        }
+
+        fun Date.convertToLocal(): String? {
+            val formatter = SimpleDateFormat(FORMAT, Locale.getDefault())
+            formatter.timeZone = TimeZone.getDefault()
+            return let(formatter::format)
+        }
+
+        fun getSubmissionFile(): String {
+            return "file:///android_asset/$PREVIEW_PAST_SUBMISSION"
+        }
 
         fun String.getFile(): String {
             val origin = "file:///android_asset/$this"
@@ -102,18 +126,21 @@ class Constant {
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
             window.statusBarColor = ContextCompat.getColor(context, color)
             if (isDark) {
-
                 window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                 val decorView: View = window.decorView
                 var systemUiVisibilityFlags = decorView.systemUiVisibility
                 systemUiVisibilityFlags =
                     systemUiVisibilityFlags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
                 decorView.systemUiVisibility = systemUiVisibilityFlags
-
-
             } else {
                 window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
+        }
+
+        fun changeSystemNavBarColor(context: Context, @ColorInt color: Int) {
+            val window: Window = (context as Activity?)!!.window
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.navigationBarColor = color
         }
 
         fun isOnline(activity: Context): Boolean {
@@ -158,19 +185,11 @@ class Constant {
         }
 
         fun deleteCultureFiles(fileOrDirectory: File) {
-            if (fileOrDirectory.isDirectory) {
-                val list = fileOrDirectory.listFiles()
-                list?.forEach(::deleteCultureFiles)
-            }
-            fileOrDirectory.delete()
+            fileOrDirectory.deleteRecursively()
         }
 
         fun deleteSurveyFiles(fileOrDirectory: File) {
-            if (fileOrDirectory.isDirectory) {
-                val list = fileOrDirectory.listFiles()
-                list?.forEach(::deleteSurveyFiles)
-            }
-            fileOrDirectory.delete()
+            fileOrDirectory.deleteRecursively()
         }
 
         private fun directoryPath(): File {
@@ -185,18 +204,24 @@ class Constant {
             return dir
         }
 
+        fun manifestFile(): File {
+            return File(culturePath(), "manifest.json")
+        }
+
         fun surveyPath(): File {
             val dir = File(directoryPath(), "/Survey")
             if (!dir.exists()) dir.mkdirs()
             return dir
         }
 
-        fun surveyFile(): File {
-            return File(surveyPath(), "questionnaires.json")
+        fun submissionsPath(): File {
+            val dir = File(surveyPath(), "/Submissions")
+            if (!dir.exists()) dir.mkdirs()
+            return dir
         }
 
-        fun manifestFile(): File {
-            return File(culturePath(), "manifest.json")
+        fun surveyFile(): File {
+            return File(surveyPath(), "questionnaires.json")
         }
 
         fun stringFromFile(file: File): String {
@@ -215,11 +240,12 @@ class Constant {
             val rnd = Random()
             val number: Int = rnd.nextInt(888889) + 111111
             return (System.currentTimeMillis() / 1000).toString() + "." + String.format(
-                "%06d", number
+                "%06d",
+                number
             )
         }
 
-        fun uploadingAnswerDialog(c: Context) {
+        fun uploadingAnswerDialog(c: Context, file: File? = null) {
             val dialog = Dialog(c, R.style.NewDialog)
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
             dialog.setCancelable(false)
@@ -231,83 +257,142 @@ class Constant {
 
             txtInfo.text = c.getString(R.string.checking_internet)
 
-            val answerFile = ArrayList<File>()
-            var pastTitle = ""
+            if (file != null) {
+                var pastTitle = ""
+                if (file.name.startsWith("answer")) {
+                    var name = file.name.substring(file.name.lastIndexOf("_") + 1)
+                    name = name.substring(0, name.lastIndexOf("."))
 
-            val files = surveyPath().listFiles()
-            if (files != null) {
-                for (i in files.indices) {
-                    if (files[i].name.startsWith("answer")) {
-                        answerFile.add(files[i])
-
-                        var name = files[i].name.substring(files[i].name.lastIndexOf("_") + 1)
-                        name = name.substring(0, name.lastIndexOf("."))
-
-                        name = "Past answers\n$name"
-                        pastTitle += if (pastTitle == "") {
-                            name
-                        } else {
-                            "\n\n" + name
-                        }
+                    name = "Past answers\n$name"
+                    pastTitle += if (pastTitle == "") {
+                        name
+                    } else {
+                        "\n\n" + name
                     }
                 }
 
-                if (answerFile.size > 0) {
-                    dialog.show()
+                dialog.show()
 
-                    isfetch = false
+                isfetch = false
 
-                    if (isOnline(c as AppCompatActivity)) {
-                        c.runOnUiThread {
-                            txtInfo.text = c.getString(R.string.uploading_answers)
-                            txtUploading.text = pastTitle
-                        }
+                if (isOnline(c as AppCompatActivity)) {
+                    c.runOnUiThread {
+                        txtInfo.text = c.getString(R.string.uploading_answers)
+                        txtUploading.text = pastTitle
+                    }
 
-                        for (i in answerFile.indices) {
-                            runBlocking {
-                                val text = stringFromFile(answerFile[i])
+                    runBlocking {
+                        val text = stringFromFile(file)
 
-                                val answer = Gson().fromJson(text, AnswerVo::class.java)
+                        val answer = Gson().fromJson(text, AnswerVo::class.java)
 
-                                val service = RetrofitInstance.getRetrofitInstance()
-                                    .create(GetApi::class.java)
-                                val call = service.uploadAnswer(answer)
-                                call.enqueue(object : Callback<AnswerVo> {
-                                    override fun onResponse(
-                                        call: Call<AnswerVo>, response: retrofit2.Response<AnswerVo>
-                                    ) {
-                                        Log.d("res", response.body().toString())
+                        val service =
+                            RetrofitInstance.getRetrofitInstance().create(GetApi::class.java)
+                        val call = service.uploadAnswer(answer)
+                        call.enqueue(object : Callback<AnswerVo> {
+                            override fun onResponse(
+                                call: Call<AnswerVo>, response: retrofit2.Response<AnswerVo>
+                            ) {
+                                Log.d("res", response.body().toString())
 
-                                        try {
-                                            response.body() as AnswerVo
-                                            //if success than it converts
+                                try {
+                                    response.body() as AnswerVo
+                                    Log.e("success", "success")
+                                    file.delete()
+                                } catch (e: java.lang.Exception) {
+                                    Log.e("errorUploading", e.toString())
+                                }
 
-                                            answerFile[i].delete()
+                                dialog.dismiss()
+                            }
 
-                                            Log.e("success", "success")
-                                        } catch (e: java.lang.Exception) {
-                                            Log.e("errorUploading", e.toString())
-                                            answerFile[i].delete()
-                                        }
+                            override fun onFailure(call: Call<AnswerVo>, t: Throwable) {
+                                Log.e("failUploading", t.toString())
+                                dialog.dismiss()
+                            }
+                        })
+                    }
+                } else {
+                    dialog.dismiss()
+                }
+            } else {
+                val answerFile = ArrayList<File>()
+                var pastTitle = ""
 
-                                        if (i == answerFile.size - 1) {
-                                            dialog.dismiss()
-                                        }
-                                    }
+                val files = submissionsPath().listFiles()
+                if (files != null) {
+                    for (i in files.indices) {
+                        if (files[i].name.startsWith("answer")) {
+                            answerFile.add(files[i])
 
-                                    override fun onFailure(call: Call<AnswerVo>, t: Throwable) {
-                                        Log.e("failUploading", t.toString())
-                                        answerFile[i].delete()
+                            var name = files[i].name.substring(files[i].name.lastIndexOf("_") + 1)
+                            name = name.substring(0, name.lastIndexOf("."))
 
-                                        if (i == answerFile.size - 1) {
-                                            dialog.dismiss()
-                                        }
-                                    }
-                                })
+                            name = "Past answers\n$name"
+                            pastTitle += if (pastTitle == "") {
+                                name
+                            } else {
+                                "\n\n" + name
                             }
                         }
-                    } else {
-                        dialog.dismiss()
+                    }
+
+                    if (answerFile.size > 0) {
+                        dialog.show()
+
+                        isfetch = false
+
+                        if (isOnline(c as AppCompatActivity)) {
+                            c.runOnUiThread {
+                                txtInfo.text = c.getString(R.string.uploading_answers)
+                                txtUploading.text = pastTitle
+                            }
+
+                            for (i in answerFile.indices) {
+                                runBlocking {
+                                    val text = stringFromFile(answerFile[i])
+
+                                    val answer = Gson().fromJson(text, AnswerVo::class.java)
+
+                                    val service = RetrofitInstance.getRetrofitInstance()
+                                        .create(GetApi::class.java)
+                                    val call = service.uploadAnswer(answer)
+                                    call.enqueue(object : Callback<AnswerVo> {
+                                        override fun onResponse(
+                                            call: Call<AnswerVo>,
+                                            response: retrofit2.Response<AnswerVo>
+                                        ) {
+                                            Log.d("res", response.body().toString())
+
+                                            try {
+                                                response.body() as AnswerVo
+                                                //if success than it converts
+                                                answerFile[i].delete()
+
+                                                Log.e("success", "success")
+                                            } catch (e: java.lang.Exception) {
+                                                Log.e("errorUploading", e.toString())
+                                                answerFile[i].delete()
+                                            }
+
+                                            if (i == answerFile.size - 1) {
+                                                dialog.dismiss()
+                                            }
+                                        }
+
+                                        override fun onFailure(call: Call<AnswerVo>, t: Throwable) {
+                                            Log.e("failUploading", t.toString())
+                                            answerFile[i].delete()
+                                            if (i == answerFile.size - 1) {
+                                                dialog.dismiss()
+                                            }
+                                        }
+                                    })
+                                }
+                            }
+                        } else {
+                            dialog.dismiss()
+                        }
                     }
                 }
             }
@@ -323,15 +408,15 @@ class Constant {
         }
 
         fun readSP(context: Context, key: String?): String {
-            var readData: SharedPreferences? = null
-            try {
-                readData = context.getSharedPreferences(
+            return try {
+                val readData: SharedPreferences? = context.getSharedPreferences(
                     SHARE_PREF, Context.MODE_PRIVATE
                 )
+                readData?.getString(key, "") ?: ""
             } catch (e: Exception) {
                 e.printStackTrace()
+                ""
             }
-            return readData!!.getString(key, "").toString()
         }
 
         abstract class DoubleClickListener : View.OnClickListener {

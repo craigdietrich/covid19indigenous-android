@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/past_submission_navigation"
+    app:startDestination="@id/navigation_list">
+
+    <fragment
+        android:id="@+id/navigation_list"
+        android:name="com.craigdietrich.covid19indigenous.ui.pastSubmissions.PastSubmissionFragment"
+        android:label="@string/past_submissions"
+        tools:layout="@layout/fragment_past_submissions">
+        <action
+            android:id="@+id/action_preview"
+            app:destination="@id/navigation_preview"
+            app:enterAnim="@anim/slide_left"
+            app:exitAnim="@anim/wait_anim"
+            app:launchSingleTop="true"
+            app:popEnterAnim="@anim/wait_anim"
+            app:popExitAnim="@anim/slide_right"
+            app:popUpTo="@id/navigation_list"
+            app:popUpToInclusive="false" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_preview"
+        android:name="com.craigdietrich.covid19indigenous.ui.pastSubmissions.PreviewFragment"
+        tools:layout="@layout/fragment_preview">
+        <argument
+            android:name="answers"
+            app:argType="string" />
+    </fragment>
+</navigation>

@@ -2,6 +2,7 @@ package com.craigdietrich.covid19indigenous.ui.culture
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -10,14 +11,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.craigdietrich.covid19indigenous.PlayerActivity
 import com.craigdietrich.covid19indigenous.R
-import com.craigdietrich.covid19indigenous.adapter.CultureAdapter
 import com.craigdietrich.covid19indigenous.common.Constant
 import com.craigdietrich.covid19indigenous.databinding.FragmentCulResBinding
+import com.craigdietrich.covid19indigenous.isLandscape
 import com.craigdietrich.covid19indigenous.loadFile
 import com.craigdietrich.covid19indigenous.model.CultureVo
 import com.craigdietrich.covid19indigenous.retrfit.GetApi
@@ -35,10 +37,10 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Callback
-import java.io.*
-import java.util.*
+import java.io.File
+import java.io.FileWriter
 
-class CulResFragment : Fragment(), CultureAdapter.ClickListener {
+class CulResFragment : Fragment(), CulResAdapter.ClickListener {
 
     private lateinit var binding: FragmentCulResBinding
     var jsonResponse = ""
@@ -48,12 +50,29 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
     private lateinit var job: Job
 
+    companion object {
+        @JvmStatic
+        fun newInstance() = CulResFragment()
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         binding = FragmentCulResBinding.inflate(inflater, container, false)
         Constant.changeStatusBar(
-            isDark = true, context = context as Activity, color = R.color.grayBg
+            isDark = false,
+            context = context as Activity,
+            color = R.color.whiteText
+        )
+        (requireActivity() as CulResActivity).supportActionBar?.setBackgroundDrawable(
+            ContextCompat.getDrawable(requireContext(), R.color.whiteText)
+        )
+        Constant.changeSystemNavBarColor(
+            context = context as Activity,
+            color = ContextCompat.getColor(
+                requireContext(),
+                if (resources.isLandscape) R.color.whiteText else R.color.colorPrimary
+            )
         )
         return binding.root
     }
@@ -66,11 +85,11 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
         binding.tabAbout.setOnTabSelectListener(object : OnTabSelectListener {
             override fun onTabSelect(position: Int) {
                 if (position == 0) {
-                    val adapter = CultureAdapter(context as Activity, culData)
+                    val adapter = CulResAdapter(context as Activity, culData)
                     adapter.setOnItemClickListener(this@CulResFragment)
                     binding.recyclerView.adapter = adapter
                 } else {
-                    val adapter = CultureAdapter(context as Activity, resData)
+                    val adapter = CulResAdapter(context as Activity, resData)
                     adapter.setOnItemClickListener(this@CulResFragment)
                     binding.recyclerView.adapter = adapter
                 }
@@ -172,7 +191,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
                 binding.tabAbout.currentTab = 0
                 binding.recyclerView.layoutManager = LinearLayoutManager(context)
-                val adapter = CultureAdapter(context as Activity, culData)
+                val adapter = CulResAdapter(context as Activity, culData)
                 adapter.setOnItemClickListener(this@CulResFragment)
                 binding.recyclerView.adapter = adapter
 
@@ -223,9 +242,7 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
 
                     delay(1500L)
 
-                    requireActivity().runOnUiThread {
-                        checkData()
-                    }
+                    requireActivity().runOnUiThread { checkData() }
                 }
             }
         } catch (e: Exception) {
@@ -234,17 +251,24 @@ class CulResFragment : Fragment(), CultureAdapter.ClickListener {
     }
 
     private fun resetData() {
-        runBlocking {
-            Constant.deleteCultureFiles(Constant.culturePath())
-        }
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.reset_data))
+            .setMessage(getString(R.string.are_you_sure, getString(R.string.fetch_new_content).lowercase()))
+            .setPositiveButton("Ok") { dialog, _ ->
+                dialog.cancel()
 
-        binding.txtProgress.visibility = View.GONE
-        binding.seekBar.progress = 0
+                runBlocking { Constant.deleteCultureFiles(Constant.culturePath()) }
 
-        culData = ArrayList()
-        resData = ArrayList()
+                binding.txtProgress.visibility = View.GONE
+                binding.seekBar.progress = 0
 
-        checkData()
+                culData = ArrayList()
+                resData = ArrayList()
+
+                checkData()
+            }
+            .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+            .show()
     }
 
     override fun onItemClick(data: CultureVo) {

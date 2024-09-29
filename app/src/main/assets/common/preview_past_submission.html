@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Loading...</title>
+	<style>
+		body {
+            background-color: #B5CBE0; /* Set the background color */
+            font-family: Arial, sans-serif;
+            padding: 0px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ensure full height of the viewport */
+            position: relative;
+        }
+
+		hr {
+			border: 0;
+			height: 1px;
+			background: #333;
+			margin: 20px 0;
+		}
+
+		img {
+			display: block;
+			margin-top: 10px;
+			max-width: 60%;
+		}
+
+		video,
+		audio {
+			display: block;
+			margin-top: 10px;
+			max-width: 100%;
+		}
+
+		.loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            position: absolute;
+            top: 45%;
+            left: 45%;
+            transform: translate(-50%, -50%);
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+		.qa-item {
+			margin-bottom: 20px;
+		}
+
+		.qa-item:last-child {
+			margin-bottom: 40px;
+			/* Extra bottom space for the last item */
+		}
+
+		.question {
+			font-weight: bold;
+		}
+
+		.answer {
+			margin-left: 0px;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="loader" id="loader"></div>
+	<div id="qa-list"></div>
+
+	<script>
+		function setTitle(title) {
+			document.title = 'Submitted on ' + title;
+		}
+
+		var qaList = [];
+		function setData(answers) {
+			const loader = document.getElementById('loader');
+			// loader.style.display = 'block';
+
+			const qaListContainer = document.getElementById('qa-list');
+			qaListContainer.style.display = 'none';
+
+			qaList = [];
+			answers.forEach(prepareRawData);
+			qaList.forEach((qaItem, index) => {
+				const qaDiv = document.createElement('div');
+				qaDiv.classList.add('qa-item');
+
+				let answerContent = '';
+				switch (qaItem.answer.type) {
+					case 'photo':
+						if (qaItem.answer.content) {
+							answerContent = `<img src="${qaItem.answer.content}" alt="Image answer" />`;
+						} else {
+							answerContent = `<div class="answer">No answer</div>`;
+						}
+						break;
+					case 'video':
+						if (qaItem.answer.content) {
+							answerContent = `<video controls>
+                                        <source src="${qaItem.answer.content}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                     </video>`;
+						} else {
+							answerContent = `<div class="answer">No answer</div>`;
+						}
+						break;
+					case 'audio':
+						if (qaItem.answer.content) {
+							answerContent = `<audio controls>
+                                        <source src="${qaItem.answer.content}" type="audio/mpeg">
+                                        Your browser does not support the audio element.
+                                     </audio>`;
+						} else {
+							answerContent = `<div class="answer">No answer</div>`;
+						}
+						break;
+					default:
+						answerContent = `<div class="answer">${qaItem.answer.content || 'No answer'}</div>`;
+				}
+
+				qaDiv.innerHTML = `
+                	<div class="question">${qaItem.question}</div>
+                	${answerContent}
+				`;
+				qaListContainer.appendChild(qaDiv);
+
+				// Add <hr> only if it's not the last item
+				if (index < qaList.length - 1) {
+					const hr = document.createElement('hr');
+					qaListContainer.appendChild(hr);
+				}
+			});
+			loader.style.display = 'none';
+			qaListContainer.style.display = 'block';
+		}
+
+		function prepareRawData(answer) {
+			var qa = {};
+			if (answer.question.type === 'open') {
+				qa = {
+					question: answer.question.title,
+					answer: getRenderedAnswers(answer)
+				}
+			} else {
+				qa = {
+					question: answer.question.title,
+					answer: {
+						type: answer.question.type,
+						content: getRenderedAnswers(answer)
+					}
+				}
+			}
+			qaList.push(qa)
+		}
+
+		var getRenderedAnswers = function (answer) {
+			var answers = answer.answers;
+			switch (answer.question.type) {
+				case 'sentence':
+				case 'text':
+				case 'noyes':
+				case 'number':
+					if ('undefined' == typeof (answers[0])) return '';
+					return answers[0];
+				case 'latlng':
+					if ('undefined' == typeof (answers[0]) || 'undefined' == typeof (answers[1]) || !answers[0].length || !answers[1].length) return '';
+					var str = '';
+					str += answers[0] + ', ' + answers[1];
+
+					// var googleMapsApiKey = $('link#google_maps_api_key')
+					// if (googleMapsApiKey != null && googleMapsApiKey.attr('href').length) str += '<a href="https://www.google.com/maps/place/'+answers[0]+','+answers[1]+'" target="_blank">';
+					// 	str += answers[0] + ', ' + answers[1];
+					// if (googleMapsApiKey != null && googleMapsApiKey.attr('href').length) str += '</a>';
+
+					return str;
+				case 'slider':
+					var prompts = answer.question;
+					return answers[0] + ' &nbsp;(' + prompts.min + ': ' + prompts.min_title + ' ... ' + prompts.max + ': ' + prompts.max_title + ', 0: No answer, 6: Don\'t know / Not applicable)';
+				case 'consent':
+					var prompts = answer.question;
+					return answers[0] + ' &nbsp;(0: ' + prompts.no_title + ' ... 1: ' + prompts.yes_title + ')';
+				case 'intermission-userfields':
+					return answers.join(', ');
+				case 'audio':
+				case 'photo':
+				case 'video':
+				case 'file':
+					if ('undefined' == typeof (answers[1])) return '';
+
+					// var baseUrl = $('link#base_url');
+					// var str = '<a class="viewMedia" href="' + baseUrl.attr('href') + "pages/proxy?path=" + answers[1] + '" target="_blank">' + answers[0] + '</a>';
+
+					return answers[1];
+				case 'open':
+					if ('undefined' == typeof (answers[1])) return '';
+					if (answers[0] == 'open-type') return answers[1];
+					var openType = answers[0].replace('open-', '');
+
+					// var baseUrl = $('link#base_url');
+					// var str = '<a class="viewMedia" href="' + baseUrl.attr('href') + "pages/proxy?path=" + answers[1] + '" target="_blank">' + openType + '</a>';
+					// if (openType == 'text') str += ': ' + answers[1];
+
+					return { type: openType, content: answers[1] };
+				case 'ranked':
+					return answers.join(', ');
+				case 'radio':
+				case 'check':
+					var content = answer.question;
+					content = content.answers;
+					answer = [];
+					for (var p = 0; p < answers.length; p++) {
+						var value = content[parseInt(answers[p])];
+						if ('undefined' != typeof (value)) {
+							answer.push(value);
+						} else {
+							answer.push('<b>other:</b> ' + answers[p]);
+						}
+					}
+					return answer.join(', ');
+				case 'likert':
+				case 'likert-slider':
+					var content = answer.question;
+					var prompts = content.prompts;
+					var content = content.answers;
+					var answer = [];
+					for (var p = 0; p < content.length; p++) {
+						if (null == answers[p]) answers[p] = 0;
+						var value = parseInt(answers[p]) - 1;
+						if (value == -1) {
+							value = 'No answer';
+						} else {
+							value = prompts[value];
+						}
+						var row = content[p].trim() + ': <b>' + value + '</b>';
+						answer.push(row);
+					}
+					return answer.join("<br/><br/>");
+				default:
+					return 'No Answer';
+			}
+		}
+	</script>
+</body>
+
+</html>

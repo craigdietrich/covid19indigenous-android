@@ -20,12 +20,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
-import android.webkit.*
+import android.webkit.GeolocationPermissions
+import android.webkit.JavascriptInterface
+import android.webkit.PermissionRequest
+import android.webkit.ValueCallback
+import android.webkit.WebChromeClient
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.craigdietrich.covid19indigenous.BuildConfig
 import com.craigdietrich.covid19indigenous.R
@@ -59,8 +66,6 @@ class NotificationsFragment : Fragment() {
 
     private lateinit var origin: String
     private lateinit var callback: GeolocationPermissions.Callback
-    var clickCount = 0
-
 
     private val geoLocationRequest: (String?, GeolocationPermissions.Callback?) -> Unit =
         { origin, callback ->
@@ -152,21 +157,23 @@ class NotificationsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        Constant.changeStatusBar(
-            isDark = true,
-            context = context as Activity,
-            color = R.color.grayBg
-        )
-
         binding = FragmentSurveyBinding.inflate(inflater, container, false)
-
-        initWebView()
-
+        Constant.changeStatusBar(
+            isDark = false,
+            context = context as Activity,
+            color = R.color.whiteText
+        )
+        Constant.changeSystemNavBarColor(
+            context = context as Activity,
+            color = ContextCompat.getColor(requireContext(), R.color.whiteText)
+        )
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        initWebView()
 
         val titles = arrayOf(getString(R.string.about_survey), getString(R.string.take_survey_tab))
         binding.tabAbout.setTabData(titles)
@@ -179,8 +186,8 @@ class NotificationsFragment : Fragment() {
                     binding.llSurveyDownload.visibility = View.GONE
                     binding.llSurveyContent.visibility = View.GONE
 
-                    if (binding.webView.url != Constant.aboutSurveyPath.getFile()) {
-                        binding.webView.loadUrl(Constant.aboutSurveyPath.getFile())
+                    if (binding.webView.url != Constant.ABOUT_SURVEY_PATH.getFile()) {
+                        binding.webView.loadUrl(Constant.ABOUT_SURVEY_PATH.getFile())
                     }
                 } else {
                     setSurveyForm()
@@ -194,8 +201,8 @@ class NotificationsFragment : Fragment() {
                     binding.llSurveyDownload.visibility = View.GONE
                     binding.llSurveyContent.visibility = View.GONE
 
-                    if (binding.webView.url != Constant.aboutSurveyPath.getFile()) {
-                        binding.webView.loadUrl(Constant.aboutSurveyPath.getFile())
+                    if (binding.webView.url != Constant.ABOUT_SURVEY_PATH.getFile()) {
+                        binding.webView.loadUrl(Constant.ABOUT_SURVEY_PATH.getFile())
                     }
                 } else {
                     setSurveyForm()
@@ -210,7 +217,7 @@ class NotificationsFragment : Fragment() {
         }
 
         binding.txtConsent.setOnClickListener {
-            Constant.writeSP(requireContext(), Constant.isAcceptSurvey, "true")
+            Constant.writeSP(requireContext(), Constant.IS_ACCEPT_SURVEY, "true")
             isFirstTimeConsentAccept = true
 
             setSurveyForm()
@@ -225,7 +232,7 @@ class NotificationsFragment : Fragment() {
         }
 
         isFirstTimeConsentAccept =
-            Constant.readSP(requireContext(), Constant.isAcceptSurvey) == "true"
+            Constant.readSP(requireContext(), Constant.IS_ACCEPT_SURVEY) == "true"
 
         changeTab(0)
     }
@@ -240,8 +247,8 @@ class NotificationsFragment : Fragment() {
         binding.llSurveyDownload.visibility = View.GONE
 
         binding.tabAbout.currentTab = 0
-        if (binding.webView.url != Constant.aboutSurveyPath.getFile()) {
-            binding.webView.loadUrl(Constant.aboutSurveyPath.getFile())
+        if (binding.webView.url != Constant.ABOUT_SURVEY_PATH.getFile()) {
+            binding.webView.loadUrl(Constant.ABOUT_SURVEY_PATH.getFile())
         }
     }
 
@@ -304,10 +311,13 @@ class NotificationsFragment : Fragment() {
                         if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)
                         ) {
                             val dialogFragment =
-                                PermissionDeniedDialogFragment(content = "Camera permission is required. Please grant it in app settings.",positiveButtonClick = {
-                                    openAppSettings()
-                                }, negativeButtonClick = {
-                                })
+                                PermissionDeniedDialogFragment(
+                                    content = "Camera permission is required. Please grant it in app settings.",
+                                    positiveButtonClick = {
+                                        openAppSettings()
+                                    },
+                                    negativeButtonClick = {
+                                    })
                             dialogFragment.isCancelable = false
                             dialogFragment.show(
                                 childFragmentManager,
@@ -340,12 +350,15 @@ class NotificationsFragment : Fragment() {
                             shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
                         ) {
                             val dialogFragment =
-                                PermissionDeniedDialogFragment(content = "Location permission is required. Please grant it in app settings.",positiveButtonClick = {
-                                    callback!!.invoke(origin, false, false)
-                                    openAppSettings()
-                                }, negativeButtonClick = {
-                                    callback!!.invoke(origin, false, false)
-                                })
+                                PermissionDeniedDialogFragment(
+                                    content = "Location permission is required. Please grant it in app settings.",
+                                    positiveButtonClick = {
+                                        callback!!.invoke(origin, false, false)
+                                        openAppSettings()
+                                    },
+                                    negativeButtonClick = {
+                                        callback!!.invoke(origin, false, false)
+                                    })
                             dialogFragment.isCancelable = false
                             dialogFragment.show(
                                 childFragmentManager,
@@ -424,8 +437,8 @@ class NotificationsFragment : Fragment() {
                 binding.llSurveyDownload.visibility = View.GONE
                 binding.llSurveyContent.visibility = View.GONE
 
-                if (binding.webView.url != Constant.aboutSurveyPath.getFile()) {
-                    binding.webView.loadUrl(Constant.aboutSurveyPath.getFile())
+                if (binding.webView.url != Constant.ABOUT_SURVEY_PATH.getFile()) {
+                    binding.webView.loadUrl(Constant.ABOUT_SURVEY_PATH.getFile())
                 }
             } else {
                 setSurveyForm()
@@ -452,7 +465,7 @@ class NotificationsFragment : Fragment() {
                         val call = service.getQuestions(
                             Constant.readSP(
                                 context as AppCompatActivity,
-                                Constant.surveyCode
+                                Constant.SURVEY_CODE
                             ), Constant.timeStamp()
                         )
                         call.enqueue(object : Callback<ResponseBody> {
@@ -491,8 +504,8 @@ class NotificationsFragment : Fragment() {
                         Log.e("error", e.toString())
                     }
                 } else {
-                    if (binding.webView.url != Constant.indexSurveyPath.getFile()) {
-                        binding.webView.loadUrl(Constant.indexSurveyPath.getFile())
+                    if (binding.webView.url != Constant.INDEX_SURVEY_PATH.getFile()) {
+                        binding.webView.loadUrl(Constant.INDEX_SURVEY_PATH.getFile())
                     }
                     binding.llSurvey.visibility = View.VISIBLE
                     binding.webView.webViewClient = object : WebViewClient() {
@@ -545,13 +558,11 @@ class NotificationsFragment : Fragment() {
                                 )
                             } else {
                                 Constant.writeSP(
-                                    context as AppCompatActivity,
-                                    Constant.surveyCode,
+                                    requireContext(),
+                                    Constant.SURVEY_CODE,
                                     binding.edtCode.text.toString()
                                 )
-
                                 Constant.isfetch = true
-
                                 writeFiles()
                             }
                         } catch (e: Exception) {
@@ -624,8 +635,8 @@ class NotificationsFragment : Fragment() {
         binding.webViewConsent.settings.allowFileAccess = true
         binding.webViewConsent.settings.loadWithOverviewMode = true
 
-        if (binding.webViewConsent.url != Constant.consentSurveyPath.getFile()) {
-            binding.webViewConsent.loadUrl(Constant.consentSurveyPath.getFile())
+        if (binding.webViewConsent.url != Constant.CONSENT_SURVEY_PATH.getFile()) {
+            binding.webViewConsent.loadUrl(Constant.CONSENT_SURVEY_PATH.getFile())
         }
 
         binding.webViewConsent.addJavascriptInterface(SurveyWebAppInterface(), "Android")
@@ -677,10 +688,10 @@ class NotificationsFragment : Fragment() {
                                 Constant.deleteSurveyFiles(Constant.surveyPath())
                                 Constant.writeSP(
                                     requireContext(),
-                                    Constant.isAcceptSurvey,
+                                    Constant.IS_ACCEPT_SURVEY,
                                     "false"
                                 )
-                                Constant.writeSP(requireContext(), Constant.surveyCode, "")
+                                Constant.writeSP(requireContext(), Constant.SURVEY_CODE, "")
                             }
                         }
                         .setNegativeButton("Cancel") { dialog, _ ->
@@ -699,13 +710,25 @@ class NotificationsFragment : Fragment() {
         @JavascriptInterface
         fun showAns(msg: String) {
             try {
-                val file = File(Constant.surveyPath(), "answers_" + Constant.timeStamp() + ".json")
+                val sendResults = Constant.readSP(requireContext(), Constant.SEND_RESULTS_TO_SERVER)
+                val isSendResult = sendResults.isEmpty() || sendResults == "false"
+
+                val fileName = if (isSendResult) {
+                    "answers_" + Constant.timeStamp() + ".json"
+                } else {
+                    "local_" + Constant.timeStamp() + ".json"
+                }
+
+                val file =
+                    File(Constant.submissionsPath(), fileName)
                 val writer = FileWriter(file)
                 writer.append(msg)
                 writer.flush()
                 writer.close()
 
-                Constant.uploadingAnswerDialog(requireContext())
+                if (isSendResult) {
+                    Constant.uploadingAnswerDialog(requireContext(), file)
+                }
 
                 selectedTab = 0
                 changeTab(0)

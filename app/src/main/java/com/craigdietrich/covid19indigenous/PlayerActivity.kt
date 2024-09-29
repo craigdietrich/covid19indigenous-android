@@ -7,6 +7,10 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.widget.SeekBar
+import android.window.OnBackInvokedCallback
+import android.window.OnBackInvokedDispatcher
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.OnBackPressedDispatcher
 import androidx.appcompat.app.AppCompatActivity
 import com.craigdietrich.covid19indigenous.common.Constant
 import com.craigdietrich.covid19indigenous.common.Constant.Companion.DoubleClickListener
@@ -40,13 +44,12 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
         }
     }
 
-    override fun onBackPressed() {
-        onStop()
-        super.onBackPressed()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        onBackPressedDispatcher.addCallback(object: OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() { onStop() }
+        })
 
         binding = ActivityPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -86,7 +89,7 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
 
 
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
+        onBackPressedDispatcher.onBackPressed()
         return true
     }
 
@@ -151,7 +154,7 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
         }
 
         binding.imgClose.setOnClickListener {
-            onBackPressed()
+            onBackPressedDispatcher.onBackPressed()
         }
 
         binding.imgFull.setOnClickListener {
