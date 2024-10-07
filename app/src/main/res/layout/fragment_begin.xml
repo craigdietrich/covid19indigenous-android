@@ -148,14 +148,14 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:importantForAccessibility="no"
-                    android:src="@drawable/bubble"
+                    android:src="@drawable/more"
                     app:tint="@color/blueText" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
-                    android:text="@string/culture_resilience"
+                    android:text="@string/title_more"
                     android:textColor="@color/blueText"
                     android:textSize="16sp" />
             </LinearLayout>

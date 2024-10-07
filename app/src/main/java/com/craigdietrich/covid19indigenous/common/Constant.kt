@@ -28,7 +28,10 @@ import retrofit2.Callback
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
+import java.util.Random
+import java.util.TimeZone
 
 class Constant {
     companion object {
@@ -297,8 +300,17 @@ class Constant {
 
                                 try {
                                     response.body() as AnswerVo
+                                    val oldName = file.name
+                                    val newName = oldName.replace("answers_", "local_")
+                                    file.parentFile?.let { parent ->
+                                        val newDestination = File(parent.path, newName)
+                                        file.renameTo(newDestination)
+                                    }
+
+//                                  /*** if success than it converts */
+//                                    file.delete()
+
                                     Log.e("success", "success")
-                                    file.delete()
                                 } catch (e: java.lang.Exception) {
                                     Log.e("errorUploading", e.toString())
                                 }
@@ -366,8 +378,15 @@ class Constant {
 
                                             try {
                                                 response.body() as AnswerVo
-                                                //if success than it converts
-                                                answerFile[i].delete()
+                                                val oldName = answerFile[i].name
+                                                val newName = oldName.replace("answers_", "local_")
+                                                answerFile[i].parentFile?.let { parent ->
+                                                    val newDestination = File(parent.path, newName)
+                                                    answerFile[i].renameTo(newDestination)
+                                                }
+
+//                                                /*** if success than it converts */
+//                                                answerFile[i].delete()
 
                                                 Log.e("success", "success")
                                             } catch (e: java.lang.Exception) {
