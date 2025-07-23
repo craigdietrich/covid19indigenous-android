@@ -5,6 +5,9 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.craigdietrich.covid19indigenous.R
@@ -24,6 +27,13 @@ class PastSubmissionActivity : AppCompatActivity() {
 
         binding = ActivityPastSubmissionBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.toolBar) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.updatePadding(top = systemBars.top)
+            insets
+        }
 
         setSupportActionBar(binding.toolBar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
