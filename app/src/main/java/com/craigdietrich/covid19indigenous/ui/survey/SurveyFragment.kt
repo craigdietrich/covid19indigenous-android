@@ -33,6 +33,8 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import com.craigdietrich.covid19indigenous.BuildConfig
 import com.craigdietrich.covid19indigenous.R
@@ -167,6 +169,17 @@ class NotificationsFragment : Fragment() {
             context = context as Activity,
             color = ContextCompat.getColor(requireContext(), R.color.whiteText)
         )
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(
+                systemBars.left,
+                systemBars.top,
+                systemBars.right,
+                0 // 👈 no bottom inset to allow edge-to-edge
+            )
+            insets
+        }
         return binding.root
     }
 

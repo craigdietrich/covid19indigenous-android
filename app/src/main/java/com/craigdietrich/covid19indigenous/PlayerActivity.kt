@@ -7,15 +7,17 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.widget.SeekBar
-import android.window.OnBackInvokedCallback
-import android.window.OnBackInvokedDispatcher
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.OnBackPressedDispatcher
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.craigdietrich.covid19indigenous.common.Constant
 import com.craigdietrich.covid19indigenous.common.Constant.Companion.DoubleClickListener
 import com.craigdietrich.covid19indigenous.databinding.ActivityPlayerBinding
-import com.google.android.exoplayer2.*
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.PlaybackException
+import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout
@@ -47,12 +49,28 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
+
         onBackPressedDispatcher.addCallback(object: OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() { onStop() }
+            override fun handleOnBackPressed() { /*onStop()*/ finish()
+            }
         })
 
         binding = ActivityPlayerBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            view.setPadding(
+                systemBars.left,
+                systemBars.top,
+                systemBars.right,
+                systemBars.bottom
+            )
+
+            WindowInsetsCompat.CONSUMED
+        }
 
         Constant.changeStatusBar(isDark = true, context = this, color = R.color.black)
 
@@ -154,7 +172,8 @@ class PlayerActivity : AppCompatActivity(), Player.EventListener {
         }
 
         binding.imgClose.setOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
+            finish()
+            /* onBackPressedDispatcher.onBackPressed()*/
         }
 
         binding.imgFull.setOnClickListener {
