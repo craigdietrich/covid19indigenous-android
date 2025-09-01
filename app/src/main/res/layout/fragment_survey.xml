@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@color/whiteText"
     android:orientation="vertical"
-    tools:context=".ui.survey.NotificationsFragment">
+    tools:context=".ui.survey.SurveyFragment">
 
     <com.dueeeke.tablayout.SegmentTabLayout
         android:id="@+id/tabAbout"

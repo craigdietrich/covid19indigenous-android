@@ -59,7 +59,7 @@ import retrofit2.Callback
 import java.io.File
 import java.io.FileWriter
 
-class NotificationsFragment : Fragment() {
+class SurveyFragment : Fragment() {
 
     private var isFirstTimeConsentAccept = false
     var jsonResponse = ""
