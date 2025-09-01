@@ -20,7 +20,7 @@ import com.craigdietrich.covid19indigenous.common.Constant.Companion.getFile
 import com.craigdietrich.covid19indigenous.databinding.FragmentProjectBinding
 import com.dueeeke.tablayout.listener.OnTabSelectListener
 
-class DashboardFragment : Fragment() {
+class ProjectFragment : Fragment() {
 
     private lateinit var binding: FragmentProjectBinding
 

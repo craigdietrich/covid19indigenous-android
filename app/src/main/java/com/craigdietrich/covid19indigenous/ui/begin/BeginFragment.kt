@@ -56,7 +56,6 @@ class BeginFragment : Fragment() {
 
         val aboutButton = view.findViewById<LinearLayout>(R.id.llAboutProject)
         aboutButton.setOnClickListener {
-            val navController = findNavController()
             val link = NavDeepLinkRequest.Builder
                 .fromUri("https://craigdietrich.com/project".toUri())
                 .build()
@@ -64,12 +63,11 @@ class BeginFragment : Fragment() {
                 setLaunchSingleTop(true)
                 setPopUpTo(R.id.navigation_begin, false)
             }.build()
-            navController.navigate(link, options)
+            findNavController().navigate(link, options)
         }
 
         val surveyButton = view.findViewById<LinearLayout>(R.id.llTakeSurvey)
         surveyButton.setOnClickListener {
-            val navController = findNavController()
             val link = NavDeepLinkRequest.Builder
                 .fromUri("https://craigdietrich.com/survey".toUri())
                 .build()
@@ -77,7 +75,7 @@ class BeginFragment : Fragment() {
                 setLaunchSingleTop(true)
                 setPopUpTo(R.id.navigation_begin, false)
             }.build()
-            navController.navigate(link, options)
+            findNavController().navigate(link, options)
         }
 
         val cultureButton = view.findViewById<LinearLayout>(R.id.llCulture)

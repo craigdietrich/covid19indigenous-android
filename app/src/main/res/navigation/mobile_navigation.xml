@@ -5,11 +5,6 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@+id/navigation_begin">
 
-    <deepLink
-        android:autoVerify="true"
-        app:action="ACTION_VIEW"
-        app:uri="https://craigdietrich.com" />
-
     <fragment
         android:id="@+id/navigation_begin"
         android:name="com.craigdietrich.covid19indigenous.ui.begin.BeginFragment"
@@ -23,7 +18,7 @@
 
     <fragment
         android:id="@+id/navigation_project"
-        android:name="com.craigdietrich.covid19indigenous.ui.project.DashboardFragment"
+        android:name="com.craigdietrich.covid19indigenous.ui.project.ProjectFragment"
         android:label="@string/title_project"
         tools:layout="@layout/fragment_project">
         <deepLink
@@ -34,7 +29,7 @@
 
     <fragment
         android:id="@+id/navigation_survey"
-        android:name="com.craigdietrich.covid19indigenous.ui.survey.NotificationsFragment"
+        android:name="com.craigdietrich.covid19indigenous.ui.survey.SurveyFragment"
         android:label="@string/title_survey"
         tools:layout="@layout/fragment_survey">
         <deepLink
